@@ -1,2 +1,12 @@
 # phpsaml2
-I created this repository to Restructure the phpsaml plugin to comply with new Composer in GLPI10. The plugin is sourced from: https://github.com/derricksmith/phpsaml. 
+
+Rewrite of phpSaml plugin by Derrick Smith for:
+- PHP8 support
+- GLPI 10+ support
+- PSR4 support
+- Use concern based class structure
+- Focus on code readability
+- SONAR LINTING
+- Improve community support
+
+
