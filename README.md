@@ -9,4 +9,7 @@ Rewrite of phpSaml plugin by Derrick Smith for:
 - SONAR LINTING
 - Improve community support
 
+# Contribute
 
+All developers, testers, feedback is more than welcome. Visit my discord and get in touch.
+https://discord.gg/35tkHxHg
