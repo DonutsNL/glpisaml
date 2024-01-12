@@ -10,6 +10,9 @@ Rewrite of phpSaml plugin by Derrick Smith for:
 - Improve community support
 
 # Contribute
-
 All developers, testers, feedback is more than welcome. Visit my discord and get in touch.
 https://discord.gg/35tkHxHg
+
+
+# Get an idea where im going with this:
+https://github.com/DonutsNL/phpsaml2/wiki/Plugin-Logic-and-Structure-Scratchboard
