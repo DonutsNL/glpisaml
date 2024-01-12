@@ -1,90 +1,117 @@
 <?php
 /**
  *  ------------------------------------------------------------------------
- *  Copyright (C) 2023 by Chris Gralike, Derrick Smith
+ *  PhpSaml2
+ *  PhpSaml2 is heavily influenced by the initial work of Derrick Smith's
+ *  PhpSaml. This project's intend is to address some structural issues
+ *  caused by the gradual development of GLPI. It intends to use more of the
+ *  GLPI core objects and php8/composer namespaces.
+ *
+ *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------
  *
  * LICENSE
  *
- * This file is part of phpSaml2.
- *
- * Ticket Filter plugin is free software: you can redistribute it and/or modify
+ * This file is part of PhpSaml2 project.
+ * PhpSaml2 plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Ticket Filter is distributed in the hope that it will be useful,
+ * PhpSaml2 is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with ticket filter. If not, see <http://www.gnu.org/licenses/>.
+ * along with PhpSaml2. If not, see <http://www.gnu.org/licenses/>.
  *
  * ------------------------------------------------------------------------
  *
- *  @package  	   phpSaml2
- *  @version	   1.0.0
- *  @author    	Chris Gralike
- *  @author       Derrick Smith
- *  @copyright 	Copyright (c) 2023 by Derrick Smith
- *  @license   	GPLv2+
- *  @see       	https://github.com/DonutsNL/phpSaml2/readme.md
- *  @link		   https://github.com/DonutsNL/phpSaml2
- *  @since     	0.1
+ *  @package    PhpSaml2
+ *  @version    1.0.0
+ *  @author     Chris Gralike
+ *  @copyright  Copyright (c) 2023 by Chris Gralike
+ *  @license    GPLv2+
+ *  @see        https://github.com/DonutsNL/phpSaml2/readme.md
+ *  @link       https://github.com/DonutsNL/phpSaml2
+ *  @since      1.0.0
  * ------------------------------------------------------------------------
  **/
 
+use Plugin;
+use Session;
 use Glpi\Plugin\Hooks;
-use GlpiPlugin\Phpsaml2\Phpsaml2;
+use GlpiPlugin\PhpSaml2\User;
+use GlpiPlugin\PhpSaml2\Config;
+use GlpiPlugin\PhpSaml2\Excludes;
+use GlpiPlugin\PhpSaml2\Loginflow;
+use GlpiPlugin\PhpSaml2\Ruleright;
+use GlpiPlugin\PhpSaml2\Rulerightcollection;
+use GlpiPlugin\PhpSaml2\Autoloader;
 
-/**
- * Maximum GLPI version, exclusive
- * Minimal GLPI version, inclusive
- */
+// Constants
 define('PLUGIN_PHPSAML2_VERSION', '1.0.0');
 define('PLUGIN_PHPSAML2_MIN_GLPI', '10.0.0');
-define('PLUGIN_PHPSAML2_MAX_GLPI', '10.0.99');
+define('PLUGIN_PHPSAML2_MAX_GLPI', '10.9.99');
+define('PLUGIN_NAME', 'phpsaml2');
+define('PLUGIN_DIR', Plugin::getWebDir(PLUGIN_NAME, false));
 
 /**
  * Init hooks of the plugin.
- *
+ * CALLED AND REQUIRED BY GLPI
+ * 
  * @return void
  */
-function plugin_init_ticketfilter() : void
+function plugin_init_phpsaml2() : void                                                  //NOSONAR - Not compliant with LINT naming convention
 {
-   global $PLUGIN_HOOKS;
+    global $PLUGIN_HOOKS;                                                               //NOSONAR - Not compliant with LINT naming convention
 
-   Plugin::registerClass(Phpsaml2::class);
+    // CSRF
+    $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT][PLUGIN_NAME] = true;                           //NOSONAR - GLPI Default variable name  
 
-   // Config page: redirect to filterpatterns dropdown page
-   $PLUGIN_HOOKS['config_page']['phpsaml2'] = 'front/ConfigDropdown.php';
+    // CONFIG PAGES
+    Plugin::registerClass(Config::class);
+    Plugin::registerClass(Excludes::class);
+    if (Session::haveRight('config', UPDATE)) {
+        $PLUGIN_HOOKS['config_page'][PLUGIN_NAME] = 'front/config.php';                 //NOSONAR
+    }
 
-   // State this plugin cross-site request forgery compliant
-   $PLUGIN_HOOKS['csrf_compliant']['phpsaml2'] = true;
+    // USER AND JIT HANDLING
+    plugin::registerClass(User::class);
+    Plugin::registerClass(Ruleright::class);
+    Plugin::registerClass(Rulerightcollection::class);
+    $PLUGIN_HOOKS[Hooks::RULE_MATCHED][PLUGIN_NAME]    = [User::class => 'updateUser'];
+
+    // POSTINIT HOOK LOGINFLOW TRIGGER
+    Plugin::registerClass(Loginflow::class);
+    $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME] = [Loginflow::class => 'evalAuth'];    //NOSONAR
+
 }
 
 
 /**
  * Returns the name and the version of the plugin
- *
  * @return array
  */
-function plugin_version_ticketfilter() : array
+function plugin_version_phpsaml2() : array                              //NOSONAR - GLPI Default function names
 {
-   return [
-      'name'           => 'Phpsaml 2',
-      'version'        => PLUGIN_TICKETFILTER_VERSION,
-      'author'         => 'Derrick Smith, Chris Gralike',
-      'license'        => 'GPLv2+',
-      'homepage'       => 'https://github.com/DonutsNL/phpsaml2',
-      'requirements'   => [
-         'glpi' => [
+    return [
+        'name'           => PLUGIN_NAME,
+        'version'        => PLUGIN_TICKETFILTER_VERSION,
+        'author'         => 'Chris Gralike',
+        'license'        => 'GPLv2+',
+        'homepage'       => 'https://github.com/DonutsNL/phpsaml2',
+        'requirements'   => [
+            'glpi' => [
             'min' => PLUGIN_TICKETFILTER_MIN_GLPI,
             'max' => PLUGIN_TICKETFILTER_MAX_GLPI,
-         ]
-      ]
-   ];
+            ],
+            'php'    => [
+            'min' => '8.0'
+            ]
+        ]
+    ];
 }
 
 
@@ -92,11 +119,8 @@ function plugin_version_ticketfilter() : array
  * Check pre-requisites before install
  * @return boolean
  */
-function plugin_phpsaml2_check_prerequisites() : bool
+function plugin_phpsaml2_check_prerequisites() : bool                   //NOSONAR - GLPI Default function names
 {
-   if (false) {
-      return false;
-   }
    return true;
 }
 
@@ -106,14 +130,10 @@ function plugin_phpsaml2_check_prerequisites() : bool
  * @param boolean $verbose Whether to display message on failure. Defaults to false
  * @return boolean
  */
-function plugin_phpsaml2_check_config($verbose = false) : bool
+function plugin_phpsaml2_check_config($verbose = false) : bool         //NOSONAR - GLPI Default function names
 {
-   if (true) { // Your configuration check
-      return true;
-   }
-
    if ($verbose) {
-      echo __('Installed / not configured', 'Phpsaml2');
+      echo __('Installed / not configured', 'TICKETFILTER');
    }
-   return false;
+   return (true) ? true : false;
 }

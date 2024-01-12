@@ -2,12 +2,13 @@
 
 /**
  *  ------------------------------------------------------------------------
- *  Copyright (C) 2023 by Chris Gralike, Derrick Smith
+ *  Chris Gralike Ticket Filter
+ *  Copyright (C) 2023 by Chris Gralike
  *  ------------------------------------------------------------------------
  *
  * LICENSE
  *
- * This file is part of phpSaml2.
+ * This file is part of Ticket Filter project.
  *
  * Ticket Filter plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -24,61 +25,61 @@
  *
  * ------------------------------------------------------------------------
  *
- *  @package  	   phpSaml2
- *  @version	   1.0.0
+ *  @package  	   TicketFilter
+ *  @version	   1.2.0
  *  @author    	Chris Gralike
- *  @author       Derrick Smith
- *  @copyright 	Copyright (c) 2023 by Derrick Smith
+ *  @copyright 	Copyright (c) 2023 by Chris Gralike
  *  @license   	GPLv2+
- *  @see       	https://github.com/DonutsNL/phpSaml2/readme.md
- *  @link		   https://github.com/DonutsNL/phpSaml2
- *  @since     	0.1
+ *  @see       	https://github.com/DonutsNL/ticketfilter/readme.md
+ *  @link		   https://github.com/DonutsNL/ticketfilter
+ *  @since     	0.1.0
  * ------------------------------------------------------------------------
  **/
 
+use GlpiPlugin\PhpSaml2\Config;
+
 /**
- * Make plugin dropdown visible in the dropdowns menu.
- * @return boolean
+ * Tell GLPI to add our dropdown to the dropdowns menu.
+ * @return array [Classname => __('Menu label') ]
+ */
+// phpcs:ignore PSR1.Function.CamelCapsMethodName
+function plugin_phpsaml2_getDropdown() : array
+{
+   return [Exclude::class => __("Excludes", 'phpsaml2')];
+}
+
+
+/**
+ * Summary of plugin_ticketFilter install
+ * @return booleansyste
  * test
  */
-// phpcs:ignore PSR1.Function.CamelCapsMethodName
-/*
-function plugin_ticketfilter_getDropdown() : array 
-{
-   return [Phpsaml2ConfigDropdown::class => __("IdentityProviders", 'phpSaml2')];
-}
-*/
-
-/**
- * Call install methods
- * @return boolean
- */
-// phpcs:ignore PSR1.Function.CamelCapsMethodName
-function plugin_ticketfilter_install() : bool
+//phpcs:ignore PSR1.Function.CamelCapsMethodName
+function plugin_phpsaml2_install() : bool
 {
 
-   if (method_exists(Phpsaml::class, 'install')) {
-      $version   = plugin_version_phpsaml2();
+   if (method_exists(FilterPattern::class, 'install')) {
+      $version   = plugin_version_ticketfilter();
       $migration = new Migration($version['version']);
-      Phpsaml::install($migration);
+      FilterPattern::install($migration);
    }
    return true;
    
 }
 
+
 /**
- * 
- * Call all uninstall methods
+ * Summary of plugin_ticketFilter uninstall
  * @return boolean
  */
-// phpcs:ignore PSR1.Function.CamelCapsMethodName
-function plugin_ticketfilter_uninstall() : bool
+//phpcs:ignore PSR1.Function.CamelCapsMethodName
+function plugin_phpsaml2_uninstall() : bool
 {
    
-   if (method_exists(Phpsaml::class, 'uninstall')) {
+   if (method_exists(FilterPattern::class, 'uninstall')) {
       $version   = plugin_version_ticketfilter();
       $migration = new Migration($version['version']);
-      Phpsaml::uninstall($migration);
+      FilterPattern::uninstall($migration);
    }
    return true;
 
