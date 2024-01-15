@@ -47,5 +47,10 @@ use GlpiPlugin\PhpSaml2\Loginflow\Loginstate;
 
 class Loginflow extends CommonDBTM
 {
-    
+        // Never perform auth for CLI calls
+        /*
+        if ( PHP_SAPI === 'cli' ){
+           return true;
+        }
+        */
 }

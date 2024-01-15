@@ -42,8 +42,6 @@ use Glpi\Plugin;
 use GlpiPlugin\PhpSaml2\Config;
 
 include_once "../../../inc/includes.php";               //NOSONAR - Cannot be included with USE keyword
-
-Plugin::load('ticketfilter', true);
-
-$dropdown = new FilterPattern();
+Plugin::load(PLUGIN_NAME, true);
+$dropdown = new Config();
 include_once GLPI_ROOT . '/front/dropdown.common.php';  //NOSONAR - Cannot be included with USE keyword

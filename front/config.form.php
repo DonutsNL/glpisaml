@@ -43,9 +43,6 @@ use Glpi\Plugin;
 use GlpiPlugin\PhpSaml2\Config;
 
 include_once '../../../inc/includes.php';                       //NOSONAR - Cannot be included with USE
-
-Plugin::load('phpsaml2', true);
-
+Plugin::load(PLUGIN_NAME, true);
 $dropdown = new Config();
-
 include_once GLPI_ROOT . "/front/dropdown.common.form.php";     //NOSONAR - Cannot be included with USE
