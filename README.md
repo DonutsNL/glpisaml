@@ -8,6 +8,7 @@ Rewrite of phpSaml plugin by Derrick Smith for:
 - Focus on code readability
 - SONAR LINTING
 - Improve community support
+- Composer support for updating libraries
 
 # Contribute
 All developers, testers, feedback is more than welcome. Visit my discord and get in touch.
