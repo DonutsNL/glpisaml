@@ -63,12 +63,15 @@ define('PLUGIN_DIR', Plugin::getWebDir(PLUGIN_NAME, false));
  * 
  * @return void
  */
-function plugin_init_phpsaml2() : void                                                  //NOSONAR - Not compliant with LINT naming convention
+function plugin_init_phpsaml2() : void                                                  //NOSONAR - These are default function names
 {
-    global $PLUGIN_HOOKS;                                                               //NOSONAR - Not compliant with LINT naming convention
+    global $PLUGIN_HOOKS;                                                               //NOSONAR
+
+    // COMPOSER AUTLOAD
+    include_once(__DIR__. 'vendor/autoload.php');                                       //NOSONAR - intended include_once to load composer autoload;
 
     // CSRF
-    $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT][PLUGIN_NAME] = true;                           //NOSONAR - GLPI Default variable name  
+    $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT][PLUGIN_NAME] = true;                           //NOSONAR - These are GLPI default variable names  
 
     // CONFIG PAGES
     Plugin::registerClass(Config::class);
@@ -94,7 +97,7 @@ function plugin_init_phpsaml2() : void                                          
  * Returns the name and the version of the plugin
  * @return array
  */
-function plugin_version_phpsaml2() : array                              //NOSONAR - GLPI Default function names
+function plugin_version_phpsaml2() : array                                              //NOSONAR
 {
     return [
         'name'           => PLUGIN_NAME,
@@ -119,8 +122,14 @@ function plugin_version_phpsaml2() : array                              //NOSONA
  * Check pre-requisites before install
  * @return boolean
  */
-function plugin_phpsaml2_check_prerequisites() : bool                   //NOSONAR - GLPI Default function names
+function plugin_phpsaml2_check_prerequisites() : bool                   //NOSONAR - These are GLPI Default function names
 {
+   // Check composer autloader
+    if (!is_readable(PLUGIN_DIR . '/vendor/autoload.php') ||
+        !is_file(PLUGIN_DIR . '/vendor/autoload.php')     ){
+            echo "Run composer install --no-dev in the plugin directory<br>";
+            return false;
+    }
    return true;
 }
 
@@ -133,7 +142,7 @@ function plugin_phpsaml2_check_prerequisites() : bool                   //NOSONA
 function plugin_phpsaml2_check_config($verbose = false) : bool         //NOSONAR - GLPI Default function names
 {
    if ($verbose) {
-      echo __('Installed / not configured', 'TICKETFILTER');
+      echo __('Installed / not configured', PLUGIN_NAME);
    }
    return (true) ? true : false;
 }
