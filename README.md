@@ -14,6 +14,9 @@ Rewrite of phpSaml plugin by Derrick Smith for:
 All developers, testers, feedback is more than welcome. Visit my discord and get in touch.
 https://discord.gg/35tkHxHg
 
+#Credits
+Special credits go to:
+- Derrick Smith (creating the initial version PHPSaml)
 
 # Get an idea where im going with this:
 https://github.com/DonutsNL/phpsaml2/wiki/Plugin-Logic-and-Structure-Scratchboard
