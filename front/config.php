@@ -39,7 +39,7 @@
  * ------------------------------------------------------------------------
  **/
 use Glpi\Plugin;
-use GlpiPlugin\PhpSaml2\Config;
+use GlpiPlugin\Phpsaml2\Config;
 
 include_once "../../../inc/includes.php";               //NOSONAR - Cannot be included with USE keyword
 Plugin::load(PLUGIN_NAME, true);

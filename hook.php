@@ -1,5 +1,4 @@
 <?php
-
 /**
  *  ------------------------------------------------------------------------
  *  PhpSaml2
@@ -14,31 +13,32 @@
  *
  * LICENSE
  *
- * This file is part of Ticket Filter project.
+ * This file is part of PhpSaml2 project.
  *
- * Ticket Filter plugin is free software: you can redistribute it and/or modify
+ * PhpSaml2 plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Ticket Filter is distributed in the hope that it will be useful,
+ * PhpSaml2 is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with ticket filter. If not, see <http://www.gnu.org/licenses/>.
+ * along with PhpSaml2. If not, see <http://www.gnu.org/licenses/> or
+ * https://choosealicense.com/licenses/gpl-3.0/
  *
  * ------------------------------------------------------------------------
  *
- *  @package  	   TicketFilter
- *  @version	   1.2.0
- *  @author    	Chris Gralike
- *  @copyright 	Copyright (c) 2023 by Chris Gralike
- *  @license   	GPLv2+
- *  @see       	https://github.com/DonutsNL/ticketfilter/readme.md
- *  @link		   https://github.com/DonutsNL/ticketfilter
- *  @since     	0.1.0
+ *  @package    PhpSaml2
+ *  @version    1.0.0
+ *  @author     Chris Gralike
+ *  @copyright  Copyright (c) 2024 by Chris Gralike
+ *  @license    GPLv3+
+ *  @see        https://github.com/DonutsNL/phpSaml2/readme.md
+ *  @link       https://github.com/DonutsNL/phpSaml2
+ *  @since      1.0.0
  * ------------------------------------------------------------------------
  **/
 
@@ -49,7 +49,7 @@ use GlpiPlugin\PhpSaml2\Config;
  * @return array [Classname => __('Menu label') ]
  */
 // phpcs:ignore PSR1.Function.CamelCapsMethodName
-function plugin_phpsaml2_getDropdown() : array
+function plugin_phpsaml2_getDropdown() : array                              //NOSONAR - Default GLPI function names
 {
    return [Exclude::class => __("Excludes", 'phpsaml2')];
 }
@@ -61,7 +61,7 @@ function plugin_phpsaml2_getDropdown() : array
  * test
  */
 //phpcs:ignore PSR1.Function.CamelCapsMethodName
-function plugin_phpsaml2_install() : bool
+function plugin_phpsaml2_install() : bool                                   //NOSONAR
 {
 
    if (method_exists(FilterPattern::class, 'install')) {
@@ -79,7 +79,7 @@ function plugin_phpsaml2_install() : bool
  * @return boolean
  */
 //phpcs:ignore PSR1.Function.CamelCapsMethodName
-function plugin_phpsaml2_uninstall() : bool
+function plugin_phpsaml2_uninstall() : bool                                 //NOSONAR
 {
    
    if (method_exists(FilterPattern::class, 'uninstall')) {
@@ -88,5 +88,4 @@ function plugin_phpsaml2_uninstall() : bool
       FilterPattern::uninstall($migration);
    }
    return true;
-
 }

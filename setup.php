@@ -43,25 +43,27 @@
 use Plugin;
 use Session;
 use Glpi\Plugin\Hooks;
-use GlpiPlugin\PhpSaml2\User;
-use GlpiPlugin\PhpSaml2\Config;
-use GlpiPlugin\PhpSaml2\Excludes;
-use GlpiPlugin\PhpSaml2\Loginflow;
-use GlpiPlugin\PhpSaml2\Ruleright;
-use GlpiPlugin\PhpSaml2\Rulerightcollection;
-use GlpiPlugin\PhpSaml2\Autoloader;
+use GlpiPlugin\Phpsaml2\User;
+use GlpiPlugin\Phpsaml2\Config;
+use GlpiPlugin\Phpsaml2\Excludes;
+use GlpiPlugin\Phpsaml2\Loginflow;
+use GlpiPlugin\Phpsaml2\Ruleright;
+use GlpiPlugin\Phpsaml2\Rulerightcollection;
+use GlpiPlugin\Phpsaml2\Autoloader;
 
 // Constants
 define('PLUGIN_PHPSAML2_VERSION', '1.0.0');
 define('PLUGIN_PHPSAML2_MIN_GLPI', '10.0.0');
 define('PLUGIN_PHPSAML2_MAX_GLPI', '10.9.99');
 define('PLUGIN_NAME', 'phpsaml2');
-define('PLUGIN_DIR', Plugin::getWebDir(PLUGIN_NAME, false));
+define('PLUGIN_PHPSAML2_WEBDIR', Plugin::getWebDir(PLUGIN_NAME, false));
+define('PLUGIN_PHPSAML2_SRCDIR', __DIR__ . '/src');
+define('PLUGIN_PHPSAML2_TPLDIR', __DIR__ . '/tpl');
 
 /**
  * Init hooks of the plugin.
  * CALLED AND REQUIRED BY GLPI
- * 
+ *
  * @return void
  */
 function plugin_init_phpsaml2() : void                                                  //NOSONAR - These are default function names
@@ -70,7 +72,7 @@ function plugin_init_phpsaml2() : void                                          
 
     // COMPOSER AUTLOAD
     // https://github.com/pluginsGLPI/example/issues/49#issuecomment-1891552141
-    include_once(__DIR__. 'vendor/autoload.php');                                       //NOSONAR - intentional include_once to load composer autoload;
+    include_once(__DIR__. '/vendor/autoload.php');                                       //NOSONAR - intentional include_once to load composer autoload;
 
     // CSRF
     $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT][PLUGIN_NAME] = true;                           //NOSONAR - These are GLPI default variable names  
@@ -86,11 +88,14 @@ function plugin_init_phpsaml2() : void                                          
     plugin::registerClass(User::class);
     Plugin::registerClass(Ruleright::class);
     Plugin::registerClass(Rulerightcollection::class);
-    $PLUGIN_HOOKS[Hooks::RULE_MATCHED][PLUGIN_NAME]    = [User::class => 'updateUser'];
+    $PLUGIN_HOOKS[Hooks::RULE_MATCHED][PLUGIN_NAME] = [User::class => 'updateUser'];
 
     // POSTINIT HOOK LOGINFLOW TRIGGER
     Plugin::registerClass(Loginflow::class);
     $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME] = [Loginflow::class => 'evalAuth'];    //NOSONAR
+
+    $flow = new Loginflow();
+
 }
 
 
@@ -126,9 +131,9 @@ function plugin_version_phpsaml2() : array                                      
 function plugin_phpsaml2_check_prerequisites() : bool                                   //NOSONAR
 {
    // https://github.com/pluginsGLPI/example/issues/49#issuecomment-1891552141
-    if (!is_readable(PLUGIN_DIR . '/vendor/autoload.php') ||
-        !is_file(PLUGIN_DIR . '/vendor/autoload.php')     ){
-            echo "Run composer install --no-dev in the plugin directory<br>";
+    if (!is_readable(__DIR__ . '/vendor/autoload.php') ||
+        !is_file(__DIR__ . '/vendor/autoload.php')     ){
+            echo 'Run composer install --no-dev in the plugin directory<br>';
             return false;
     }
    return true;

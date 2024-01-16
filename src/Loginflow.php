@@ -49,9 +49,10 @@
  *
  **/
 
-namespace GlpiPlugin\PhpSaml2;
+namespace GlpiPlugin\Phpsaml2;
 
 use Session;
+use CommonDBTM;
 use GlpiPlugin\PhpSaml2\Loginflow\Loginstate;
 
 class Loginflow extends CommonDBTM
@@ -62,4 +63,17 @@ class Loginflow extends CommonDBTM
            return true;
         }
         */
+
+        /**
+         * getMenuContent() : array | bool -
+         * Method called by pre_item_add hook validates the object and passes
+         * it to the RegEx Matching then decides what to do.
+         *
+         * @return mixed             boolean|array
+         */
+        public function evalAuth(){
+            $iterator = new DirectoryIterator(PLUGIN_PHPSAML2_SRCDIR);
+            echo $iterator->getPathname();
+            die();
+        }
 }

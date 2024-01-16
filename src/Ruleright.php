@@ -42,7 +42,7 @@
  * ------------------------------------------------------------------------
  **/
 
-namespace GlpiPlugin\PhpSaml2;
+namespace GlpiPlugin\Phpsaml2;
 
 class Ruleright extends Rule
 {

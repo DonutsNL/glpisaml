@@ -33,6 +33,8 @@
  *  @since          1.3.0
  * ------------------------------------------------------------------------
  **/
+use Glpi\Plugin;
+use GlpiPlugin\Phpsaml2\Exclude;
 
 include "../../../inc/includes.php";                    //NOSONAR - Cant be included with USE.
 Plugin::load(PLUGIN_NAME, true);

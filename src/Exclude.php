@@ -42,7 +42,7 @@
  * ------------------------------------------------------------------------
  **/
 
-namespace GlpiPlugin\PhpSaml2;
+namespace GlpiPlugin\Phpsaml2;
 
 // MAKE SURE GLPI IS LOADED
 if (!defined("GLPI_ROOT")) { die("Sorry, directly access to this file is prohibited"); }
