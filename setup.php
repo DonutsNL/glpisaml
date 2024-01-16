@@ -2,10 +2,11 @@
 /**
  *  ------------------------------------------------------------------------
  *  PhpSaml2
- *  PhpSaml2 is heavily influenced by the initial work of Derrick Smith's
+ *
+ *  PhpSaml2 was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
- *  caused by the gradual development of GLPI. It intends to use more of the
- *  GLPI core objects and php8/composer namespaces.
+ *  caused by the gradual development of GLPI and the broad ammount of
+ *  wishes expressed by the community. 
  *
  *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------
@@ -68,7 +69,8 @@ function plugin_init_phpsaml2() : void                                          
     global $PLUGIN_HOOKS;                                                               //NOSONAR
 
     // COMPOSER AUTLOAD
-    include_once(__DIR__. 'vendor/autoload.php');                                       //NOSONAR - intended include_once to load composer autoload;
+    // https://github.com/pluginsGLPI/example/issues/49#issuecomment-1891552141
+    include_once(__DIR__. 'vendor/autoload.php');                                       //NOSONAR - intentional include_once to load composer autoload;
 
     // CSRF
     $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT][PLUGIN_NAME] = true;                           //NOSONAR - These are GLPI default variable names  
@@ -89,7 +91,6 @@ function plugin_init_phpsaml2() : void                                          
     // POSTINIT HOOK LOGINFLOW TRIGGER
     Plugin::registerClass(Loginflow::class);
     $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME] = [Loginflow::class => 'evalAuth'];    //NOSONAR
-
 }
 
 
@@ -122,9 +123,9 @@ function plugin_version_phpsaml2() : array                                      
  * Check pre-requisites before install
  * @return boolean
  */
-function plugin_phpsaml2_check_prerequisites() : bool                   //NOSONAR - These are GLPI Default function names
+function plugin_phpsaml2_check_prerequisites() : bool                                   //NOSONAR
 {
-   // Check composer autloader
+   // https://github.com/pluginsGLPI/example/issues/49#issuecomment-1891552141
     if (!is_readable(PLUGIN_DIR . '/vendor/autoload.php') ||
         !is_file(PLUGIN_DIR . '/vendor/autoload.php')     ){
             echo "Run composer install --no-dev in the plugin directory<br>";
@@ -139,7 +140,7 @@ function plugin_phpsaml2_check_prerequisites() : bool                   //NOSONA
  * @param boolean $verbose Whether to display message on failure. Defaults to false
  * @return boolean
  */
-function plugin_phpsaml2_check_config($verbose = false) : bool         //NOSONAR - GLPI Default function names
+function plugin_phpsaml2_check_config($verbose = false) : bool                          //NOSONAR
 {
    if ($verbose) {
       echo __('Installed / not configured', PLUGIN_NAME);

@@ -1,13 +1,15 @@
 <?php
 /**
- * ------------------------------------------------------------------------
- * PhpSaml2 is heavily influenced by the initial work of Derrick Smith's
- * PhpSaml. This project's intent is to address some structural issues and
- * changes made by the gradual development of GLPI and provide a free, safe
- * and functional way of implementing SAML authentication in GLPI.
+ *  ------------------------------------------------------------------------
+ *  PhpSaml2
  *
- * Copyright (C) 2024 by Chris Gralike
- * ------------------------------------------------------------------------
+ *  PhpSaml2 was inspired by the initial work of Derrick Smith's
+ *  PhpSaml. This project's intend is to address some structural issues
+ *  caused by the gradual development of GLPI and the broad ammount of
+ *  wishes expressed by the community. 
+ *
+ *  Copyright (C) 2024 by Chris Gralike
+ *  ------------------------------------------------------------------------
  *
  * LICENSE
  *
