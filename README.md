@@ -3,12 +3,15 @@
 Rewrite of phpSaml plugin by Derrick Smith for:
 - PHP8 support
 - GLPI 10+ support
+- Use GLPI core objects where possible
 - PSR4 support
 - Use concern based class structure
 - Focus on code readability
 - SONAR LINTING
 - Improve community support
 - Composer support for updating libraries
+- Discord support channel
+- Support multiple IDPs
 
 # Contribute
 All developers, testers, feedback is more than welcome. Visit my discord and get in touch.
