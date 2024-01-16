@@ -42,50 +42,88 @@
  * ------------------------------------------------------------------------
  **/
 
-use GlpiPlugin\PhpSaml2\Config;
+use GlpiPlugin\Phpsaml2\Config;
+use GlpiPlugin\Phpsaml2\Loginflow;
 
 /**
  * Tell GLPI to add our dropdown to the dropdowns menu.
  * @return array [Classname => __('Menu label') ]
  */
-// phpcs:ignore PSR1.Function.CamelCapsMethodName
-function plugin_phpsaml2_getDropdown() : array                              //NOSONAR - Default GLPI function names
+function plugin_phpsaml2_getDropdown() : array                              //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
    return [Exclude::class => __("Excludes", 'phpsaml2')];
 }
 
 
-/**
- * Summary of plugin_ticketFilter install
- * @return booleansyste
- * test
- */
-//phpcs:ignore PSR1.Function.CamelCapsMethodName
-function plugin_phpsaml2_install() : bool                                   //NOSONAR
-{
 
-   if (method_exists(FilterPattern::class, 'install')) {
-      $version   = plugin_version_ticketfilter();
-      $migration = new Migration($version['version']);
-      FilterPattern::install($migration);
-   }
-   return true;
-   
+function plugin_phpsaml2_evalAuth() : void                                  //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+{
+    // Call the evalAuth hook;
+    $flow = new Loginflow();
+    $flow->evalAuth();
 }
 
 
 /**
- * Summary of plugin_ticketFilter uninstall
+ * Performs install of plugin classes in /src.
+ *
  * @return boolean
  */
 //phpcs:ignore PSR1.Function.CamelCapsMethodName
-function plugin_phpsaml2_uninstall() : bool                                 //NOSONAR
+function plugin_phpsaml2_install() : bool                                   //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
-   
-   if (method_exists(FilterPattern::class, 'uninstall')) {
-      $version   = plugin_version_ticketfilter();
-      $migration = new Migration($version['version']);
-      FilterPattern::uninstall($migration);
-   }
-   return true;
+    if($files = plugin_phpsaml2_getSrcClasses())
+    {
+        if(is_array($files)) {
+            foreach($files as $name){
+                $class = "GlpiPlugin\\Phpsaml2\\" . basename($name, '.php');
+                if(method_exists($class, 'install')){
+                    $version   = plugin_version_ticketfilter();
+                    $migration = new Migration($version['version']);
+                    $class::install($migration);
+                }
+            }
+        }
+    }
+    return true;
+}
+
+/**
+ * Performs uninstall of pluginclasses in /src.
+ *
+ * @return boolean
+ */
+function plugin_phpsaml2_uninstall() : bool                                 //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+{
+    if($files = plugin_phpsaml2_getSrcClasses()) {
+        if(is_array($files)) {
+            foreach($files as $name){
+                $class = "GlpiPlugin\\Phpsaml2\\" . basename($name, '.php');
+                if(method_exists($class, 'install')){
+                    $version   = plugin_version_ticketfilter();
+                    $migration = new Migration($version['version']);
+                    $class::uninstall($migration);
+                }
+            }
+        }
+    }
+    return true;
+}
+
+/**
+ * Fetches all classes from the plugin \src directory
+ *
+ * @return boolean
+ */
+function plugin_phpsaml2_getSrcClasses()                                    //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+{
+    if(is_dir(PLUGIN_PHPSAML2_SRCDIR)       &&
+       is_readable(PLUGIN_PHPSAML2_SRCDIR)  ){
+        return array_filter(scandir(PLUGIN_PHPSAML2_SRCDIR, SCANDIR_SORT_NONE), function($item) {
+            return !is_dir(PLUGIN_PHPSAML2_SRCDIR.'/'.$item);
+        });
+    }else{
+        echo "The directory". PLUGIN_PHPSAML2_SRCDIR . "Isnt accessible, Plugin installation failed!";
+        return false;
+    }
 }

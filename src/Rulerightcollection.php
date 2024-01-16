@@ -44,7 +44,9 @@
 
 namespace GlpiPlugin\Phpsaml2;
 
-class Rulerightcollection extends Rulcollection
+use RuleCollection;
+
+class Rulerightcollection extends RuleCollection
 {
     
 }

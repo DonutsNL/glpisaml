@@ -44,6 +44,8 @@
 
 namespace GlpiPlugin\Phpsaml2;
 
+use CommonDropdown;
+
 class Config extends CommonDropdown
 {
 

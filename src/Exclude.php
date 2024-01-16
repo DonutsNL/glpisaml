@@ -44,6 +44,11 @@
 
 namespace GlpiPlugin\Phpsaml2;
 
+use Migration;
+use Session;
+use CommonDropdown;
+
+
 // MAKE SURE GLPI IS LOADED
 if (!defined("GLPI_ROOT")) { die("Sorry, directly access to this file is prohibited"); }
 
@@ -222,8 +227,12 @@ class Exclude extends CommonDropdown
      * @return void
      * @see             hook.php:plugin_ticketfilter_install()
      */
-    public static function install(Migration $migration) : void
+    public static function install(Migration $migration) : bool
     {
+        // TODO: remove this after debug
+        Session::addMessageAfterRedirect(__(__CLASS__ . "\Install() called"), true, WARNING);
+        return true;
+
         global $DB;
         $default_charset = DBConnection::getDefaultCharset();
         $default_collation = DBConnection::getDefaultCollation();
@@ -294,8 +303,12 @@ class Exclude extends CommonDropdown
      * @return void
      * @see             hook.php:plugin_ticketfilter_uninstall()
      */
-    public static function uninstall(Migration $migration) : void
+    public static function uninstall(Migration $migration) : bool
     {
+        // TODO: remove this after debug
+        Session::addMessageAfterRedirect(__(__CLASS__ . "\uninstall() called"), true, WARNING);
+        return true;
+
         $table = self::getTable();
         $migration->displayMessage("Uninstalling $table");
         $migration->dropTable($table);

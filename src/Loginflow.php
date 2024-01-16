@@ -53,7 +53,9 @@ namespace GlpiPlugin\Phpsaml2;
 
 use Session;
 use CommonDBTM;
-use GlpiPlugin\PhpSaml2\Loginflow\Loginstate;
+use Migration;
+use GlpiPlugin\Phpsaml2\Exclude;
+use GlpiPlugin\Phpsaml2\Loginflow\Loginstate;
 
 class Loginflow extends CommonDBTM
 {
@@ -72,8 +74,26 @@ class Loginflow extends CommonDBTM
          * @return mixed             boolean|array
          */
         public function evalAuth(){
-            $iterator = new DirectoryIterator(PLUGIN_PHPSAML2_SRCDIR);
-            echo $iterator->getPathname();
+            // GET ALL FILES FROM SRC DIRECTORY
+            if(is_dir(PLUGIN_PHPSAML2_SRCDIR) &&
+               is_readable(PLUGIN_PHPSAML2_SRCDIR)  ){
+                $files = array_filter(scandir(PLUGIN_PHPSAML2_SRCDIR, SCANDIR_SORT_NONE), function($item) {
+                    return !is_dir(PLUGIN_PHPSAML2_SRCDIR.'/'.$item);
+                });
+            }else{
+                echo "The directory". PLUGIN_PHPSAML2_SRCDIR . "Isnt accessible, Plugin installation failed!";
+                return false;
+            }
+            // TRY TO CALL CLASS INSTALLERS
+            if(is_array($files)) {
+                foreach($files as $name){
+                    // Load the class
+                    $className = "GlpiPlugin\\Phpsaml2\\" . basename($name, '.php');
+                    if(method_exists($className, 'install')){
+                        print basename($name, '.php') . ' : True<br>';
+                    }
+                }
+            }
             die();
         }
 }

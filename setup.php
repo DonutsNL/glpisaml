@@ -66,7 +66,7 @@ define('PLUGIN_PHPSAML2_TPLDIR', __DIR__ . '/tpl');
  *
  * @return void
  */
-function plugin_init_phpsaml2() : void                                                  //NOSONAR - These are default function names
+function plugin_init_phpsaml2() : void                                                  //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
     global $PLUGIN_HOOKS;                                                               //NOSONAR
 
@@ -79,7 +79,7 @@ function plugin_init_phpsaml2() : void                                          
 
     // CONFIG PAGES
     Plugin::registerClass(Config::class);
-    Plugin::registerClass(Excludes::class);
+    Plugin::registerClass(Exclude::class);
     if (Session::haveRight('config', UPDATE)) {
         $PLUGIN_HOOKS['config_page'][PLUGIN_NAME] = 'front/config.php';                 //NOSONAR
     }
@@ -92,9 +92,7 @@ function plugin_init_phpsaml2() : void                                          
 
     // POSTINIT HOOK LOGINFLOW TRIGGER
     Plugin::registerClass(Loginflow::class);
-    $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME] = [Loginflow::class => 'evalAuth'];    //NOSONAR
-
-    $flow = new Loginflow();
+    $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME] = 'plugin_phpsaml2_evalAuth';                          //NOSONAR
 
 }
 
@@ -103,7 +101,7 @@ function plugin_init_phpsaml2() : void                                          
  * Returns the name and the version of the plugin
  * @return array
  */
-function plugin_version_phpsaml2() : array                                              //NOSONAR
+function plugin_version_phpsaml2() : array                                              //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
     return [
         'name'           => PLUGIN_NAME,
@@ -128,7 +126,7 @@ function plugin_version_phpsaml2() : array                                      
  * Check pre-requisites before install
  * @return boolean
  */
-function plugin_phpsaml2_check_prerequisites() : bool                                   //NOSONAR
+function plugin_phpsaml2_check_prerequisites() : bool                                   //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
    // https://github.com/pluginsGLPI/example/issues/49#issuecomment-1891552141
     if (!is_readable(__DIR__ . '/vendor/autoload.php') ||
@@ -145,7 +143,7 @@ function plugin_phpsaml2_check_prerequisites() : bool                           
  * @param boolean $verbose Whether to display message on failure. Defaults to false
  * @return boolean
  */
-function plugin_phpsaml2_check_config($verbose = false) : bool                          //NOSONAR
+function plugin_phpsaml2_check_config($verbose = false) : bool                          //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
    if ($verbose) {
       echo __('Installed / not configured', PLUGIN_NAME);

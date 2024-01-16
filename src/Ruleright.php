@@ -44,6 +44,8 @@
 
 namespace GlpiPlugin\Phpsaml2;
 
+Use Rule;
+
 class Ruleright extends Rule
 {
     
