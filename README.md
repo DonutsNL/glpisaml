@@ -13,6 +13,17 @@ Rewrite of phpSaml plugin by Derrick Smith for:
 - Discord support channel
 - Support multiple IDPs
 
+# Current focus
+- Implement correct structure;
+- Implement multiple IDP configuration;
+- Cook up approach for simple test assertions phpunit;
+
+# Done
+- Layout basic class structure and do initial testing;
+- Implement composer PSR4 support;
+- Implement src iter installation logic;
+
+
 # Contribute
 All developers, testers, feedback is more than welcome. Visit my discord and get in touch.
 https://discord.gg/35tkHxHg
