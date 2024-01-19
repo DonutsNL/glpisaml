@@ -181,7 +181,7 @@ class Exclude extends CommonDropdown
     {
         global $DB;
         $excludes = [];
-        $dropdown = new PluginPhpsamlExclude();
+        $dropdown = new Exclude();
         $table = $dropdown::getTable();
         foreach($DB->request($table) as $id => $row){                           //NOSONAR - For readability
             $excludes[] = [self::NAME                => $row[self::NAME],

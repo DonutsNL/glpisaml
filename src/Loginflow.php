@@ -38,7 +38,6 @@
  *  @license    GPLv3+
  *  @see        https://github.com/DonutsNL/phpSaml2/readme.md
  *  @link       https://github.com/DonutsNL/phpSaml2
- *  @since      1.0.0
  * ------------------------------------------------------------------------
  *
  * POV: The correct object name should be 'Authflow.' But people tend to
@@ -46,54 +45,50 @@
  * so for maintainability purposes I chose to call it 'login' instead
  * of 'Auth' where Auth might also cause duplication issues where Auth is
  * also being handled by OneLogin\PhpSaml\Auth.
- *
+ * 
+ * The concern this class adresses is added because we want to add support
+ * for multiple idp's. Deciding what idp to use might involve more complex
+ * algorithms then we used (1:1) in the previous version of phpSaml. These
+ * can then be implemented here.
+ * 
  **/
 
 namespace GlpiPlugin\Phpsaml2;
 
 use Session;
-use CommonDBTM;
 use Migration;
+use CommonDBTM;
 use GlpiPlugin\Phpsaml2\Exclude;
-use GlpiPlugin\Phpsaml2\Loginflow\Loginstate;
+use GlpiPlugin\Phpsaml2\Loginstate;
+use OneLogin\Saml2\Auth;
+use OneLogin\Saml2\Settings;
 
 class Loginflow extends CommonDBTM
 {
-        // Never perform auth for CLI calls
-        /*
-        if ( PHP_SAPI === 'cli' ){
-           return true;
-        }
-        */
-
         /**
-         * getMenuContent() : array | bool -
-         * Method called by pre_item_add hook validates the object and passes
-         * it to the RegEx Matching then decides what to do.
+         * Evaluates the session and determins if login/logout is required
+         * Called by post_init hook via function in hooks.php
          *
-         * @return mixed             boolean|array
+         * @param void
+         * @return boolean
+         * @since 1.0.0
          */
-        public function evalAuth(){
-            // GET ALL FILES FROM SRC DIRECTORY
-            if(is_dir(PLUGIN_PHPSAML2_SRCDIR) &&
-               is_readable(PLUGIN_PHPSAML2_SRCDIR)  ){
-                $files = array_filter(scandir(PLUGIN_PHPSAML2_SRCDIR, SCANDIR_SORT_NONE), function($item) {
-                    return !is_dir(PLUGIN_PHPSAML2_SRCDIR.'/'.$item);
-                });
-            }else{
-                echo "The directory". PLUGIN_PHPSAML2_SRCDIR . "Isnt accessible, Plugin installation failed!";
-                return false;
+        public function evalAuth()  : bool
+        {
+
+            // Evaluate current login state
+            $state = new Loginstate();
+            if ($state->isAuthenticated()) {
+                return true;
             }
-            // TRY TO CALL CLASS INSTALLERS
-            if(is_array($files)) {
-                foreach($files as $name){
-                    // Load the class
-                    $className = "GlpiPlugin\\Phpsaml2\\" . basename($name, '.php');
-                    if(method_exists($className, 'install')){
-                        print basename($name, '.php') . ' : True<br>';
-                    }
-                }
+
+            // Dont peform auth for CLI calls.
+            if (PHP_SAPI === 'cli'         ||
+                Exclude::ProcessExcludes() ){
+                return true;
             }
-            die();
+
+        return true;
         }
+
 }

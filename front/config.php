@@ -38,7 +38,7 @@
  *  @since      1.0.0
  * ------------------------------------------------------------------------
  **/
-use Glpi\Plugin;
+use Plugin;
 use GlpiPlugin\Phpsaml2\Config;
 
 include_once "../../../inc/includes.php";               //NOSONAR - Cannot be included with USE keyword
