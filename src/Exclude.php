@@ -44,10 +44,10 @@
 
 namespace GlpiPlugin\Phpsaml2;
 
-use Migration;
 use Session;
+use Migration;
+use DBConnection;
 use CommonDropdown;
-
 
 // MAKE SURE GLPI IS LOADED
 if (!defined("GLPI_ROOT")) { die("Sorry, directly access to this file is prohibited"); }
@@ -206,14 +206,14 @@ class Exclude extends CommonDropdown
         // Process configured excluded URIs and agents.
         foreach($excludes as $exclude){
 
-            if (strpos($_SERVER['REQUEST_URI'], $exclude[PluginPhpsamlExclude::EXCLUDEPATH]) !== false) {
+            if (strpos($_SERVER['REQUEST_URI'], $exclude[Exclude::EXCLUDEPATH]) !== false) {
                 // Do we need to validate client agent?
-                if(!empty($exclude[PluginPhpsamlExclude::CLIENTAGENT])                                        &&
-                   strpos($_SERVER['HTTP_USER_AGENT'], $exclude[PluginPhpsamlExclude::CLIENTAGENT]) !== false ){
-                    return ($exclude[PluginPhpsamlExclude::ACTION]) ? true : false;
+                if(!empty($exclude[Exclude::CLIENTAGENT])                                        &&
+                   strpos($_SERVER['HTTP_USER_AGENT'], $exclude[Exclude::CLIENTAGENT]) !== false ){
+                    return ($exclude[Exclude::ACTION]) ? true : false;
                 }else{
                     // return configured action true for bypass, false for auth.
-                    return ($exclude[PluginPhpsamlExclude::ACTION]) ? true : false;
+                    return ($exclude[Exclude::ACTION]) ? true : false;
                 }
             } // Else Continue
         }
@@ -225,14 +225,10 @@ class Exclude extends CommonDropdown
      * Install table needed for Ticket Filter configuration dropdowns
      *
      * @return void
-     * @see             hook.php:plugin_ticketfilter_install()
+     * @see             hook.php:plugin_phpsaml2_install()
      */
-    public static function install(Migration $migration) : bool
+    public static function install(Migration $migration) : void
     {
-        // TODO: remove this after debug
-        Session::addMessageAfterRedirect(__(__CLASS__ . "\Install() called"), true, WARNING);
-        return true;
-
         global $DB;
         $default_charset = DBConnection::getDefaultCharset();
         $default_collation = DBConnection::getDefaultCollation();
@@ -243,7 +239,6 @@ class Exclude extends CommonDropdown
         // Create the base table if it does not yet exist;
         // Dont update this table for later versions, use the migration class;
         if (!$DB->tableExists($table)) {
-            $migration->displayMessage("Installing $table");
             $query = <<<SQL
             CREATE TABLE IF NOT EXISTS `$table` (
                 `id`                        int {$default_key_sign} NOT NULL AUTO_INCREMENT,
@@ -258,7 +253,7 @@ class Exclude extends CommonDropdown
             ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=COMPRESSED;
             SQL;
             $DB->query($query) or die($DB->error());
-
+            Session::addMessageAfterRedirect("Installed: $table.");
             // insert default excludes;
             $query = <<<SQL
             INSERT INTO `$table`(name, comment, action, ClientAgent, ExcludePath)
@@ -293,6 +288,7 @@ class Exclude extends CommonDropdown
             VALUES('Bypass all fusioninventory files', '', '1', '', '/fusioninventory/');
             SQL;
             $DB->query($query) or die($DB->error());
+            Session::addMessageAfterRedirect("Inserted exclude defaults.");
         }
     }
 
@@ -301,16 +297,12 @@ class Exclude extends CommonDropdown
      * Uninstall tables uncomment the line to make plugin clean table.
      *
      * @return void
-     * @see             hook.php:plugin_ticketfilter_uninstall()
+     * @see             hook.php:plugin_phpsaml2_uninstall()
      */
-    public static function uninstall(Migration $migration) : bool
+    public static function uninstall(Migration $migration) : void
     {
-        // TODO: remove this after debug
-        Session::addMessageAfterRedirect(__(__CLASS__ . "\uninstall() called"), true, WARNING);
-        return true;
-
         $table = self::getTable();
-        $migration->displayMessage("Uninstalling $table");
+        Session::addMessageAfterRedirect("Removed: $table");
         $migration->dropTable($table);
     }
 }

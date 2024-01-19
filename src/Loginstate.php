@@ -53,7 +53,10 @@ namespace GlpiPlugin\PhpSaml2;
 
 use Htlm;               // Provides Html::redirectToLogin();
 use Cache;
+use Session;
+use Migration;
 use CommonDBTM;
+use DBConnection;
 
 class Loginstate extends CommonDBTM
 {
@@ -118,8 +121,8 @@ class Loginstate extends CommonDBTM
      */
     public function isAuthenticated() : bool
     {
-        return ($this->isSamlAuthenticated &&
-                $this->isGlpiAuthenticated )? true : false;
+        return ($this->isSamlAuthenticated() &&
+                $this->isGlpiAuthenticated() )? true : false;
     }
 
     /**
@@ -132,7 +135,7 @@ class Loginstate extends CommonDBTM
      */
     private function isSamlAuthenticated() : bool
     {
-
+        return true;
     }
 
     /**
@@ -143,7 +146,7 @@ class Loginstate extends CommonDBTM
      * @return  void
      * @since   1.0.0
      */
-    private function isGlpiAuthenticated()
+    private function isGlpiAuthenticated() : bool
     {
         // Versions prior to GLPI 0.85 dont support these indexes.
         return (isset($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR])          &&
@@ -192,13 +195,11 @@ class Loginstate extends CommonDBTM
      * Install class database
      *
      * @param   Migration $obj
-     * @return  boolean
+     * @return  void
      * @since   1.0.0
      */
-    public static function install(Migration $migration) : bool
+    public static function install(Migration $migration) : void
     {
-        Session::addMessageAfterRedirect(__(__CLASS__ . "\Install() called"), true, INFO);
-
         global $DB;
         $default_charset = DBConnection::getDefaultCharset();
         $default_collation = DBConnection::getDefaultCollation();
@@ -209,7 +210,6 @@ class Loginstate extends CommonDBTM
         // Create the base table if it does not yet exist;
         // Dont update this table for later versions, use the migration class;
         if (!$DB->tableExists($table)) {
-            $migration->displayMessage("Installing $table");
             $query = <<<SQL
             CREATE TABLE IF NOT EXISTS `$table` (
                 `id`                        int {$default_key_sign} NOT NULL AUTO_INCREMENT,
@@ -229,6 +229,7 @@ class Loginstate extends CommonDBTM
             ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=COMPRESSED;
             SQL;
             $DB->query($query) or die($DB->error());
+            Session::addMessageAfterRedirect("Installed: $table.");
         }
     }
 
@@ -236,17 +237,13 @@ class Loginstate extends CommonDBTM
      * Uninstall class database
      *
      * @param   Migration $obj
-     * @return  boolean
+     * @return  void
      * @since   1.0.0
      */
-    public static function uninstall(Migration $migration) : bool
+    public static function uninstall(Migration $migration) : void
     {
-        // TODO: remove this after debug
-        Session::addMessageAfterRedirect(__(__CLASS__ . "\uninstall() called"), true, WARNING);
-        return true;
-
         $table = self::getTable();
-        $migration->displayMessage("Uninstalling $table");
+        Session::addMessageAfterRedirect("Removed: $table.");
         $migration->dropTable($table);
     }
     

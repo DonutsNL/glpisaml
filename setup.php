@@ -105,14 +105,14 @@ function plugin_version_phpsaml2() : array                                      
 {
     return [
         'name'           => PLUGIN_NAME,
-        'version'        => PLUGIN_TICKETFILTER_VERSION,
+        'version'        => PLUGIN_PHPSAML2_VERSION,
         'author'         => 'Chris Gralike',
         'license'        => 'GPLv2+',
         'homepage'       => 'https://github.com/DonutsNL/phpsaml2',
         'requirements'   => [
             'glpi' => [
-            'min' => PLUGIN_TICKETFILTER_MIN_GLPI,
-            'max' => PLUGIN_TICKETFILTER_MAX_GLPI,
+            'min' => PLUGIN_PHPSAML2_MIN_GLPI,
+            'max' => PLUGIN_PHPSAML2_MAX_GLPI,
             ],
             'php'    => [
             'min' => '8.0'

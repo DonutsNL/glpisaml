@@ -38,11 +38,10 @@
  *  @since      1.0.0
  * ------------------------------------------------------------------------
  **/
-
-use Glpi\Plugin;
+use Plugin;
 use GlpiPlugin\Phpsaml2\Config;
 
 include_once '../../../inc/includes.php';                       //NOSONAR - Cannot be included with USE
 Plugin::load(PLUGIN_NAME, true);
 $dropdown = new Config();
-include_once GLPI_ROOT . "/front/dropdown.common.form.php";     //NOSONAR - Cannot be included with USE
+include_once GLPI_ROOT . '/front/dropdown.common.form.php';     //NOSONAR - Cannot be included with USE

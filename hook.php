@@ -78,7 +78,7 @@ function plugin_phpsaml2_install() : bool                                   //NO
             foreach($files as $name){
                 $class = "GlpiPlugin\\Phpsaml2\\" . basename($name, '.php');
                 if(method_exists($class, 'install')){
-                    $version   = plugin_version_ticketfilter();
+                    $version   = plugin_version_phpsaml2();
                     $migration = new Migration($version['version']);
                     $class::install($migration);
                 }
@@ -100,7 +100,7 @@ function plugin_phpsaml2_uninstall() : bool                                 //NO
             foreach($files as $name){
                 $class = "GlpiPlugin\\Phpsaml2\\" . basename($name, '.php');
                 if(method_exists($class, 'install')){
-                    $version   = plugin_version_ticketfilter();
+                    $version   = plugin_version_phpsaml2();
                     $migration = new Migration($version['version']);
                     $class::uninstall($migration);
                 }
