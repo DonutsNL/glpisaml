@@ -1,9 +1,9 @@
 <?php
 /**
  *  ------------------------------------------------------------------------
- *  PhpSaml2
+ *  GLPISAML
  *
- *  PhpSaml2 was inspired by the initial work of Derrick Smith's
+ *  GLPISAML was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI and the broad ammount of
  *  wishes expressed by the community. 
@@ -13,29 +13,29 @@
  *
  * LICENSE
  *
- * This file is part of PhpSaml2 project.
- * PhpSaml2 plugin is free software: you can redistribute it and/or modify
+ * This file is part of GLPISAML project.
+ * GLPISAML plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * PhpSaml2 is distributed in the hope that it will be useful,
+ * GLPISAML is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with PhpSaml2. If not, see <http://www.gnu.org/licenses/>.
+ * along with GLPISAML. If not, see <http://www.gnu.org/licenses/>.
  *
  * ------------------------------------------------------------------------
  *
- *  @package    PhpSaml2
+ *  @package    GLPISAML
  *  @version    1.0.0
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2023 by Chris Gralike
  *  @license    GPLv2+
- *  @see        https://github.com/DonutsNL/phpSaml2/readme.md
- *  @link       https://github.com/DonutsNL/phpSaml2
+ *  @see        https://github.com/DonutsNL/GLPISaml/readme.md
+ *  @link       https://github.com/DonutsNL/GLPISaml
  *  @since      1.0.0
  * ------------------------------------------------------------------------
  **/
@@ -43,36 +43,34 @@
 use Plugin;
 use Session;
 use Glpi\Plugin\Hooks;
-use GlpiPlugin\Phpsaml2\User;
-use GlpiPlugin\Phpsaml2\Config;
-use GlpiPlugin\Phpsaml2\Excludes;
-use GlpiPlugin\Phpsaml2\Loginflow;
-use GlpiPlugin\Phpsaml2\Ruleright;
-use GlpiPlugin\Phpsaml2\Rulerightcollection;
-use GlpiPlugin\Phpsaml2\Autoloader;
+use GlpiPlugin\Glpisaml\User;
+use GlpiPlugin\Glpisaml\Config;
+use GlpiPlugin\Glpisaml\Exclude;
+use GlpiPlugin\Glpisaml\Loginflow;
+use GlpiPlugin\Glpisaml\Ruleright;
+use GlpiPlugin\Glpisaml\Rulerightcollection;
 
 // Constants
-define('PLUGIN_PHPSAML2_VERSION', '1.0.0');
-define('PLUGIN_PHPSAML2_MIN_GLPI', '10.0.0');
-define('PLUGIN_PHPSAML2_MAX_GLPI', '10.9.99');
-define('PLUGIN_NAME', 'phpsaml2');
-define('PLUGIN_PHPSAML2_WEBDIR', Plugin::getWebDir(PLUGIN_NAME, false));
-define('PLUGIN_PHPSAML2_SRCDIR', __DIR__ . '/src');
-define('PLUGIN_PHPSAML2_TPLDIR', __DIR__ . '/tpl');
+define('PLUGIN_GLPISAML_VERSION', '1.0.0');
+define('PLUGIN_GLPISAML_MIN_GLPI', '10.0.0');
+define('PLUGIN_GLPISAML_MAX_GLPI', '10.9.99');
+define('PLUGIN_NAME', 'Glpisaml');
+define('PLUGIN_GLPISAML_PHPDIR', Plugin::getPhpDir(PLUGIN_NAME, true));
+define('PLUGIN_GLPISAML_WEBDIR', Plugin::getWebDir(PLUGIN_NAME, false));
+define('PLUGIN_GLPISAML_SRCDIR', __DIR__ . '/src');
+define('PLUGIN_GLPISAML_TPLDIR', __DIR__ . '/tpl');
 
 /**
  * Init hooks of the plugin.
- * CALLED AND REQUIRED BY GLPI
- *
  * @return void
  */
-function plugin_init_phpsaml2() : void                                                  //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+function plugin_init_glpisaml() : void                                                  //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
     global $PLUGIN_HOOKS;                                                               //NOSONAR
+    $plugin = new Plugin();
 
-    // COMPOSER AUTLOAD
-    // https://github.com/pluginsGLPI/example/issues/49#issuecomment-1891552141
-    include_once(__DIR__. '/vendor/autoload.php');                                       //NOSONAR - intentional include_once to load composer autoload;
+    // INCLUDE LOCALIZED COMPOSER AUTLOAD
+    include_once(__DIR__. '/vendor/autoload.php');                                      //NOSONAR - intentional include_once to load composer autoload;
 
     // CSRF
     $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT][PLUGIN_NAME] = true;                           //NOSONAR - These are GLPI default variable names  
@@ -80,8 +78,13 @@ function plugin_init_phpsaml2() : void                                          
     // CONFIG PAGES
     Plugin::registerClass(Config::class);
     Plugin::registerClass(Exclude::class);
-    if (Session::haveRight('config', UPDATE)) {
-        $PLUGIN_HOOKS['config_page'][PLUGIN_NAME] = 'front/config.php';                 //NOSONAR
+    // Dont show config buttons if plugin is not enabled.
+    if ($plugin->isInstalled(PLUGIN_NAME) || $plugin->isActivated(PLUGIN_NAME)) {
+        if (Session::haveRight('config', UPDATE)) {
+            $PLUGIN_HOOKS['config_page'][PLUGIN_NAME]   = 'front/config.php';           //NOSONAR
+        }
+        $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME]        = ['plugins' => Config::class];
+        $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME]        = ['plugins' => Exclude::class];
     }
 
     // USER AND JIT HANDLING
@@ -92,8 +95,8 @@ function plugin_init_phpsaml2() : void                                          
 
     // POSTINIT HOOK LOGINFLOW TRIGGER
     Plugin::registerClass(Loginflow::class);
-    $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME] = 'plugin_phpsaml2_evalAuth';                          //NOSONAR
-
+    $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME]    = 'plugin_GLPISAML_evalAuth';                          //NOSONAR
+   
 }
 
 
@@ -101,18 +104,18 @@ function plugin_init_phpsaml2() : void                                          
  * Returns the name and the version of the plugin
  * @return array
  */
-function plugin_version_phpsaml2() : array                                              //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+function plugin_version_glpisaml() : array                                              //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
     return [
         'name'           => PLUGIN_NAME,
-        'version'        => PLUGIN_PHPSAML2_VERSION,
+        'version'        => PLUGIN_GLPISAML_VERSION,
         'author'         => 'Chris Gralike',
         'license'        => 'GPLv2+',
-        'homepage'       => 'https://github.com/DonutsNL/phpsaml2',
+        'homepage'       => 'https://github.com/DonutsNL/Phpsaml2',
         'requirements'   => [
             'glpi' => [
-            'min' => PLUGIN_PHPSAML2_MIN_GLPI,
-            'max' => PLUGIN_PHPSAML2_MAX_GLPI,
+            'min' => PLUGIN_GLPISAML_MIN_GLPI,
+            'max' => PLUGIN_GLPISAML_MAX_GLPI,
             ],
             'php'    => [
             'min' => '8.0'
@@ -126,7 +129,7 @@ function plugin_version_phpsaml2() : array                                      
  * Check pre-requisites before install
  * @return boolean
  */
-function plugin_phpsaml2_check_prerequisites() : bool                                   //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+function plugin_glpisaml_check_prerequisites() : bool                                   //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
    // https://github.com/pluginsGLPI/example/issues/49#issuecomment-1891552141
     if (!is_readable(__DIR__ . '/vendor/autoload.php') ||
@@ -143,7 +146,7 @@ function plugin_phpsaml2_check_prerequisites() : bool                           
  * @param boolean $verbose Whether to display message on failure. Defaults to false
  * @return boolean
  */
-function plugin_phpsaml2_check_config($verbose = false) : bool                          //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+function plugin_glpisaml_check_config($verbose = false) : bool                          //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
    if ($verbose) {
       echo __('Installed / not configured', PLUGIN_NAME);

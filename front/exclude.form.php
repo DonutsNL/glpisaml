@@ -34,7 +34,7 @@
  * ------------------------------------------------------------------------
  **/
 use Glpi\Plugin;
-use GlpiPlugin\Phpsaml2\Exclude;
+use GlpiPlugin\Glpisaml\Exclude;
 
 include '../../../inc/includes.php';                            //NOSONAR - Cant be included with USE.
 $dropdown = new Exclude();

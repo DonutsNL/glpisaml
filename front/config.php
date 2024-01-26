@@ -38,10 +38,41 @@
  *  @since      1.0.0
  * ------------------------------------------------------------------------
  **/
-use Plugin;
-use GlpiPlugin\Phpsaml2\Config;
 
-include_once '../../../inc/includes.php';               //NOSONAR - Cannot be included with USE keyword
-Plugin::load(PLUGIN_NAME, true);
-$dropdown = new Config();
-include_once GLPI_ROOT . '/front/dropdown.common.php';  //NOSONAR - Cannot be included with USE keyword
+use HTML;
+use Plugin;
+use Session;
+use GlpiPlugin\Glpisaml\Config as samlConfig;
+
+include_once '../../../inc/includes.php';               //NO SONAR - Cannot be included with USE keyword
+
+// Check if plugin is activated...
+$plugin = new Plugin();
+if(!$plugin->isInstalled(PLUGIN_NAME) ||
+   !$plugin->isActivated(PLUGIN_NAME) ){
+    Html::displayNotFoundError();
+}
+
+if (samlConfig::canCreate()) {
+    Html::header(__(PLUGIN_NAME), $_SERVER['PHP_SELF'], 'plugins', samlConfig::class);
+    $p = [
+    'start'      => 0,      // start with first item (index 0)
+    'is_deleted' => 0,      // item is not deleted
+    'sort'       => 1,      // sort by name
+    'order'      => 'DESC' , // sort direction
+    'reset'      => 'reset',// reset search flag
+    'criteria'   => [
+        [
+            'field'      => 80,        // field index in search options
+            'searchtype' => 'equals',  // type of search
+            'value'      => 0,         // value to search
+        ],
+    ],
+    ];
+    print "<pre>";
+    print_r(Search::getDatas(samlConfig::class, $p));
+    //Html::footer();
+ } else {
+    //View is not granted.
+    Html::displayRightError();
+ }

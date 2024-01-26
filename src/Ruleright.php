@@ -1,9 +1,9 @@
 <?php
 /**
  *  ------------------------------------------------------------------------
- *  PhpSaml2
+ *  GLPISaml
  *
- *  PhpSaml2 was inspired by the initial work of Derrick Smith's
+ *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI and the broad ammount of
  *  wishes expressed by the community. 
@@ -13,36 +13,36 @@
  *
  * LICENSE
  *
- * This file is part of PhpSaml2 project.
+ * This file is part of GLPISaml project.
  *
- * PhpSaml2 plugin is free software: you can redistribute it and/or modify
+ * GLPISaml plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * PhpSaml2 is distributed in the hope that it will be useful,
+ * GLPISaml is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with PhpSaml2. If not, see <http://www.gnu.org/licenses/> or
+ * along with GLPISaml. If not, see <http://www.gnu.org/licenses/> or
  * https://choosealicense.com/licenses/gpl-3.0/
  *
  * ------------------------------------------------------------------------
  *
- *  @package    PhpSaml2
+ *  @package    GLPISaml
  *  @version    1.0.0
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2024 by Chris Gralike
  *  @license    GPLv3+
- *  @see        https://github.com/DonutsNL/phpSaml2/readme.md
- *  @link       https://github.com/DonutsNL/phpSaml2
+ *  @see        https://github.com/DonutsNL/GLPISaml/readme.md
+ *  @link       https://github.com/DonutsNL/GLPISaml
  *  @since      1.0.0
  * ------------------------------------------------------------------------
  **/
 
-namespace GlpiPlugin\Phpsaml2;
+ namespace GlpiPlugin\Glpisaml;
 
 Use Rule;
 
