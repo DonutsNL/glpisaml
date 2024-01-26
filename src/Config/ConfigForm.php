@@ -44,25 +44,69 @@
 
 namespace GlpiPlugin\Glpisaml\Config;
 
+use Html;
 use Plugin;
+use Session;
 use GlpiPlugin\Glpisaml\Config;
-
-
 
 class ConfigForm extends Config{
 
     private const TEMPLATE_FILE = '/configForm.html';
     private const GIT_ATOM_URL  = 'https://github.com/donutsnl/GLPISaml/releases.atom';
 
-    public static function getTypeName($nb = 0)
+    /**
+     * Add new phpSaml configuration
+     *
+     * @param array $postData $_POST data from form
+     * @return void -
+     */
+    public function addSamlConfig($postData) : void
     {
-        return __('IdP Configuration', PLUGIN_NAME);
+        $config = new Config();
+        if($id = $config->add($postData)) {
+            Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.form.php?id=$id");
+        } else {
+            Session::addMessageAfterRedirect(__('Error: Unable to add new GlpiSaml configuration!', PLUGIN_NAME));
+            Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.php");
+        }
     }
 
-    public static function getIcon() : string
+    /**
+     * Update phpSaml configuration
+     *
+     * @param int   $id of configuration to update
+     * @param array $postData $_POST data from form
+     * @return void -
+     */
+    public function updateSamlConfig($id, $postData) : void
     {
-        return 'fas fa-address-book';
+        $config = new Config();
+        if($config->canUpdate()       &&
+           $config->update($postData) ){
+            Html::back();
+        } else {
+            Session::addMessageAfterRedirect(__('Not allowed or error updating SAML configuration!', PLUGIN_NAME));
+            Html::back();
+        }
     }
+
+    /**
+     * Add new phpSaml configuration
+     *
+     * @param array $postData $_POST data from form
+     * @return void -
+     */
+    public function deleteSamlConfig($id) : void
+    {
+        $config = new Config();
+        if($config->canPurge()  &&
+           $config->delete($id) ){
+            Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.php");
+        } else {
+            Session::addMessageAfterRedirect(__('Not allowed or error deleting SAML configuration!', PLUGIN_NAME));
+        }
+    }
+
 
     /**
      * Print the auth ldap form
@@ -78,6 +122,15 @@ class ConfigForm extends Config{
         $this->generateForm($ID);
     }
 
+    /**
+     * Print the auth ldap form
+     *
+     * @param integer $ID      ID of the item
+     * @param array   $options Options
+     *     - target for the form
+     *
+     * @return void|boolean (display) Returns false if there is a rights error.
+     */
     private function generateForm(){
         // Read the template file containing the HTML template;
         $path = PLUGIN_GLPISAML_TPLDIR.self::TEMPLATE_FILE;
@@ -86,10 +139,7 @@ class ConfigForm extends Config{
         }else{
             $htmlForm = 'empty :(';
         }
-        
-           
-
-
+        print $htmlForm;
     }
 
     // For reference use

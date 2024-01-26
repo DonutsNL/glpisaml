@@ -1,8 +1,8 @@
 <?php
 /**
  *  ------------------------------------------------------------------------
- *  PhpSaml2
- *  PhpSaml2 is heavily influenced by the initial work of Derrick Smith's
+ *  GlpiSAML
+ *  GlpiSAML is heavily influenced by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI. It intends to use more of the
  *  GLPI core samlConfigs and php8/composer namespaces.
@@ -12,29 +12,29 @@
  *
  * LICENSE
  *
- * This file is part of PhpSaml2 project.
- * PhpSaml2 plugin is free software: you can redistribute it and/or modify
+ * This file is part of GlpiSAML project.
+ * GlpiSAML plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * PhpSaml2 is distributed in the hope that it will be useful,
+ * GlpiSAML is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with PhpSaml2. If not, see <http://www.gnu.org/licenses/>.
+ * along with GlpiSAML. If not, see <http://www.gnu.org/licenses/>.
  *
  * ------------------------------------------------------------------------
  *
- *  @package    PhpSaml2
+ *  @package    GlpiSAML
  *  @version    1.0.0
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2023 by Chris Gralike
  *  @license    GPLv2+
- *  @see        https://github.com/DonutsNL/phpSaml2/readme.md
- *  @link       https://github.com/DonutsNL/phpSaml2
+ *  @see        https://github.com/DonutsNL/GlpiSAML/readme.md
+ *  @link       https://github.com/DonutsNL/GlpiSAML
  *  @since      1.0.0
  * ------------------------------------------------------------------------
  **/
@@ -44,48 +44,36 @@ use GlpiPlugin\Glpisaml\Config\ConfigForm;
 
 include_once '../../../inc/includes.php';                       //NOSONAR - Cannot be included with USE
 
-
-Html::header(__('PHP SAML', PLUGIN_NAME), $_SERVER['PHP_SELF'], Config::class, "Idp configuration");
+Html::header(__('PHP SAML', PLUGIN_NAME),
+                $_SERVER['PHP_SELF'],
+                Config::class,
+                "Saml configuration");
 
 $plugin = new Plugin();
 if(!$plugin->isInstalled(PLUGIN_NAME) ||
    !$plugin->isActivated(PLUGIN_NAME) ||
-   !class_exists(ConfigForm::class)      ){
+   !class_exists(ConfigForm::class)   ){
+
     Html::displayNotFoundError();
+
 } else {
+
     $ConfigForm = new ConfigForm();
+    if(isset($_POST['add']))
+    {
+        $ConfigForm->addSamlConfig($_POST);
+    } elseif(isset($_POST['update']) ){
+        $id = (isset($_GET['id']) && is_numeric($_GET['id'])) ? $_GET['id'] : -1;
+        $ConfigForm->updateSamlConfig($id, $_POST);
+    } elseif(isset($_POST['delete']) ||
+             isset($_POST['purge'])  ){
+        $id = (isset($_GET['id']) && is_numeric($_GET['id'])) ? $_GET['id'] : -1;
+        $ConfigForm->deleteSamlConfig($_POST);
+    } else {
+        $id = (isset($_GET['id']) && is_numeric($_GET['id'])) ? $_GET['id'] : -1;
+        $ConfigForm->showForm($_GET['id'], []);
+    }
 }
 
-if (isset($_POST['add'])) {
-    $ConfigForm->check(-1, CREATE, $_POST);
-    $newid = $ConfigForm->add($_POST);
-    //Redirect to newly created samlConfig form
-    Html::redirect("{$CFG_GLPI['root_doc']}/plugins/front/Config.form.php?id=$newid");
- } else if (isset($_POST['update'])) {
-    //Check UPDATE ACL
-    $samlConfig->check($_POST['id'], UPDATE);
-    //Do samlConfig update
-    $samlConfig->update($_POST);
-    //Redirect to samlConfig form
-    Html::back();
- } else if (isset($_POST['delete'])) {
-    //Check DELETE ACL
-    $ConfigForm->check($_POST['id'], DELETE);
-    //Put samlConfig in dustbin
-    $ConfigForm->delete($_POST);
-    //Redirect to samlConfigs list
-    $ConfigForm->redirectToList();
- } else if (isset($_POST['purge'])) {
-    //Check PURGE ACL
-    $ConfigForm->check($_POST['id'], PURGE);
-    //Do samlConfig purge
-    $ConfigForm->delete($_POST, 1);
-    //Redirect to samlConfigs list
-    Html::redirect("{$CFG_GLPI['root_doc']}/plugins/front/Config.php");
- } else {
-    //per default, display samlConfig
-    $id = (isset($_GET['id'])) ? $_GET['id'] : 0;
-    $withtemplate = (isset($_GET['withtemplate']) ? $_GET['withtemplate'] : 0);
-    $ConfigForm->showForm( $id,['withtemplate' => $withtemplate]);
- }
- Html::footer();
+Html::footer();
+

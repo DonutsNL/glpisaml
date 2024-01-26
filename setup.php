@@ -1,35 +1,35 @@
 <?php
 /**
  *  ------------------------------------------------------------------------
- *  GLPISAML
+ *  Glpisaml
  *
- *  GLPISAML was inspired by the initial work of Derrick Smith's
+ *  Glpisaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI and the broad ammount of
- *  wishes expressed by the community. 
+ *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------
  *
  * LICENSE
  *
- * This file is part of GLPISAML project.
- * GLPISAML plugin is free software: you can redistribute it and/or modify
+ * This file is part of Glpisaml project.
+ * Glpisaml plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * GLPISAML is distributed in the hope that it will be useful,
+ * Glpisaml is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with GLPISAML. If not, see <http://www.gnu.org/licenses/>.
+ * along with Glpisaml. If not, see <http://www.gnu.org/licenses/>.
  *
  * ------------------------------------------------------------------------
  *
- *  @package    GLPISAML
+ *  @package    Glpisaml
  *  @version    1.0.0
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2023 by Chris Gralike
@@ -54,7 +54,7 @@ use GlpiPlugin\Glpisaml\Rulerightcollection;
 define('PLUGIN_GLPISAML_VERSION', '1.0.0');
 define('PLUGIN_GLPISAML_MIN_GLPI', '10.0.0');
 define('PLUGIN_GLPISAML_MAX_GLPI', '10.9.99');
-define('PLUGIN_NAME', 'Glpisaml');
+define('PLUGIN_NAME', 'glpisaml');
 define('PLUGIN_GLPISAML_PHPDIR', Plugin::getPhpDir(PLUGIN_NAME, true));
 define('PLUGIN_GLPISAML_WEBDIR', Plugin::getWebDir(PLUGIN_NAME, false));
 define('PLUGIN_GLPISAML_SRCDIR', __DIR__ . '/src');
@@ -83,8 +83,7 @@ function plugin_init_glpisaml() : void                                          
         if (Session::haveRight('config', UPDATE)) {
             $PLUGIN_HOOKS['config_page'][PLUGIN_NAME]   = 'front/config.php';           //NOSONAR
         }
-        $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME]        = ['plugins' => Config::class];
-        $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME]        = ['plugins' => Exclude::class];
+        $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME][]  = [Config::class, Exclude::class];
     }
 
     // USER AND JIT HANDLING
@@ -95,7 +94,7 @@ function plugin_init_glpisaml() : void                                          
 
     // POSTINIT HOOK LOGINFLOW TRIGGER
     Plugin::registerClass(Loginflow::class);
-    $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME]    = 'plugin_GLPISAML_evalAuth';                          //NOSONAR
+    $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME]    = 'plugin_glpisaml_evalAuth';                          //NOSONAR
    
 }
 
@@ -107,7 +106,7 @@ function plugin_init_glpisaml() : void                                          
 function plugin_version_glpisaml() : array                                              //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
     return [
-        'name'           => PLUGIN_NAME,
+        'name'           => 'GLPI SAML2',
         'version'        => PLUGIN_GLPISAML_VERSION,
         'author'         => 'Chris Gralike',
         'license'        => 'GPLv2+',

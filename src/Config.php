@@ -110,6 +110,258 @@ class Config extends CommonDBTM
         return 'fas fa-address-book';
     }
 
+    function rawSearchOptions() : array                         //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+    {
+        $tab[] = [
+            'id'                 => '2',
+            'table'              => $this->getTable(),
+            'field'              => self::NAME,
+            'name'               => __('Name'),
+            'datatype'           => 'itemlink',
+            'massiveaction'      => false,
+            'autocomplete'       => true,
+        ];
+
+        $tab[] = [
+            'id'                 => '3',
+            'table'              => $this->getTable(),
+            'field'              => self::CONF_DOMAIN,
+            'name'               => __('Domain string'),
+            'datatype'           => 'string',
+            'massiveaction'      => false,
+            'autocomplete'       => true,
+        ];
+
+        $tab[] = [
+            'id'                 => '4',
+            'table'              => $this->getTable(),
+            'field'              => self::CONF_ICON,
+            'name'               => __('Configuration Icon'),
+            'datatype'           => 'string',
+            'massiveaction'      => false,
+            'autocomplete'       => true,
+        ];
+
+        $tab[] = [
+            'id'                 => '5',
+            'table'              => $this->getTable(),
+            'field'              => self::ENFORCE_SSO,
+            'name'               => __('Force SSO'),
+            'datatype'           => 'bool',
+            'massiveaction'      => true,
+        ];
+
+        $tab[] = [
+            'id'                 => '6',
+            'table'              => $this->getTable(),
+            'field'              => self::PROXIED,
+            'name'               => __('Proxied Responses'),
+            'datatype'           => 'bool',
+            'massiveaction'      => true,
+        ];
+
+        $tab[] = [
+            'id'                 => '7',
+            'table'              => $this->getTable(),
+            'field'              => self::STRICT,
+            'name'               => __('Strict mode'),
+            'datatype'           => 'bool',
+            'massiveaction'      => true,
+        ];
+
+        $tab[] = [
+            'id'                 => '8',
+            'table'              => $this->getTable(),
+            'field'              => self::DEBUG,
+            'name'               => __('Debug mode'),
+            'datatype'           => 'bool',
+            'massiveaction'      => true,
+        ];
+
+        $tab[] = [
+            'id'                 => '9',
+            'table'              => $this->getTable(),
+            'field'              => self::USER_JIT,
+            'name'               => __('Automatic user creation'),
+            'datatype'           => 'bool',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '10',
+            'table'              => $this->getTable(),
+            'field'              => self::SP_CERTIFICATE,
+            'name'               => __('Service Provider Certificate'),
+            'datatype'           => 'text',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '11',
+            'table'              => $this->getTable(),
+            'field'              => self::SP_KEY,
+            'name'               => __('Service Provider private Key'),
+            'datatype'           => 'text',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '12',
+            'table'              => $this->getTable(),
+            'field'              => self::SP_NAME_FORMAT,
+            'name'               => __('Name format'),
+            'datatype'           => 'string',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '13',
+            'table'              => $this->getTable(),
+            'field'              => self::IDP_ENTITY_ID,
+            'name'               => __('IdP entity identifier'),
+            'datatype'           => 'string',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '14',
+            'table'              => $this->getTable(),
+            'field'              => self::IDP_SSO_URL,
+            'name'               => __('IdP Single Sign On Url'),
+            'datatype'           => 'string',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '15',
+            'table'              => $this->getTable(),
+            'field'              => self::IDP_SLO_URL,
+            'name'               => __('IdP Logoff Url'),
+            'datatype'           => 'string',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '16',
+            'table'              => $this->getTable(),
+            'field'              => self::IDP_CERTIFICATE,
+            'name'               => __('IdP Public Certificate'),
+            'datatype'           => 'text',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '17',
+            'table'              => $this->getTable(),
+            'field'              => self::AUTHN_CONTEXT,
+            'name'               => __('AuthN Context'),
+            'datatype'           => 'string',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '18',
+            'table'              => $this->getTable(),
+            'field'              => self::AUTHN_COMPARE,
+            'name'               => __('AuthN Compare'),
+            'datatype'           => 'string',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '19',
+            'table'              => $this->getTable(),
+            'field'              => self::ENCRYPT_NAMEID,
+            'name'               => __('Force SSO'),
+            'datatype'           => 'bool',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '20',
+            'table'              => $this->getTable(),
+            'field'              => self::ENCRYPT_NAMEID,
+            'name'               => __('Encrypted nameId'),
+            'datatype'           => 'bool',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '21',
+            'table'              => $this->getTable(),
+            'field'              => self::SIGN_AUTHN,
+            'name'               => __('Sign AuthN Requests'),
+            'datatype'           => 'bool',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '22',
+            'table'              => $this->getTable(),
+            'field'              => self::SIGN_SLO_REQ,
+            'name'               => __('Sign SLO Requests'),
+            'datatype'           => 'bool',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '23',
+            'table'              => $this->getTable(),
+            'field'              => self::SIGN_AUTHN,
+            'name'               => __('Sign SLO Responses'),
+            'datatype'           => 'bool',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '24',
+            'table'              => $this->getTable(),
+            'field'              => self::COMPRESS_REQ,
+            'name'               => __('Compress requests'),
+            'datatype'           => 'bool',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '25',
+            'table'              => $this->getTable(),
+            'field'              => self::COMPRESS_RES,
+            'name'               => __('Compress responses'),
+            'datatype'           => 'bool',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '26',
+            'table'              => $this->getTable(),
+            'field'              => self::XML_VALIDATION,
+            'name'               => __('Perform XML validation'),
+            'datatype'           => 'bool',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '27',
+            'table'              => $this->getTable(),
+            'field'              => self::DEST_VALIDATION,
+            'name'               => __('Perform destination validation'),
+            'datatype'           => 'bool',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '28',
+            'table'              => $this->getTable(),
+            'field'              => self::LOWERCASE_URL,
+            'name'               => __('Perform lowercase encoding'),
+            'datatype'           => 'bool',
+            'massiveaction'      => false,
+        ];
+
+        return $tab;
+    }
+
+
     /**
      * install(Migration migration) : void -
      * Install table needed for Ticket Filter configuration dropdowns
