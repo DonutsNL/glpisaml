@@ -46,7 +46,7 @@
  * instance allow the the plugin to invalidate a session for what ever reason
  * and force a user to login again. It also allows future SIEM integration
  * to forcefully invalidate any active sessions.
- * 
+ *
  **/
 
 namespace GlpiPlugin\Glpisaml;
@@ -90,7 +90,7 @@ class LoginState extends CommonDBTM
         global $GLPI_CACHE;
         $self = $GLPI_CACHE->get('GLPISaml_loginstateObj');
         echo "$self";
-        //$GLPI_CACHE->set('phpsaml_'.session_id(), true);
+        //$GLPI_CACHE->set('phpsaml_'.session_id(), true); //NOSONAR - WIP
     }
 
     /**
@@ -113,8 +113,8 @@ class LoginState extends CommonDBTM
 
 
     /**
-     * Clean all type.resource for serialization;
-     *
+     * Validate user is correctly authenticated in both the external
+     * Idp aswell as GLPI.
      * @param   void
      * @return  void
      * @since   1.0.0
@@ -126,11 +126,9 @@ class LoginState extends CommonDBTM
     }
 
     /**
-     * Restore object if version has been cached and trigger
-     * validation to make sure the session isnt hijacked
-     *
+     * Validate user is correctly authenticated with external Idp
      * @param   void
-     * @return  void
+     * @return  bool    - true on valid session
      * @since   1.0.0
      */
     private function isSamlAuthenticated() : bool
@@ -139,11 +137,9 @@ class LoginState extends CommonDBTM
     }
 
     /**
-     * Restore object if version has been cached and trigger
-     * validation to make sure the session isnt hijacked
-     *
+     * Validate user is correctly authenticated with GLPI
      * @param   void
-     * @return  void
+     * @return  bool    - true on valid GLPI session
      * @since   1.0.0
      */
     private function isGlpiAuthenticated() : bool
@@ -155,45 +151,44 @@ class LoginState extends CommonDBTM
     }
 
     /**
-     * Restore object if version has been cached and trigger
-     * validation to make sure the session isnt hijacked
-     *
+     * Update session state in the session LoginState database
+     * for external (SIEM) evaluation and interaction
      * @param   void
-     * @return  void
+     * @return  bool
      * @since   1.0.0
      */
-    private function updateState()
+    private function updateState() : bool   //NOSONAR - WIP
     {
+        return true;
+        // Do something
     }
 
     /**
-     * Restore object if version has been cached and trigger
-     * validation to make sure the session isnt hijacked
-     *
-     * @param   void
-     * @return  void
+     * Fetch the session state for a specific user
+     * @param   int     $id         - Id of the session to fetch
+     * @return  object  Loginstate  - instance of LoginState
      * @since   1.0.0
      */
-    private function getState()
+    private function getState(int $id) : LoginState //NOSONAR - WIP
     {
-
+        return $this;
     }
 
     /**
-     * Restore object if version has been cached and trigger
-     * validation to make sure the session isnt hijacked
-     *
-     * @param   void
-     * @return  void
+     * Forcefully invalidate the state of an active session
+     * to enforce logoff and relogin.
+     * @param   $id         - Id of the session to invalidate
+     * @param   $message    - Logoff and log message
+     * @return  bool        - Returns true on success
      * @since   1.0.0
      */
-    private function invalidateState()
+    private function invalidateState(int $id, string $message) : bool   //NOSONAR - WIP
     {
+        return true;
     }
 
     /**
-     * Install class database
-     *
+     * Install the LoginState DB table
      * @param   Migration $obj
      * @return  void
      * @since   1.0.0
@@ -234,8 +229,7 @@ class LoginState extends CommonDBTM
     }
 
     /**
-     * Uninstall class database
-     *
+     * Uninstall the LoginState DB table
      * @param   Migration $obj
      * @return  void
      * @since   1.0.0

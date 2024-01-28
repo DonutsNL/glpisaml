@@ -49,6 +49,11 @@ use Migration;
 use DBConnection;
 use CommonDropdown;
 
+/**
+ * Be carefull with PSR4 Namespaces when extending common GLPI objects.
+ * Only Characters are allowed in namespaces extending glpi Objects.
+ * @see https://github.com/pluginsGLPI/example/issues/51
+ */
 class Exclude extends CommonDropdown
 {
     /**
@@ -74,7 +79,29 @@ class Exclude extends CommonDropdown
      */
     public static function getTypeName($nb = 0) : string
     {
-        return _n('Exclude path', 'Excluded paths', $nb, PLUGIN_NAME);
+        return __('SAML2 Excludes', PLUGIN_NAME);
+    }
+
+    /**
+     * Overloads missing canCreate Setup right and returns canUpdate instead
+     * @param  void
+     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @see             - https://github.com/pluginsGLPI/example/issues/50
+     */
+    public static function canCreate(): bool
+    {
+        return static::canUpdate();
+    }
+
+    /**
+     * Overloads missing canPurge Setup right and returns canUpdate instead
+     * @param  void
+     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @see             - https://github.com/pluginsGLPI/example/issues/50
+     */
+    public static function canPurge(): bool
+    {
+        return static::canUpdate();
     }
 
     /**
@@ -106,7 +133,7 @@ class Exclude extends CommonDropdown
      */
     public static function getIcon() : string
     {
-        return 'fas fa-check-square';
+        return 'fa-regular fa-paper-plane';
     }
 
     /**

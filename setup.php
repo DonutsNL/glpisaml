@@ -83,7 +83,7 @@ function plugin_init_glpisaml() : void                                          
         if (Session::haveRight('config', UPDATE)) {
             $PLUGIN_HOOKS['config_page'][PLUGIN_NAME]   = 'front/config.php';           //NOSONAR
         }
-        $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME][]  = [Config::class, Exclude::class];
+        $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME]['config'] = [Config::class, Exclude::class];
     }
 
     // USER AND JIT HANDLING

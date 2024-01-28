@@ -38,42 +38,26 @@
  *  @since      1.0.0
  * ------------------------------------------------------------------------
  **/
-use Html;
-use Plugin;
+
 use GlpiPlugin\Glpisaml\Config\ConfigForm;
 
-include_once '../../../inc/includes.php';                       //NOSONAR - Cannot be included with USE
+// Prevent GLPI from processing the post.
+$post  = $_POST;
+$_POST = [];
 
-Html::header(__('PHP SAML', PLUGIN_NAME),
-                $_SERVER['PHP_SELF'],
-                Config::class,
-                "Saml configuration");
+include_once '../../../inc/includes.php';                       //NOSONAR - by design
+
+// Show nice header
+Html::header(__('Identity providers'), $_SERVER['PHP_SELF'], "config", ConfigForm::class);
 
 $plugin = new Plugin();
 if(!$plugin->isInstalled(PLUGIN_NAME) ||
    !$plugin->isActivated(PLUGIN_NAME) ||
    !class_exists(ConfigForm::class)   ){
-
     Html::displayNotFoundError();
-
 } else {
-
-    $ConfigForm = new ConfigForm();
-    if(isset($_POST['add']))
-    {
-        $ConfigForm->addSamlConfig($_POST);
-    } elseif(isset($_POST['update']) ){
-        $id = (isset($_GET['id']) && is_numeric($_GET['id'])) ? $_GET['id'] : -1;
-        $ConfigForm->updateSamlConfig($id, $_POST);
-    } elseif(isset($_POST['delete']) ||
-             isset($_POST['purge'])  ){
-        $id = (isset($_GET['id']) && is_numeric($_GET['id'])) ? $_GET['id'] : -1;
-        $ConfigForm->deleteSamlConfig($_POST);
-    } else {
-        $id = (isset($_GET['id']) && is_numeric($_GET['id'])) ? $_GET['id'] : -1;
-        $ConfigForm->showForm($_GET['id'], []);
-    }
+    $id = (isset($_GET['id']) && is_numeric($_GET['id'])) ? $_GET['id'] : -1;
+    $configForm = new ConfigForm($id, $post);
 }
-
 Html::footer();
 

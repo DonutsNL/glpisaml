@@ -6,7 +6,7 @@
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI and the broad ammount of
- *  wishes expressed by the community. 
+ *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------
@@ -47,12 +47,50 @@ namespace GlpiPlugin\Glpisaml\Config;
 use Html;
 use Plugin;
 use Session;
-use GlpiPlugin\Glpisaml\Config;
+use GlpiPlugin\Glpisaml\Config as SamlConfig;
 
-class ConfigForm extends Config{
+
+/**
+ * Class Handles the CRUD operations of the config.form.php
+ */
+class ConfigForm
+{
 
     private const TEMPLATE_FILE = '/configForm.html';
-    private const GIT_ATOM_URL  = 'https://github.com/donutsnl/GLPISaml/releases.atom';
+    private const GIT_ATOM_URL  = 'https://github.com/donutsnl/GLPISaml/releases.atom'; //NOSONAR - WIP
+
+    /**
+     * Inits ConfigForm and decides what to do based
+     * on whats provded by config.form.php
+     *
+     * @param array $postData $_POST data from form
+     * @return void -
+     */
+    public function __construct(int $id, array $post)
+    {
+        if( $id === -1 ){
+            // Show form for new entry;
+            $options['template'] = (isset($_GET['template']) && ctype_alpha($_GET['template'])) ? $_GET['template'] : 'default';
+            print $this->showForm($id, $options['template']);
+        } else {
+            // Process provided data
+            if( isset($post['add']) ){
+                // Do add
+            } elseif( isset($post['update']) ){
+                // Do update
+            } elseif( isset($post['delete']) ){
+                // Do delete
+            } else {
+                // Show requested configuration
+                if(empty($post)){
+                    print $this->showForm($id);
+                }else{
+                    Session::addMessageAfterRedirect(__('Invalid post header!', PLUGIN_NAME));
+                    Html::back();
+                }
+            }
+        }
+    }
 
     /**
      * Add new phpSaml configuration
@@ -62,7 +100,7 @@ class ConfigForm extends Config{
      */
     public function addSamlConfig($postData) : void
     {
-        $config = new Config();
+        $config = new SamlConfig();
         if($id = $config->add($postData)) {
             Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.form.php?id=$id");
         } else {
@@ -78,11 +116,12 @@ class ConfigForm extends Config{
      * @param array $postData $_POST data from form
      * @return void -
      */
-    public function updateSamlConfig($id, $postData) : void
+    public function updateSamlConfig($postData) : void
     {
-        $config = new Config();
+        $config = new SamlConfig();
         if($config->canUpdate()       &&
            $config->update($postData) ){
+            Session::addMessageAfterRedirect(__('Configuration updates succesfully', PLUGIN_NAME));
             Html::back();
         } else {
             Session::addMessageAfterRedirect(__('Not allowed or error updating SAML configuration!', PLUGIN_NAME));
@@ -96,30 +135,28 @@ class ConfigForm extends Config{
      * @param array $postData $_POST data from form
      * @return void -
      */
-    public function deleteSamlConfig($id) : void
+    public function deleteSamlConfig($postData) : void
     {
-        $config = new Config();
+        $config = new SamlConfig();
         if($config->canPurge()  &&
-           $config->delete($id) ){
+           $config->delete($postData) ){
+            Session::addMessageAfterRedirect(__('Configuration deleted succesfully', PLUGIN_NAME));
             Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.php");
         } else {
             Session::addMessageAfterRedirect(__('Not allowed or error deleting SAML configuration!', PLUGIN_NAME));
+            Html::back();
         }
     }
 
-
     /**
-     * Print the auth ldap form
+     * Show configuration form
      *
-     * @param integer $ID      ID of the item
+     * @param integer $id      ID the configuration item to show
      * @param array   $options Options
-     *     - target for the form
-     *
-     * @return void|boolean (display) Returns false if there is a rights error.
      */
-    public function showForm($ID, array $options = [])
+    public function showForm($id, array $options = []) : string
     {
-        $this->generateForm($ID);
+        return $this->generateForm((new ConfigEntity($id)));
     }
 
     /**
@@ -131,7 +168,7 @@ class ConfigForm extends Config{
      *
      * @return void|boolean (display) Returns false if there is a rights error.
      */
-    private function generateForm(){
+    private function generateForm(ConfigEntity $configEntity){
         // Read the template file containing the HTML template;
         $path = PLUGIN_GLPISAML_TPLDIR.self::TEMPLATE_FILE;
         if (file_exists($path)) {
@@ -139,39 +176,9 @@ class ConfigForm extends Config{
         }else{
             $htmlForm = 'empty :(';
         }
-        print $htmlForm;
+        echo "<pre>";
+        var_dump($configEntity);
+        return $htmlForm;
     }
-
-    // For reference use
-    public function post_getEmpty()
-    {
-        $this->fields[self::NAME]               = '';
-        $this->fields[self::CONF_DOMAIN]        = '';
-        $this->fields[self::CONF_ICON]          = '';
-        $this->fields[self::ENFORCE_SSO]        = false;
-        $this->fields[self::PROXIED]            = false;
-        $this->fields[self::STRICT]             = false;
-        $this->fields[self::DEBUG]              = false;
-        $this->fields[self::USER_JIT]           = false;
-        $this->fields[self::SP_CERTIFICATE]     = '';
-        $this->fields[self::SP_KEY]             = '';
-        $this->fields[self::SP_NAME_FORMAT]     = '';
-        $this->fields[self::IDP_ENTITY_ID]      = '';
-        $this->fields[self::IDP_SSO_URL]        = '';
-        $this->fields[self::IDP_SLO_URL]        = '';
-        $this->fields[self::IDP_CERTIFICATE]    = '';
-        $this->fields[self::AUTHN_CONTEXT]      = '';
-        $this->fields[self::AUTHN_COMPARE]      = '';
-        $this->fields[self::ENCRYPT_NAMEID]     = false;
-        $this->fields[self::SIGN_AUTHN]         = false;
-        $this->fields[self::SIGN_SLO_REQ]       = false;
-        $this->fields[self::SIGN_SLO_RES]       = false;
-        $this->fields[self::COMPRESS_REQ]       = false;
-        $this->fields[self::COMPRESS_RES]       = false;
-        $this->fields[self::XML_VALIDATION]     = true;
-        $this->fields[self::DEST_VALIDATION]    = true;
-        $this->fields[self::LOWERCASE_URL]      = true;
-    }
-
 
 }

@@ -33,8 +33,31 @@
  *  @since          1.3.0
  * ------------------------------------------------------------------------
  **/
+use HTML;
+use Plugin;
+use Search;
 use GlpiPlugin\Glpisaml\Exclude;
 
 include "../../../inc/includes.php";                    //NOSONAR - Cant be included with USE.
+
+// Check if plugin is activated...
+$plugin = new Plugin();
+if($plugin->isInstalled(PLUGIN_NAME) ||
+   $plugin->isActivated(PLUGIN_NAME) ){
+    if (Exclude::canCreate()) {
+        Html::header(__('SAML Excludes'), $_SERVER['PHP_SELF'], "config", Exclude::class);
+        Search::show(Exclude::class);
+        Html::footer();
+    }else{
+        Html::displayRightError();
+    }
+    
+}else{
+    Html::displayNotFoundError();
+}
+
+/*
 $dropdown = new Exclude();
 include GLPI_ROOT . '/front/dropdown.common.php';       //NOSONAR - Cant be included with USE.
+*/
+

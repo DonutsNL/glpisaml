@@ -40,6 +40,7 @@
  **/
 
 use HTML;
+use Search;
 use Plugin;
 use GlpiPlugin\Glpisaml\Config as samlConfig;
 
@@ -50,7 +51,7 @@ $plugin = new Plugin();
 if($plugin->isInstalled(PLUGIN_NAME) ||
    $plugin->isActivated(PLUGIN_NAME) ){
     if (samlConfig::canCreate()) {
-        Html::header(__(PLUGIN_NAME), $_SERVER['PHP_SELF'], 'plugins', samlConfig::class);
+        Html::header(__('Identity providers'), $_SERVER['PHP_SELF'], "config", samlConfig::class);
         Search::show(samlConfig::class);
         Html::footer();
     }else{

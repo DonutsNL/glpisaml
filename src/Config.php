@@ -1,4 +1,5 @@
 <?php
+
 /**
  *  ------------------------------------------------------------------------
  *  GLPISaml
@@ -6,7 +7,7 @@
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI and the broad ammount of
- *  wishes expressed by the community. 
+ *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------
@@ -42,80 +43,94 @@
  * ------------------------------------------------------------------------
  **/
 
- namespace GlpiPlugin\Glpisaml;
+ /**
+ * Be carefull with PSR4 Namespaces when extending common GLPI objects.
+ * Only Characters are allowed in namespaces extending glpi Objects.
+ * @see https://github.com/pluginsGLPI/example/issues/51
+ */
+namespace GlpiPlugin\Glpisaml;
 
 use Session;
-use Plugin;
 use Migration;
-use CommonGLPI;
 use CommonDBTM;
-use CommonDropdown;
 use DBConnection;
+use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 
+/*
+ * Lists available configurations and handles
+ * generic SAML configuration operations for
+ * other plugin objects.
+ */
 class Config extends CommonDBTM
 {
-    public const ID             = 'id';
-    public const NAME           = 'name';
-    public const CONF_DOMAIN    = 'conf_domain';            // idea is to 'detect' the correct idp config using the provided 'username's domain' in the loginform.
-    public const CONF_ICON      = 'conf_icon';
-    public const ENFORCE_SSO    = 'enforce_sso';
-    public const PROXIED        = 'proxied';
-    public const STRICT         = 'strict';
-    public const DEBUG          = 'debug';
-    public const USER_JIT       = 'user_jit';
-    public const SP_CERTIFICATE = 'sp_certificate';
-    public const SP_KEY         = 'sp_private_key';
-    public const SP_NAME_FORMAT = 'sp_nameid_format';
-    public const IDP_ENTITY_ID  = 'idp_entity_id';
-    public const IDP_SSO_URL    = 'idp_single_sign_on_service';
-    public const IDP_SLO_URL    = 'idp_single_logout_service';
-    public const IDP_CERTIFICATE= 'idp_certificate';
-    public const AUTHN_CONTEXT  = 'requested_authn_context';
-    public const AUTHN_COMPARE  = 'requested_authn_context_comparison';
-    public const ENCRYPT_NAMEID = 'security_nameidencrypted';
-    public const SIGN_AUTHN     = 'security_authnrequestssigned';
-    public const SIGN_SLO_REQ   = 'security_logoutrequestsigned';
-    public const SIGN_SLO_RES   = 'security_logoutresponsesigned';
-    public const COMPRESS_REQ   = 'compress_requests';
-    public const COMPRESS_RES   = 'compress_responses';
-    public const XML_VALIDATION = 'validate_xml';
-    public const DEST_VALIDATION= 'validate_destination';  // relax destination validation
-    public const LOWERCASE_URL  = 'lowercase_url_encoding'; // lowercaseUrlEncoding
 
-    // From CommonDBTM
+    /**
+     * Tell DBTM to keep history
+     * @var    bool     - $dohistory
+     */
     public $dohistory = true;
 
-    // 'Config (setup) only implements canRead and canUpdate
+    /**
+     * Tell CommonGLPI to use config (Setup->Setup in UI) rights.
+     * @var    string   - $rightname
+     */
     public static $rightname = 'config';
 
-    // use 'Update' as canCreate permission
-    public static function canCreate()
+    /**
+     * Overloads missing canCreate Setup right and returns canUpdate instead
+     * @param  void
+     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @see             - https://github.com/pluginsGLPI/example/issues/50
+     */
+    public static function canCreate(): bool
     {
         return static::canUpdate();
     }
 
-    // use 'Update' as canPurge permission
-    public static function canPurge()
+    /**
+     * Overloads missing canPurge Setup right and returns canUpdate instead
+     * @param  void
+     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @see             - https://github.com/pluginsGLPI/example/issues/50
+     */
+    public static function canPurge(): bool
     {
         return static::canUpdate();
     }
 
-    public static function getTypeName($nb = 0)
+    /**
+     * returns class friendly TypeName
+     * @param  int      - $nb return plural or singular friendly name.
+     * @return string   - returns translated friendly name.
+     */
+    public static function getTypeName($nb = 0): string
     {
-        return __('SAML2 Config', PLUGIN_NAME);
+        return __('SAML2 Providers', PLUGIN_NAME);
     }
 
-    public static function getIcon() : string
+    /**
+     * Returns class icon to use in menus and tabs
+     * @param  void
+     * @return string   - returns Font Awesom icon classname.
+     * @see             - https://fontawesome.com/search
+     */
+    public static function getIcon(): string
     {
-        return 'fas fa-address-book';
+        return 'fa-regular fa-address-card';
     }
 
-    function rawSearchOptions() : array                         //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+    /**
+     * Provides search options for DBTM. Do not rely on this, @see CommonDBTM::searchOptions instead.
+     * @param  void
+     * @return string   - returns Font Awesom icon classname.
+     * @see             - https://fontawesome.com/search
+     */
+    function rawSearchOptions(): array                         //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
     {
         $tab[] = [
-            'id'                 => '2',
+            'id'                 => '1',
             'table'              => $this->getTable(),
-            'field'              => self::NAME,
+            'field'              => ConfigEntity::NAME,
             'name'               => __('Name'),
             'datatype'           => 'itemlink',
             'massiveaction'      => false,
@@ -123,9 +138,9 @@ class Config extends CommonDBTM
         ];
 
         $tab[] = [
-            'id'                 => '3',
+            'id'                 => '2',
             'table'              => $this->getTable(),
-            'field'              => self::CONF_DOMAIN,
+            'field'              => ConfigEntity::CONF_DOMAIN,
             'name'               => __('Domain string'),
             'datatype'           => 'string',
             'massiveaction'      => false,
@@ -133,20 +148,28 @@ class Config extends CommonDBTM
         ];
 
         $tab[] = [
+            'id'                 => '3',
+            'table'              => $this->getTable(),
+            'field'              => ConfigEntity::ENFORCE_SSO,
+            'name'               => __('Force SSO'),
+            'datatype'           => 'bool',
+            'massiveaction'      => true,
+        ];
+
+        $tab[] = [
             'id'                 => '4',
             'table'              => $this->getTable(),
-            'field'              => self::CONF_ICON,
-            'name'               => __('Configuration Icon'),
-            'datatype'           => 'string',
-            'massiveaction'      => false,
-            'autocomplete'       => true,
+            'field'              => ConfigEntity::PROXIED,
+            'name'               => __('Proxied Responses'),
+            'datatype'           => 'bool',
+            'massiveaction'      => true,
         ];
 
         $tab[] = [
             'id'                 => '5',
             'table'              => $this->getTable(),
-            'field'              => self::ENFORCE_SSO,
-            'name'               => __('Force SSO'),
+            'field'              => ConfigEntity::STRICT,
+            'name'               => __('Strict mode'),
             'datatype'           => 'bool',
             'massiveaction'      => true,
         ];
@@ -154,8 +177,8 @@ class Config extends CommonDBTM
         $tab[] = [
             'id'                 => '6',
             'table'              => $this->getTable(),
-            'field'              => self::PROXIED,
-            'name'               => __('Proxied Responses'),
+            'field'              => ConfigEntity::DEBUG,
+            'name'               => __('Debug mode'),
             'datatype'           => 'bool',
             'massiveaction'      => true,
         ];
@@ -163,53 +186,53 @@ class Config extends CommonDBTM
         $tab[] = [
             'id'                 => '7',
             'table'              => $this->getTable(),
-            'field'              => self::STRICT,
-            'name'               => __('Strict mode'),
-            'datatype'           => 'bool',
-            'massiveaction'      => true,
-        ];
-
-        $tab[] = [
-            'id'                 => '8',
-            'table'              => $this->getTable(),
-            'field'              => self::DEBUG,
-            'name'               => __('Debug mode'),
-            'datatype'           => 'bool',
-            'massiveaction'      => true,
-        ];
-
-        $tab[] = [
-            'id'                 => '9',
-            'table'              => $this->getTable(),
-            'field'              => self::USER_JIT,
+            'field'              => ConfigEntity::USER_JIT,
             'name'               => __('Automatic user creation'),
             'datatype'           => 'bool',
             'massiveaction'      => false,
         ];
 
         $tab[] = [
+            'id'                 => '8',
+            'table'              => $this->getTable(),
+            'field'              => ConfigEntity::SP_NAME_FORMAT,
+            'name'               => __('Name format'),
+            'datatype'           => 'string',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
+            'id'                 => '9',
+            'table'              => $this->getTable(),
+            'field'              => ConfigEntity::IDP_SSO_URL,
+            'name'               => __('IdP Single Sign On Url'),
+            'datatype'           => 'string',
+            'massiveaction'      => false,
+        ];
+
+        $tab[] = [
             'id'                 => '10',
             'table'              => $this->getTable(),
-            'field'              => self::SP_CERTIFICATE,
-            'name'               => __('Service Provider Certificate'),
-            'datatype'           => 'text',
+            'field'              => ConfigEntity::IDP_SLO_URL,
+            'name'               => __('IdP Logoff Url'),
+            'datatype'           => 'string',
             'massiveaction'      => false,
         ];
 
         $tab[] = [
             'id'                 => '11',
             'table'              => $this->getTable(),
-            'field'              => self::SP_KEY,
-            'name'               => __('Service Provider private Key'),
-            'datatype'           => 'text',
+            'field'              => ConfigEntity::AUTHN_CONTEXT,
+            'name'               => __('AuthN Context'),
+            'datatype'           => 'string',
             'massiveaction'      => false,
         ];
 
         $tab[] = [
             'id'                 => '12',
             'table'              => $this->getTable(),
-            'field'              => self::SP_NAME_FORMAT,
-            'name'               => __('Name format'),
+            'field'              => ConfigEntity::AUTHN_COMPARE,
+            'name'               => __('AuthN Compare'),
             'datatype'           => 'string',
             'massiveaction'      => false,
         ];
@@ -217,62 +240,62 @@ class Config extends CommonDBTM
         $tab[] = [
             'id'                 => '13',
             'table'              => $this->getTable(),
-            'field'              => self::IDP_ENTITY_ID,
-            'name'               => __('IdP entity identifier'),
-            'datatype'           => 'string',
+            'field'              => ConfigEntity::ENCRYPT_NAMEID,
+            'name'               => __('Force SSO'),
+            'datatype'           => 'bool',
             'massiveaction'      => false,
         ];
 
         $tab[] = [
             'id'                 => '14',
             'table'              => $this->getTable(),
-            'field'              => self::IDP_SSO_URL,
-            'name'               => __('IdP Single Sign On Url'),
-            'datatype'           => 'string',
+            'field'              => ConfigEntity::ENCRYPT_NAMEID,
+            'name'               => __('Encrypted nameId'),
+            'datatype'           => 'bool',
             'massiveaction'      => false,
         ];
 
         $tab[] = [
             'id'                 => '15',
             'table'              => $this->getTable(),
-            'field'              => self::IDP_SLO_URL,
-            'name'               => __('IdP Logoff Url'),
-            'datatype'           => 'string',
+            'field'              => ConfigEntity::SIGN_AUTHN,
+            'name'               => __('Sign AuthN Requests'),
+            'datatype'           => 'bool',
             'massiveaction'      => false,
         ];
 
         $tab[] = [
             'id'                 => '16',
             'table'              => $this->getTable(),
-            'field'              => self::IDP_CERTIFICATE,
-            'name'               => __('IdP Public Certificate'),
-            'datatype'           => 'text',
+            'field'              => ConfigEntity::SIGN_SLO_REQ,
+            'name'               => __('Sign SLO Requests'),
+            'datatype'           => 'bool',
             'massiveaction'      => false,
         ];
 
         $tab[] = [
             'id'                 => '17',
             'table'              => $this->getTable(),
-            'field'              => self::AUTHN_CONTEXT,
-            'name'               => __('AuthN Context'),
-            'datatype'           => 'string',
+            'field'              => ConfigEntity::SIGN_AUTHN,
+            'name'               => __('Sign SLO Responses'),
+            'datatype'           => 'bool',
             'massiveaction'      => false,
         ];
 
         $tab[] = [
             'id'                 => '18',
             'table'              => $this->getTable(),
-            'field'              => self::AUTHN_COMPARE,
-            'name'               => __('AuthN Compare'),
-            'datatype'           => 'string',
+            'field'              => ConfigEntity::COMPRESS_REQ,
+            'name'               => __('Compress requests'),
+            'datatype'           => 'bool',
             'massiveaction'      => false,
         ];
 
         $tab[] = [
             'id'                 => '19',
             'table'              => $this->getTable(),
-            'field'              => self::ENCRYPT_NAMEID,
-            'name'               => __('Force SSO'),
+            'field'              => ConfigEntity::COMPRESS_RES,
+            'name'               => __('Compress responses'),
             'datatype'           => 'bool',
             'massiveaction'      => false,
         ];
@@ -280,8 +303,8 @@ class Config extends CommonDBTM
         $tab[] = [
             'id'                 => '20',
             'table'              => $this->getTable(),
-            'field'              => self::ENCRYPT_NAMEID,
-            'name'               => __('Encrypted nameId'),
+            'field'              => ConfigEntity::XML_VALIDATION,
+            'name'               => __('Perform XML validation'),
             'datatype'           => 'bool',
             'massiveaction'      => false,
         ];
@@ -289,8 +312,8 @@ class Config extends CommonDBTM
         $tab[] = [
             'id'                 => '21',
             'table'              => $this->getTable(),
-            'field'              => self::SIGN_AUTHN,
-            'name'               => __('Sign AuthN Requests'),
+            'field'              => ConfigEntity::DEST_VALIDATION,
+            'name'               => __('Perform destination validation'),
             'datatype'           => 'bool',
             'massiveaction'      => false,
         ];
@@ -298,61 +321,7 @@ class Config extends CommonDBTM
         $tab[] = [
             'id'                 => '22',
             'table'              => $this->getTable(),
-            'field'              => self::SIGN_SLO_REQ,
-            'name'               => __('Sign SLO Requests'),
-            'datatype'           => 'bool',
-            'massiveaction'      => false,
-        ];
-
-        $tab[] = [
-            'id'                 => '23',
-            'table'              => $this->getTable(),
-            'field'              => self::SIGN_AUTHN,
-            'name'               => __('Sign SLO Responses'),
-            'datatype'           => 'bool',
-            'massiveaction'      => false,
-        ];
-
-        $tab[] = [
-            'id'                 => '24',
-            'table'              => $this->getTable(),
-            'field'              => self::COMPRESS_REQ,
-            'name'               => __('Compress requests'),
-            'datatype'           => 'bool',
-            'massiveaction'      => false,
-        ];
-
-        $tab[] = [
-            'id'                 => '25',
-            'table'              => $this->getTable(),
-            'field'              => self::COMPRESS_RES,
-            'name'               => __('Compress responses'),
-            'datatype'           => 'bool',
-            'massiveaction'      => false,
-        ];
-
-        $tab[] = [
-            'id'                 => '26',
-            'table'              => $this->getTable(),
-            'field'              => self::XML_VALIDATION,
-            'name'               => __('Perform XML validation'),
-            'datatype'           => 'bool',
-            'massiveaction'      => false,
-        ];
-
-        $tab[] = [
-            'id'                 => '27',
-            'table'              => $this->getTable(),
-            'field'              => self::DEST_VALIDATION,
-            'name'               => __('Perform destination validation'),
-            'datatype'           => 'bool',
-            'massiveaction'      => false,
-        ];
-
-        $tab[] = [
-            'id'                 => '28',
-            'table'              => $this->getTable(),
-            'field'              => self::LOWERCASE_URL,
+            'field'              => ConfigEntity::LOWERCASE_URL,
             'name'               => __('Perform lowercase encoding'),
             'datatype'           => 'bool',
             'massiveaction'      => false,
@@ -361,15 +330,13 @@ class Config extends CommonDBTM
         return $tab;
     }
 
-
     /**
-     * install(Migration migration) : void -
      * Install table needed for Ticket Filter configuration dropdowns
-     *
-     * @return void
-     * @see             hook.php:plugin_GLPISaml_install()
+     * @param   Migration $migration    - Plugin migration information;
+     * @return  void
+     * @see                             - GLPISaml/hook.php
      */
-    public static function install(Migration $migration) : void
+    public static function install(Migration $migration): void
     {
         global $DB;
         $default_charset = DBConnection::getDefaultCharset();
@@ -422,7 +389,7 @@ class Config extends CommonDBTM
             Session::addMessageAfterRedirect("Installed: $table.");
         }
 
-        // Debug entries TODO: Delete when implemented.
+        // Debug entries Delete when implemented.
         $query = <<<SQL
         INSERT INTO $table
         VALUES('1', 'test 1', '@Donuts.nl', 'icon', '1', '1', '1', '1', '1', 'sp_cert',
@@ -452,13 +419,12 @@ class Config extends CommonDBTM
     }
 
     /**
-     * uninstall(Migration migration) : void -
-     * Uninstall tables uncomment the line to make plugin clean table.
-     *
-     * @return void
-     * @see             hook.php:plugin_GLPISaml_uninstall()
+     * Uninstall table needed for Ticket Filter configuration dropdowns
+     * @param   Migration $migration    - Plugin migration information;
+     * @return  void
+     * @see                             - GLPISaml/hook.php
      */
-    public static function uninstall(Migration $migration) : void
+    public static function uninstall(Migration $migration): void
     {
         $table = self::getTable();
         $migration->backupTables([$table]);

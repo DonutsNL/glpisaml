@@ -68,7 +68,6 @@ class Loginflow extends CommonDBTM
         /**
          * Evaluates the session and determins if login/logout is required
          * Called by post_init hook via function in hooks.php
-         *
          * @param void
          * @return boolean
          * @since 1.0.0
