@@ -100,12 +100,12 @@ class ConfigEntity
     // Create entity using template
     private function buildTemplateEntity($template): ConfigEntity
     {
-        $templateClass = 'GlpiPlugin\Glpisaml\Config\ConfigTpl'.$template;
+        $templateClass = 'GlpiPlugin\Glpisaml\Config\Config'.$template.'Tpl';
         if(!class_exists($templateClass)){
-            $templateClass = 'GlpiPlugin\Glpisaml\Config\ConfigTplDefault';
+            $templateClass = 'GlpiPlugin\Glpisaml\Config\ConfigDefaultTpl';
         }
         // Perform same validation
-        foreach($templateClass::Template as $field => $val){
+        foreach($templateClass::template() as $field => $val){
             $asset = $this->validate($field, $val);
             if(isset($asset['evaluation']) && $asset['evaluation'] == 'valid'){
                 $this->fields[$field] = $val;
@@ -131,9 +131,9 @@ class ConfigEntity
             // Do defined validations
             $asset = $this->validate($field, $val);
             if(isset($asset['evaluation']) && $asset['evaluation'] == 'valid'){
-                $this->fields[$field] = $val;
+                $this->fields[$field] = $asset['value'];
             }else{
-                $this->invalidMessages = array_merge($asset['errors'], $this->invalidMessages);
+                $this->invalidMessages = (is_Array($asset['errors'])) ? array_merge($asset['errors'], $this->invalidMessages) : $this->invalidMessages;
                 $this->unvalidatedFields[$field] = $val;
             }
         }

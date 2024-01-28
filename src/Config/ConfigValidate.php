@@ -43,6 +43,7 @@
  **/
 namespace GlpiPlugin\Glpisaml\Config;
 
+use DateTime;
 use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 
 /*
@@ -52,175 +53,121 @@ use GlpiPlugin\Glpisaml\Config\ConfigEntity;
  */
 class ConfigValidate                                                        //NOSONAR
 {
+    public const VALID      = 'valid';
+    public const INVALID    = 'invalid';
+    public const VALUE      = 'value';
+    public const EVAL       = 'evaluation';
+    public const ERRORS     = 'errors';
+
     public static function id(mixed $val): array
     {
-        if($val){
-            return ['evaluation' => 'valid',
-                    'value'  => $val];
-        } else {
-            return ['evaluation' => 'invalid',
-                    'value'  => null,
-                    'errors' => [__('Id is required field', PLUGIN_NAME)]];
-        }
+        return [self::EVAL   => ($val) ? self::VALID : self::INVALID,
+                self::VALUE  =>  $val,
+                self::ERRORS => ($val) ? null : __('Id is a required field', PLUGIN_NAME)];
     }
 
     public static function name(mixed $val): array
     {
-        if($val){
-            return ['evaluation' => 'valid',
-                    'value'  => $val];
-        } else {
-            return ['evaluation' => 'invalid',
-                    'value'  => null,
-                    'errors' => [__('Name is required field', PLUGIN_NAME)]];
-        }
+        return [self::EVAL   => ($val) ? self::VALID : self::INVALID,
+                self::VALUE  => (string) $val,
+                self::ERRORS => ($val) ? null : __('Name is a required field', PLUGIN_NAME)];
     }
 
     public static function conf_domain(mixed $val): array                   //NOSONAR
     {
-        if($val){
-            return ['evaluation' => 'valid',
-                    'value'  => $val];
-        } else {
-            return ['evaluation' => 'invalid',
-                    'value'  => null,
-                    'errors' => [__('Configuration domain is required field', PLUGIN_NAME)]];
-        }
+        return [self::EVAL   => ($val) ? self::VALID : self::INVALID,
+                self::VALUE  => (string) $val,
+                self::ERRORS => ($val) ? null : __('Configuration domain is a required field', PLUGIN_NAME)];
     }
 
     public static function sp_certificate(mixed $val): array                //NOSONAR
     {
-        return ['evaluation' => 'valid',
-                'value'  => $val];
+        return [self::EVAL => self::VALID,
+                self::VALUE  => $val];
     }
 
     public static function sp_private_key(mixed $val): array                //NOSONAR
     {
-        return ['evaluation' => 'valid',
-                'value'  => $val];
+        return [self::EVAL => self::VALID,
+                self::VALUE  => $val];
     }
 
     public static function sp_nameid_format(mixed $val): array              //NOSONAR
     {
-        if($val){
-            return ['evaluation' => 'valid',
-                    'value'  => $val];
-        } else {
-            return ['evaluation' => 'invalid',
-                    'value'  => null,
-                    'errors' => [__('Service provider nameId format is a required field', PLUGIN_NAME)]];
-        }
+        return [self::EVAL   => ($val) ? self::VALID : self::INVALID,
+                self::VALUE  => (string) $val,
+                self::ERRORS => ($val) ? null : __('Service provider name id is a required field', PLUGIN_NAME)];
     }
 
     public static function idp_entity_id(mixed $val): array                 //NOSONAR
     {
-        if($val){
-            return ['evaluation' => 'valid',
-                    'value'  => $val];
-        } else {
-            return ['evaluation' => 'invalid',
-                    'value'  => null,
-                    'errors' => [__('Identity provider Entity ID is a required field', PLUGIN_NAME)]];
-        }
+        return [self::EVAL   => ($val) ? self::VALID : self::INVALID,
+                self::VALUE  => (string) $val,
+                self::ERRORS => ($val) ? null : __('Identity provider entity id is a required field', PLUGIN_NAME)];
     }
 
     public static function idp_single_sign_on_service(mixed $val): array    //NOSONAR
     {
-        if($val){
-            return ['evaluation' => 'valid',
-                    'value'  => $val];
-        } else {
-            return ['evaluation' => 'invalid',
-                    'value'  => null,
-                    'errors' => [__('Identity provider SSO URL is a required field', PLUGIN_NAME)]];
-        }
+        return [self::EVAL   => ($val) ? self::VALID : self::INVALID,
+                self::VALUE  => (string) $val,
+                self::ERRORS => ($val) ? null : __('Identity provider SSO URL is a required field', PLUGIN_NAME)];
     }
 
     public static function idp_single_logout_service(mixed $val): array     //NOSONAR
     {
-        if($val){
-            return ['evaluation' => 'valid',
-                    'value'  => $val];
-        } else {
-            return ['evaluation' => 'invalid',
-                    'value'  => null,
-                    'errors' => [__('Identity SLO URL is a required field', PLUGIN_NAME)]];
-        }
+        return [self::EVAL   => ($val) ? self::VALID : self::INVALID,
+                self::VALUE  => (string) $val,
+                self::ERRORS => ($val) ? null : __('Identity provider SLO URL is a required field', PLUGIN_NAME)];
     }
     public static function idp_certificate(mixed $val): array               //NOSONAR
     {
-        if($val){
-            return ['evaluation' => 'valid',
-                    'value'  => $val];
-        } else {
-            return ['evaluation' => 'invalid',
-                    'value'  => null,
-                    'errors' => [__('Identity provider publ certificate is a required field', PLUGIN_NAME)]];
-        }
+        return [self::EVAL   => ($val) ? self::VALID : self::INVALID,
+                self::VALUE  => (string) $val,
+                self::ERRORS => ($val) ? null : __('Identity provider certificate is a required field', PLUGIN_NAME)];
     }
 
     public static function requested_authn_context(mixed $val): array       //NOSONAR
     {
-        if($val){
-            return ['evaluation' => 'valid',
-                    'value'  => $val];
-        } else {
-            return ['evaluation' => 'invalid',
-                    'value'  => null,
-                    'errors' => [__('AuthN context is a required field', PLUGIN_NAME)]];
-        }
+        return [self::EVAL   => ($val) ? self::VALID : self::INVALID,
+                self::VALUE  => (string) $val,
+                self::ERRORS => ($val) ? null : __('Requested authN context is a required field', PLUGIN_NAME)];
     }
 
     public static function requested_authn_context_comparison(mixed $val): array  //NOSONAR
     {
-        if($val){
-            return ['evaluation' => 'valid',
-                    'value'  => $val];
-        } else {
-            return ['evaluation' => 'invalid',
-                    'value'  => null,
-                    'errors' => [__('AuthN comparison is a required field', PLUGIN_NAME)]];
-        }
+        return [self::EVAL   => ($val) ? self::VALID : self::INVALID,
+                self::VALUE  => (string) $val,
+                self::ERRORS => ($val) ? null : __('Requested authN context comparison is a required field', PLUGIN_NAME)];
     }
 
     // IGNORED FIELDS
     public static function conf_icon(mixed $val): array                     //NOSONAR
     {
-        return ['evaluation' => 'valid',
-                    'value'  => $val];
+        return [self::EVAL   => self::VALID,
+                self::VALUE  => (string) $val];
     }
 
     public static function comment(mixed $val): array                       //NOSONAR
     {
-        return ['evaluation' => 'valid',
-                'value'  => $val];
+        return [self::EVAL   => self::VALID,
+                self::VALUE  => (string) $val];
     }
 
+    // Might cast it into an EPOCH date with invalid values.
     public static function date_creation(mixed $val): array                 //NOSONAR
     {
-        return ['evaluation' => 'valid',
-                'value'  => $val];
+        return [self::EVAL   => self::VALID,
+                self::VALUE  => new DateTime($val)];
     }
 
+    // Might cast it into an EPOCH date with invalid values.
     public static function date_mod(mixed $val): array                      //NOSONAR
     {
-        return ['evaluation' => 'valid',
-        'value'  => $val];
+        return [self::EVAL   => self::VALID,
+                self::VALUE  => new DateTime($val)];
     }
 
     // BOOLEANS
-    public static function handleAsBool(int $val, $field = null): array
-    {
-        if(is_numeric($val)){       // Database is storing tinyints.
-            return ['evaluation' => 'valid',
-                    'value'      => ($val) ? true : false];
-        } else {
-            return ['evaluation' => 'invalid',
-                    'value'      => false,
-                    'errors'     => ["$field not a boolean, defaulted to false"]];
-        }
-    }
-
     public static function is_deleted(mixed $val): array                    //NOSONAR
     {
         return self::handleAsBool($val, 'is_deleted');
@@ -299,6 +246,14 @@ class ConfigValidate                                                        //NO
     public static function lowercase_url_encoding(int $val): array          //NOSONAR
     {
         return self::handleAsBool($val, ConfigEntity::LOWERCASE_URL);
+    }
+
+    // Make sure we allways return the correct datatype.
+    public static function handleAsBool(int $val, $field = null): array
+    {
+        return [self::EVAL   => (is_numeric($val)) ? self::VALID : self::INVALID,
+                self::VALUE  => (bool) $val,
+                self::ERRORS => (is_numeric($val)) ? null : __("$field does not appear to be an boolean, defaulted to false", PLUGIN_NAME)];
     }
 
 }
