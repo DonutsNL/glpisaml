@@ -58,7 +58,7 @@ use Migration;
 use CommonDBTM;
 use DBConnection;
 
-class Loginstate extends CommonDBTM
+class LoginState extends CommonDBTM
 {
     // CLASS CONSTANTS
     public const SESSION_GLPI_NAME_ACCESSOR = 'glpiname';       // NULL -> Populated with user->name in Session::class:128 after GLPI login->init;

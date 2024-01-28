@@ -48,7 +48,7 @@ use GlpiPlugin\Glpisaml\Config;
 use GlpiPlugin\Glpisaml\Exclude;
 use GlpiPlugin\Glpisaml\Loginflow;
 use GlpiPlugin\Glpisaml\Ruleright;
-use GlpiPlugin\Glpisaml\Rulerightcollection;
+use GlpiPlugin\Glpisaml\RulerightCollection;
 
 // Constants
 define('PLUGIN_GLPISAML_VERSION', '1.0.0');

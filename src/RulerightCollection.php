@@ -46,7 +46,7 @@ namespace GlpiPlugin\Glpisaml;
 
 use RuleCollection;
 
-class Rulerightcollection extends RuleCollection
+class RulerightCollection extends RuleCollection
 {
     
 }

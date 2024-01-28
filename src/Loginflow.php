@@ -59,7 +59,7 @@ use Session;
 use Migration;
 use CommonDBTM;
 use GlpiPlugin\Glpisaml\Exclude;
-use GlpiPlugin\Glpisaml\Loginstate;
+use GlpiPlugin\Glpisaml\LoginState;
 use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\Settings;
 
