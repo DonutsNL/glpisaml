@@ -55,9 +55,15 @@ use GlpiPlugin\Glpisaml\Config as SamlConfig;
  */
 class ConfigForm
 {
-
+    /**
+     * Where is the template file located for the configuration form
+     */
     private const TEMPLATE_FILE = '/configForm.html';
-    private const GIT_ATOM_URL  = 'https://github.com/donutsnl/GLPISaml/releases.atom'; //NOSONAR - WIP
+
+    /**
+     * Holds the HTML form elements for generation of the final form.
+     */
+    private $formFields         =   [];
 
     /**
      * Inits ConfigForm and decides what to do based
@@ -90,6 +96,17 @@ class ConfigForm
                 }
             }
         }
+    }
+
+    /**
+     * Show configuration form
+     *
+     * @param integer $id      ID the configuration item to show
+     * @param array   $options Options
+     */
+    public function showForm($id, array $options = []): string
+    {
+        return $this->generateForm((new ConfigEntity($id)));
     }
 
     /**
@@ -149,17 +166,6 @@ class ConfigForm
     }
 
     /**
-     * Show configuration form
-     *
-     * @param integer $id      ID the configuration item to show
-     * @param array   $options Options
-     */
-    public function showForm($id, array $options = []) : string
-    {
-        return $this->generateForm((new ConfigEntity($id, $options)));
-    }
-
-    /**
      * Print the auth ldap form
      *
      * @param integer $ID      ID of the item
@@ -169,16 +175,43 @@ class ConfigForm
      * @return void|boolean (display) Returns false if there is a rights error.
      */
     private function generateForm(ConfigEntity $configEntity){
+        // Populate form elements using expected fieldTypes, ignore all garbage
+        foreach(($configEntity->getFields()) as $item)
+        {
+            if(!is_object($item['fieldValue'])) {
+                print $item['fieldName'] . ' = ' . $item['fieldValue'] . '<br>';
+            }
+            
+            
+            // Uncallable fields do not require to be assigned to a formField
+        }
+
+        //print_r($this->formFields);
+        
+        
         // Read the template file containing the HTML template;
         $path = PLUGIN_GLPISAML_TPLDIR.self::TEMPLATE_FILE;
         if (file_exists($path)) {
             $htmlForm = file_get_contents($path);
         }else{
-            $htmlForm = 'empty :(';
+            Session::addMessageAfterRedirect(__("Failed to open template: $path, got permission?", PLUGIN_NAME));
+            Html::back();
         }
+
+        
         echo "<pre>";
-        var_dump($configEntity);
+        var_dump($this->formFields);
         return $htmlForm;
+    }
+
+    private function id(int $id): void
+    {
+        $this->formFields['ID']  = $id;
+    }
+
+    private function name(string $name): void
+    {
+        $this->formFields['NAME']  = $name;
     }
 
 }

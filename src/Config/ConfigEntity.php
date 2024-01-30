@@ -243,6 +243,49 @@ class ConfigEntity
 
 
     /**
+     * This function will return contextual information about the available
+     * configuration fields.
+     *
+     * Intended for generating Config->searchOptions, perform unittests and debugging.
+     * (new ConfigEntity(id))->getFieldTypes() will return DB field information
+     * and values of given ID.
+     *
+     * @param  bool     $debug  - If true will only return fields without predefined class Constant and preloaded value.
+     * @return array            - ConfigEntity field information
+     */
+    public function getFields($debug = false): array
+    {
+        global $DB;
+        $classConstants = self::getConstants();
+        $sql = 'SHOW COLUMNS FROM '.SamlConfig::getTable();
+        if ($result = $DB->query($sql)) {
+            while ($data = $result->fetch_assoc()) {
+                if($key = array_search($data['Field'], $classConstants)) {
+                    if(!$debug && isset($this->fields[$data['Field']])){
+                        $fields[] = [
+                            'fieldName' =>  $data['Field'],
+                            'fieldType' =>  $data['Type'],
+                            'fieldNull' =>  $data['Null'],
+                            'fieldConstant' =>  "ConfigEntity::$key",
+                            'fieldValue'    =>  (isset($this->fields[$data['Field']])) ? $this->fields[$data['Field']] : 'UNDEFINED'
+                        ];
+                    }// For testing dont add correct fields to debug array so we can validate with count 0;
+                }else{
+                    $fields[] = [
+                        'fieldName' =>  $data['Field'],
+                        'fieldType' =>  $data['Type'],
+                        'fieldNull' =>  $data['Null'],
+                        'fieldConstant' =>  "UNDEFINED",
+                        'fieldValue'    =>  (isset($this->fields[$data['Field']])) ? $this->fields[$data['Field']] : 'UNDEFINED'
+                    ];
+                }
+            }
+        }
+        return $fields;
+    }
+
+
+    /**
      * Returns the validity state of the currently loaded ConfigEntity
      * @param  void
      * @return bool
@@ -250,17 +293,6 @@ class ConfigEntity
     public function isValid(): bool
     {
         return $this->isValid;
-    }
-
-
-    /**
-     * Returns an array of loaded configuration fields
-     * @param  void
-     * @return array    - Loaded configuration fields.
-     */
-    public function getConfig(): array
-    {
-        return $this->fields;
     }
 }
 

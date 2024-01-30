@@ -56,6 +56,7 @@ class ConfigValidate                                                        //NO
     public const VALID      = 'valid';
     public const INVALID    = 'invalid';
     public const VALUE      = 'value';
+    public const RICHVALUE  = 'richvalue';
     public const EVAL       = 'evaluation';
     public const ERRORS     = 'errors';
 
@@ -156,15 +157,17 @@ class ConfigValidate                                                        //NO
     // Might cast it into an EPOCH date with invalid values.
     public static function date_creation(mixed $val): array                 //NOSONAR
     {
-        return [self::EVAL   => self::VALID,
-                self::VALUE  => new DateTime($val)];
+        return [self::EVAL      => self::VALID,
+                self::VALUE     => (string) $val,
+                self::RICHVALUE => new DateTime($val)];
     }
 
     // Might cast it into an EPOCH date with invalid values.
     public static function date_mod(mixed $val): array                      //NOSONAR
     {
-        return [self::EVAL   => self::VALID,
-                self::VALUE  => new DateTime($val)];
+        return [self::EVAL      => self::VALID,
+                self::VALUE     => (string) $val,
+                self::RICHVALUE => new DateTime($val)];
     }
 
     // BOOLEANS

@@ -55,7 +55,7 @@ use Migration;
 use CommonDBTM;
 use DBConnection;
 use GlpiPlugin\Glpisaml\Config\ConfigEntity;
-use GlpiPlugin\Glpisaml\Config\ConfigSearchOptions;
+use GlpiPlugin\Glpisaml\Config\ConfigSearchOptions as GlpiSamlSearch;
 
 /**
  * Class Handles the installation and listing of configuration front/config.php 
@@ -65,6 +65,12 @@ use GlpiPlugin\Glpisaml\Config\ConfigSearchOptions;
  */
 class Config extends CommonDBTM
 {
+
+    /**
+     * Where can we find the latest version of the plugin?
+     */
+    public const GIT_ATOM_URL  = 'https://github.com/donutsnl/Phpsaml2/releases.atom'; //NOSONAR - WIP
+
 
     /**
      * Tell DBTM to keep history
@@ -122,14 +128,53 @@ class Config extends CommonDBTM
     }
 
     /**
-     * Provides search options for DBTM. Do not rely on this, @see CommonDBTM::searchOptions instead.
+     * Provides search options for DBTM.
+     * Do not rely on this, @see CommonDBTM::searchOptions instead.
      * @param  void
-     * @return string   - returns Font Awesom icon classname.
-     * @see             - https://fontawesome.com/search
+     * @return array  $tab  - returns searchOptions
+     * @see                 - https://glpi-developer-documentation.readthedocs.io/en/master/devapi/search.html
      */
     function rawSearchOptions(): array                          //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
     {
-        return ConfigSearchOptions::get();
+        $index = 0;
+        foreach((new ConfigEntity())->getFields() as $field)
+        {
+           // skip the following fields
+            if($field['fieldName'] != 'id'             &&
+               $field['fieldName'] != 'is_deleted'     &&
+               $field['fieldName'] != 'date_creation'  &&
+               $field['fieldName'] != 'date_mod'       &&
+               $field['fieldName'] != 'is_active'      &&
+               $field['fieldName'] != 'comment'        ){
+
+                // Remap DB to Search datatypes
+                if($field['fieldType'] == 'varchar(255)' &&
+                   $field['fieldName'] == 'name'         ){
+                    $field['fieldType'] = 'itemlink';
+                }elseif(strstr($field['fieldType'], 'varchar')){
+                    $field['fieldType'] = 'string';
+                }elseif($field['fieldType'] == 'tinyint'){
+                    $field['fieldType'] = 'bool';
+                }elseif($field['fieldType'] == 'text'){
+                    $field['fieldType'] = 'text';
+                }elseif($field['fieldType'] == 'timestamp'){
+                    $field['fieldType'] = 'date';
+                }elseif(strstr($field['fieldType'], 'int')){
+                    $field['fieldType'] = 'number';
+                }
+
+                // Build tab array
+                $tab[] = [
+                    'id'                 => $index,
+                    'table'              => self::getTable(),
+                    'field'              => $field['fieldName'],
+                    'name'               => __(str_replace('_', ' ', ucfirst($field['fieldName']))),
+                    'datatype'           => $field['fieldType'],
+                ];
+            }
+            $index++;
+        }
+        return $tab;
     }
 
     /**
