@@ -3,11 +3,15 @@
 namespace GlpiPlugin\Glpisaml\Config;
 
 use GlpiPlugin\Glpisaml\Config\ConfigEntity;
-use PHPUnit\TextUI\CliArguments\Configuration;
 
+/**
+ * Provides a default template for new configurations
+ * Future: use ConfigEntities database to store additional templates
+ */
 class ConfigDefaultTpl {
     public static function template(): array
     {
+        // Do not define the 'id' field, this will break the ConfigEntity logic.
         return [ ConfigEntity::NAME             => 'Default Azure',
                  ConfigEntity::CONF_DOMAIN      => 'youruserdomain.tld',
                  ConfigEntity::CONF_ICON        => 'fa-brands fa-microsoft',

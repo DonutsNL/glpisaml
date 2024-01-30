@@ -51,7 +51,7 @@ use GlpiPlugin\Glpisaml\Config as SamlConfig;
 
 
 /**
- * Class Handles the CRUD operations of the config.form.php
+ * Class Handles the Configuration front/config.form.php Form
  */
 class ConfigForm
 {
@@ -71,7 +71,7 @@ class ConfigForm
         if( $id === -1 ){
             // Show form for new entry;
             $options['template'] = (isset($_GET['template']) && ctype_alpha($_GET['template'])) ? $_GET['template'] : 'default';
-            print $this->showForm($id, $options['template']);
+            print $this->showForm($id, $options);
         } else {
             // Process provided data
             if( isset($post['add']) ){
@@ -156,7 +156,7 @@ class ConfigForm
      */
     public function showForm($id, array $options = []) : string
     {
-        return $this->generateForm((new ConfigEntity($id)));
+        return $this->generateForm((new ConfigEntity($id, $options)));
     }
 
     /**
