@@ -47,6 +47,7 @@
  * Be carefull with PSR4 Namespaces when extending common GLPI objects.
  * Only Characters are allowed in namespaces extending glpi Objects.
  * @see https://github.com/pluginsGLPI/example/issues/51
+ * @see https://github.com/DonutsNL/phpsaml2/issues/6
  */
 namespace GlpiPlugin\Glpisaml;
 
