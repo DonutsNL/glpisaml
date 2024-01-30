@@ -55,7 +55,6 @@ use Migration;
 use CommonDBTM;
 use DBConnection;
 use GlpiPlugin\Glpisaml\Config\ConfigEntity;
-use GlpiPlugin\Glpisaml\Config\ConfigSearchOptions as GlpiSamlSearch;
 
 /**
  * Class Handles the installation and listing of configuration front/config.php 
