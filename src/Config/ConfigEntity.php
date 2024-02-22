@@ -46,18 +46,21 @@ namespace GlpiPlugin\Glpisaml\Config;
 use Session;
 use ReflectionClass;
 use GlpiPlugin\Glpisaml\Config as SamlConfig;
-use GlpiPlugin\Glpisaml\Config\ConfigValidate;
+use GlpiPlugin\Glpisaml\Config\ConfigItem;
 
 
 /*
- * Class ConfigEntity's job is to always return a valid, normalized instance of a
- * samlConfiguration either based on a template or based on a Config database row
+ * Class ConfigEntity's job is to populate, evaluate, test, normalize and
+ * make sure we always return a consistant, valid, and usable instance of
+ * a samlConfiguration thats either based on a template or based on an 
+ * existing database row
  */
 class ConfigEntity
 {
     /*
-     * ConfigEntity can be reflected by this->getConstants(), 
+     * ConfigEntity can be reflected by this->getConstants(),
      * private constants are not!
+     * 32 database fields expected
      */
     public const ID             = 'id';                                     // Database ID
     public const NAME           = 'name';                                   // Configuration name, not used in SAML handling
@@ -88,21 +91,19 @@ class ConfigEntity
     public const LOWERCASE_URL  = 'lowercase_url_encoding';                 // lowercaseUrlEncoding
     public const COMMENT        = 'comment';                                // Field for comments on configuration page
     public const IS_ACTIVE      = 'is_active';                              // Toggle SAML config active or disabled
+    public const IS_DELETED     = 'is_deleted';
+    public const CREATE_DATE    = 'date_creation';
+    public const MOD_DATE       = 'date_mod';
 
     /**
-     * Set to true if configEntity was found to be valid after population
+     * True, if an configuration issue is found its set to false.
      */
-    private $isValid            = false;
+    private $isValid            = true;
 
      /**
      * Contains all field values of a certain configuration
      */
     private $fields             = [];
-
-     /**
-     * Contains all fields that could not be validated, should be empty
-     */
-    private $unvalidatedFields  = [];
 
     /**
      * Contains all validation error messages generated during validation
@@ -120,8 +121,8 @@ class ConfigEntity
     {
         if(!$id || $id == -1) {
             // negative identifier equals populate using a template file
-            $template = (!empty($options['template'])) ? $options['template'] : 'Default';
-            return $this->validateAndPopulateTemplateEntity($template);
+            $options = (!empty($options['template'])) ? $options : ['template' => 'default'];
+            return $this->validateAndPopulateTemplateEntity($options);
         } else {
             // positive identifier equals populate using on a database row
             return $this->validateAndPopulateDBEntity($id);
@@ -132,37 +133,45 @@ class ConfigEntity
     /**
      * Populates the instance of ConfigEntity using a template.
      *
-     * @param  string   $template       - name of the Config[NAME]Tpl class to use as template.
-     * @return object   ConfigEntity    - returns instance of ConfigEntity.
+     * @param  array   $options      - name of the Config[NAME]Tpl class to use as template.
+     * @return object  ConfigEntity    - returns instance of ConfigEntity.
      */
-    private function validateAndPopulateTemplateEntity($template = 'Default'): ConfigEntity
+    private function validateAndPopulateTemplateEntity(array $options): ConfigEntity    //NOSONAR we are to lazy to split method further.
     {
-        // Locate our template file
-        $templateClass = 'GlpiPlugin\Glpisaml\Config\Config'.$template.'Tpl';
-        if(!class_exists($templateClass)){
-            //Fallback
-            $templateClass = 'GlpiPlugin\Glpisaml\Config\ConfigDefaultTpl';
+        // Create entity based on post inputs
+        if($options['template'] == 'post'       &&
+           array_key_exists('postData', $options)   ){
+
+            // Only evaluate valid Config Items;
+            $configItems = $this->getConstants();
+            foreach($options['postData'] as $field => $value){
+                if(array_search($field, $configItems)){
+                    $this->evaluateItem($field, $value);
+                }
+            }
+
+        }else{
+
+            // Locate our template file
+            $templateClass = 'GlpiPlugin\Glpisaml\Config\Config'.$options['template'].'Tpl';
             if(!class_exists($templateClass)){
-                // Fatal issue.
-                Session::addMessageAfterRedirect(__("Could not locate configuration template $templateClass, please verify installation!"));
-                exit;
+                //Fallback
+                $templateClass = 'GlpiPlugin\Glpisaml\Config\ConfigDefaultTpl';
+                if(!class_exists($templateClass)){
+                    // Fatal issue.
+                    Session::addMessageAfterRedirect(__("Could not locate configuration template $templateClass, please verify installation!"));
+                    exit;
+                }
+            }// Use found template.
+            // Perform same validation
+            foreach($templateClass::template() as $field => $value){
+                // Might be issue, we assume the correct fields are declared in returned array.
+                $this->evaluateItem($field, $value);
             }
-        }// Use found template.
-        // Perform same validation
-        foreach($templateClass::template() as $field => $val){
-            // Might be issue, we assume the correct fields are declared in returned array.
-            $configAsset = $this->validateConfigFields($field, $val);
-            if(isset($configAsset['evaluation']) && $configAsset['evaluation'] == 'valid'){
-                $this->fields[$field] = $val;
-            }else{
-                $this->invalidMessages = array_merge($configAsset['errors'], $this->invalidMessages);
-                $this->unvalidatedFields[$field] = $val;
-            }
+            
         }
-        // Validate the configuration is valid.
-        if (empty($this->unvalidatedFields)) {
-            $this->isValid = true;
-        }// Else keep the default false;
+        // Do some final consistancy check here.
+
         return $this;
     }
 
@@ -179,49 +188,52 @@ class ConfigEntity
         $config = new SamlConfig();
         if($config->getFromDB($id)) {
             // Iterate through fetched fields
-            foreach($config->fields as $field => $val) {
+            foreach($config->fields as $field => $value) {
                 // Do validations on all provided fields. All fields need to be
-                // verified by GlpiPlugin\Glpisaml\Config\ConfigValidate per default.
-                $asset = $this->validateConfigFields($field, $val);
-                if(isset($asset['evaluation']) && $asset['evaluation'] == 'valid'){
-                    $this->fields[$field] = $asset['value'];
-                }else{
-                    $this->invalidMessages = (is_Array($asset['errors'])) ? array_merge($asset['errors'], $this->invalidMessages) : $this->invalidMessages;
-                    $this->unvalidatedFields[$field] = $asset['value'];
-                }
+                // verified by GlpiPlugin\Glpisaml\Config\ConfigItem per default.
+                $this->evaluateItem($field, $value);
             }
-
-            if (empty($this->unvalidatedFields)) {
-                $this->isValid = true;
-            }
-            return $this;
         }else{
             // Return the default configuration, this exception can be verified
             // by checking the absence of the 'id' field in the returned ConfigEntity.
-            return $this->validateAndPopulateTemplateEntity();
+            return $this->validateAndPopulateTemplateEntity(['template' => 'default']);
         }
+        // Do some final consistancy check here.
+
+        return $this;
     }
 
 
     /**
      * Validates and normalizes configuration fields using checks defined
-     * in class GlpiPlugin\Glpisaml\Config\ConfigValidate. For instance
-     * if defined in ConfigValidate, it will convert DB result (string) '1'
+     * in class GlpiPlugin\Glpisaml\Config\ConfigItem. For instance
+     * if defined in ConfigItem, it will convert DB result (string) '1'
      * too (boolean) true in the returned array for type safety purposes.
      *
      * @param  string   $field  - name of the field to validate
      * @param  mixed    $val    - value beloging to the field.
      * @return array            - result of the validation including normalized values.
      * @see https://www.mysqltutorial.org/mysql-basics/mysql-boolean/
+     * @todo can we move this to ConfigItem and make it static?             //NOSONAR
      */
-    private function validateConfigFields(string $field, mixed $val): array
+    private function evaluateItem(string $field, string $value, $invalidate = false): array
     {
-        if(is_callable(array((new ConfigValidate), $field))){
-            return configValidate::$field($val);
-        } else {
-            return ['value'     => $val,
-                    'errors'    => __('No type validation found in ConfigValidate for $field', PLUGIN_NAME)];
+        $evaluatedItem = (is_callable(array((new ConfigItem), $field))) ? configItem::$field($value) : ConfigItem::noMethod($field, $value);
+        if(isset($evaluatedItem[ConfigItem::EVAL])      &&
+           $evaluatedItem[ConfigItem::EVAL] == 'valid'  ){
+            $this->fields[$field] = $evaluatedItem[ConfigItem::VALUE];
+        }else{
+            // Pass or invalidate
+            $this->fields[$field] = ($invalidate) ? '' : $value;
+            // Add errormessage
+            $msg  = ['field' => (isset($field)) ? $field : 'UNDEFINED',
+                     'value' => (isset($value)) ? $value : 'UNDEFINED',
+                     'error' => (isset($evaluatedItem[ConfigItem::ERRORS])) ? $evaluatedItem[ConfigItem::ERRORS] : 'UNDEFINED'];
+            array_push($this->invalidMessages, $msg);
+            // Mark entity invalid
+            $this->isValid = false;
         }
+        return $evaluatedItem;
     }
 
 
@@ -247,41 +259,41 @@ class ConfigEntity
      * configuration fields.
      *
      * Intended for generating Config->searchOptions, perform unittests and debugging.
-     * (new ConfigEntity(id))->getFieldTypes() will return DB field information
-     * and values of given ID.
      *
      * @param  bool     $debug  - If true will only return fields without predefined class Constant and preloaded value.
      * @return array            - ConfigEntity field information
      */
-    public function getFields($debug = false): array
+    public function getFields(): array        //NOSONAR - Maybe reduce complexity reduce calls to validateConfigFields?;
     {
         global $DB;
+        // Fetch config item constants;
         $classConstants = self::getConstants();
+        // Fetch database columns;
         $sql = 'SHOW COLUMNS FROM '.SamlConfig::getTable();
         if ($result = $DB->query($sql)) {
             while ($data = $result->fetch_assoc()) {
-                if($key = array_search($data['Field'], $classConstants)) {
-                    if(!$debug && isset($this->fields[$data['Field']])){
-                        $fields[] = [
-                            'fieldName' =>  $data['Field'],
-                            'fieldType' =>  $data['Type'],
-                            'fieldNull' =>  $data['Null'],
-                            'fieldConstant' =>  "ConfigEntity::$key",
-                            'fieldValue'    =>  (isset($this->fields[$data['Field']])) ? $this->fields[$data['Field']] : 'UNDEFINED'
-                        ];
-                    }// For testing dont add correct fields to debug array so we can validate with count 0;
-                }else{
-                    $fields[] = [
-                        'fieldName' =>  $data['Field'],
-                        'fieldType' =>  $data['Type'],
-                        'fieldNull' =>  $data['Null'],
-                        'fieldConstant' =>  "UNDEFINED",
-                        'fieldValue'    =>  (isset($this->fields[$data['Field']])) ? $this->fields[$data['Field']] : 'UNDEFINED'
-                    ];
-                }
+                $fields[] = [
+                    ConfigItem::FIELD       => $data['Field'],
+                    ConfigItem::TYPE        => $data['Type'],
+                    ConfigItem::NULL        => $data['Null'],
+                    ConfigItem::CONSTANT    => ($key = array_search($data['Field'], $classConstants)) ? "ConfigEntity::$key" : 'UNDEFINED',
+                    ConfigItem::VALUE       => (isset($this->fields[$data['Field']])) ? $this->fields[$data['Field']] : null,
+                    ConfigItem::EVAL        => $this->evaluateItem($data['Field'], (isset($this->fields[$data['Field']])) ? $this->fields[$data['Field']] : ''),
+                ];
             }
         }
         return $fields;
+    }
+
+    /**
+     * This function will return specific configfield if it exists
+     *
+     * @param  bool     $fieldName  - Name of the configuration item we are looking for, use class constants.
+     * @return string               - Value of the configuration or (bool) false if not found.
+     */
+    public function getField(string $fieldName): string|bool
+    {
+        return (key_exists($fieldName, $this->fields)) ? $this->fields[$fieldName] : false;
     }
 
 
@@ -293,6 +305,16 @@ class ConfigEntity
     public function isValid(): bool
     {
         return $this->isValid;
+    }
+
+    public function getFieldCount(): int
+    {
+        return count($this->fields);
+    }
+
+    public function validateFieldCount(): bool
+    {
+        return (count($this->getConstants()) == $this->getFieldCount()) ? true : false;
     }
 }
 

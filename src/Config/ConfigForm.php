@@ -53,61 +53,12 @@ use GlpiPlugin\Glpisaml\Config as SamlConfig;
 /**
  * Class Handles the Configuration front/config.form.php Form
  */
-class ConfigForm
+class ConfigForm        //NOSONAR - Ignore number of methods.
 {
     /**
      * Where is the template file located for the configuration form
      */
-    private const TEMPLATE_FILE = '/configForm.html';
-
-    /**
-     * Holds the HTML form elements for generation of the final form.
-     */
-    private $formFields         =   [];
-
-    /**
-     * Inits ConfigForm and decides what to do based
-     * on whats provded by config.form.php
-     *
-     * @param array $postData $_POST data from form
-     * @return void -
-     */
-    public function __construct(int $id, array $post)
-    {
-        if( $id === -1 ){
-            // Show form for new entry;
-            $options['template'] = (isset($_GET['template']) && ctype_alpha($_GET['template'])) ? $_GET['template'] : 'default';
-            print $this->showForm($id, $options);
-        } else {
-            // Process provided data
-            if( isset($post['add']) ){
-                // Do add
-            } elseif( isset($post['update']) ){
-                // Do update
-            } elseif( isset($post['delete']) ){
-                // Do delete
-            } else {
-                // Show requested configuration
-                if(empty($post)){
-                    print $this->showForm($id);
-                }else{
-                    Session::addMessageAfterRedirect(__('Invalid post header!', PLUGIN_NAME));
-                    Html::back();
-                }
-            }
-        }
-    }
-
-    /**
-     * Show configuration form
-     *
-     * @param integer $id      ID the configuration item to show
-     * @param array   $options Options
-     */
-    public function showForm($id, array $options = []): string
-    {
-        return $this->generateForm((new ConfigEntity($id)));
-    }
+    private const HTML_TEMPLATE_FILE = PLUGIN_GLPISAML_TPLDIR.'/configForm.html';
 
     /**
      * Add new phpSaml configuration
@@ -115,8 +66,20 @@ class ConfigForm
      * @param array $postData $_POST data from form
      * @return void -
      */
-    public function addSamlConfig($postData) : void
+    public function addSamlConfig($postData) : string
     {
+        // Validate the configuration;
+        $configEntity = new ConfigEntity(-1, ['template' => 'post', 'postData' => $postData]);
+        if($configEntity->isValid()){
+            echo 'CREATE <pre>';
+            print $configEntity->validateFieldCount();
+            var_dump($configEntity);
+            die();
+        }else{
+            return $this->generateForm($configEntity);
+        }
+       
+        /*
         $config = new SamlConfig();
         if($id = $config->add($postData)) {
             Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.form.php?id=$id");
@@ -124,6 +87,7 @@ class ConfigForm
             Session::addMessageAfterRedirect(__('Error: Unable to add new GlpiSaml configuration!', PLUGIN_NAME));
             Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.php");
         }
+        */
     }
 
     /**
@@ -154,64 +118,157 @@ class ConfigForm
      */
     public function deleteSamlConfig($postData) : void
     {
+        echo 'DELETE';
+        var_dump($postData);
+        die();
+        /*
         $config = new SamlConfig();
         if($config->canPurge()  &&
-           $config->delete($postData) ){
+           $config->delete($postData)){
             Session::addMessageAfterRedirect(__('Configuration deleted succesfully', PLUGIN_NAME));
             Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.php");
         } else {
             Session::addMessageAfterRedirect(__('Not allowed or error deleting SAML configuration!', PLUGIN_NAME));
             Html::back();
         }
+        */
     }
 
     /**
-     * Print the auth ldap form
+     * Figures out what form to show
      *
-     * @param integer $ID      ID of the item
-     * @param array   $options Options
-     *     - target for the form
-     *
-     * @return void|boolean (display) Returns false if there is a rights error.
+     * @param integer $id       ID the configuration item to show
+     * @param array   $options  Options
      */
-    private function generateForm(ConfigEntity $configEntity){
-        // Populate form elements using expected fieldTypes, ignore all garbage
-        foreach(($configEntity->getFields()) as $item)
-        {
-            if(!is_object($item['fieldValue'])) {
-                print $item['fieldName'] . ' = ' . $item['fieldValue'] . '<br>';
-            }
-            
-            
-            // Uncallable fields do not require to be assigned to a formField
-        }
-
-        //print_r($this->formFields);
-        
-        
-        // Read the template file containing the HTML template;
-        $path = PLUGIN_GLPISAML_TPLDIR.self::TEMPLATE_FILE;
-        if (file_exists($path)) {
-            $htmlForm = file_get_contents($path);
+    public function showForm(int $id, array $options = []): string
+    {
+        if($id === -1 || $id > 0){
+            // Generate form using a template
+            return $this->generateForm(new ConfigEntity($id, $options));
         }else{
-            Session::addMessageAfterRedirect(__("Failed to open template: $path, got permission?", PLUGIN_NAME));
+            // Invalid redirect back to origin
+            Session::addMessageAfterRedirect(__('Invalid request, redirecting back', PLUGIN_NAME));
+            Html::back();
+        }
+    }
+
+
+    /**
+     * Generate configuration form based on provided ConfigEntity
+     *
+     * @param ConfigEntity $configEntity      ID of the item
+     * @return string   $htmlForm             raw html form
+     */
+    private function generateForm(ConfigEntity $configEntity): string
+    {
+        // Read the template file containing the HTML template;
+        if (file_exists(self::HTML_TEMPLATE_FILE)) {
+            $htmlForm = file_get_contents(self::HTML_TEMPLATE_FILE);
+        }else{
+            Session::addMessageAfterRedirect(__("Failed to open setup HTML template got permission?", PLUGIN_NAME));
             Html::back();
         }
 
-        
-        echo "<pre>";
-        var_dump($this->formFields);
+        // Populate tplArray ubased on reevaluated ConfigEntity fields
+        $tplArray = [];
+        foreach($configEntity->getFields() as $configArray){
+            $items = $configArray[ConfigItem::EVAL];
+            $tplField = strtoupper($configArray[ConfigItem::FIELD]);
+            $tplArray = $this->getSelectableFormElements($configArray, $tplArray);
+
+            // Handle evaluation errors
+            if(isset($items[ConfigItem::ERRORS]) && !is_null($items[ConfigItem::ERRORS])){
+                $tplArray = array_merge($tplArray, ['{{'.$tplField."_ERROR}}"   =>  $items[ConfigItem::ERRORS],]);
+            }
+            // Fill template elements
+            $tplArray = array_merge($tplArray, [
+                '{{'.$tplField.'_FIELD}}'   =>  $configArray[ConfigItem::FIELD],
+                '{{'.$tplField.'_TITLE}}'   =>  $items[ConfigItem::FORMTITLE],
+                '{{'.$tplField.'_LABEL}}'   =>  $items[ConfigItem::FORMLABEL],
+                '{{'.$tplField.'_VALUE}}'   =>  $items[ConfigItem::VALUE],
+            ]);
+        }
+
+        // Get Generic field translation
+        $tplArray = array_merge($tplArray, $this->getGenericFormTranslations());
+      
+        if ($htmlForm = str_replace(array_keys($tplArray), array_values($tplArray), $htmlForm)) {
+            // Clean any remaining placeholders like {{ERRORS}}
+            $htmlForm = preg_replace('/{{.*}}/', '', $htmlForm);
+        }
+
         return $htmlForm;
     }
 
-    private function id(int $id): void
+    /**
+     * Returns the generic fields used in the form template
+     * including their translations if available.
+     * todo: Make foreach varnames more intuitive.
+     *
+     * @return array   - Generic form fields with their translations
+     */
+    private function getSelectableFormElements(array $configArray, array $tplArray): array
     {
-        $this->formFields['ID']  = $id;
+        $items = $configArray[ConfigItem::EVAL];
+        $tplField = strtoupper($configArray[ConfigItem::FIELD]);
+        // Start with if datatype is a boolean, generate selectable options
+        if(is_bool($items[ConfigItem::VALUE])) {
+            $tplArray['{{'.$tplField.'_SELECT}}'] = '';
+            $options = [ 1 => __('Yes', PLUGIN_NAME),
+                        0 => __('No', PLUGIN_NAME)];
+        }
+        // If fieldname is NameFormat
+        if($items[ConfigItem::FIELD] == ConfigEntity::SP_NAME_FORMAT){
+            // Generate the options array
+            $options = ['unspecified'  => __('Unspecified', PLUGIN_NAME),
+                        'emailAddress' => __('Email Address', PLUGIN_NAME),
+                        'transient'    => __('Transient', PLUGIN_NAME),
+                        'persistent'   => __('Persistent', PLUGIN_NAME)];
+        }
+        // If fieldname is AuthN context
+        if($items[ConfigItem::FIELD] == ConfigEntity::AUTHN_CONTEXT){
+            $options = ['PasswordProtectedTransport'  => __('PasswordProtectedTransport', PLUGIN_NAME),
+                        'Password'                    => __('Password', PLUGIN_NAME),
+                        'X509'                        => __('X509', PLUGIN_NAME)];
+        }
+        // If fieldname is AuthN comparison
+        if($items[ConfigItem::FIELD] == ConfigEntity::AUTHN_COMPARE){
+            $options = ['exact'  => __('Exact', PLUGIN_NAME),
+                        'minimum'=> __('Minimum', PLUGIN_NAME),
+                        'maximum'=> __('Maximum', PLUGIN_NAME),
+                        'better' => __('Better', PLUGIN_NAME)];
+        }
+        // Generate our selects if required
+        if(isset($options) && is_array($options)) {
+            foreach ($options as $value => $label) {
+                $selected = ($value == $items[ConfigItem::VALUE]) ? 'selected' : '';
+                $tplArray['{{'.$tplField.'_SELECT}}'] .= "<option value='$value' $selected>$label</option>";
+            }
+        }
+        return $tplArray;
     }
 
-    private function name(string $name): void
+    /**
+     * Returns the generic fields used in the form template
+     * including their translations if available.
+     *
+     * @return array   - Generic form fields with their translations
+     */
+    private function getGenericFormTranslations(): array
     {
-        $this->formFields['NAME']  = $name;
+        return [
+            '{{SUBMIT}}'                    =>  __('Save', PLUGIN_NAME),
+            '{{DELETE}}'                    =>  __('Delete', PLUGIN_NAME),
+            '{{CLOSE_FORM}}'                =>  Html::closeForm(false),
+            '{{GLPI_ROOTDOC}}'              =>  Plugin::getWebDir(PLUGIN_NAME, true).'/front/config.form.php',
+            '{{TITLE}}'                     =>  __('IDP configuration', PLUGIN_NAME),
+            '{{HEADER_GENERAL}}'            =>  __('General configuration items', PLUGIN_NAME),
+            '{{SECURITY_HEADER}}'           =>  __('Security configuration', PLUGIN_NAME),
+            '{{HEADER_PROVIDER}}'           =>  __('Service provider details', PLUGIN_NAME),
+            '{{HEADER_PROVIDER_CONFIG}}'    =>  __('Identity provider details', PLUGIN_NAME),
+            '{{HEADER_SECURITY}}'           =>  __('Security options', PLUGIN_NAME),
+            '{{AVAILABLE}}'                 =>  __('Available', 'phpsaml'),
+            '{{SELECTED}}'                  =>  __('Selected', 'phpsaml'),
+        ];
     }
-
 }

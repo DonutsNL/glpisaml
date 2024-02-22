@@ -39,25 +39,57 @@
  * ------------------------------------------------------------------------
  **/
 
+use GlpiPlugin\Glpisaml\Config;
 use GlpiPlugin\Glpisaml\Config\ConfigForm;
 
-// Prevent GLPI from processing the post.
+// Capture post before GLPI processes it.
 $post  = $_POST;
-$_POST = [];
 
-include_once '../../../inc/includes.php';                       //NOSONAR - by design
+// Include GLPI;
+include_once '../../../inc/includes.php';                       //NOSONAR intentional include_once;
 
-// Show nice header
-Html::header(__('Identity providers'), $_SERVER['PHP_SELF'], "config", ConfigForm::class);
 
-$plugin = new Plugin();
-if(!$plugin->isInstalled(PLUGIN_NAME) ||
-   !$plugin->isActivated(PLUGIN_NAME) ||
-   !class_exists(ConfigForm::class)   ){
+// Show header with saml config breadcrums.
+Html::header(__('Identity providers'), $_SERVER['PHP_SELF'], "config", Config::class);
+
+// Validate plugin is active and registered properly
+if(!(new Plugin())->isInstalled(PLUGIN_NAME) ||
+   !(new Plugin())->isActivated(PLUGIN_NAME) ||
+   !class_exists(ConfigForm::class)          ){
+
     Html::displayNotFoundError();
-} else {
+// Load the configform
+}else{
     $id = (isset($_GET['id']) && is_numeric($_GET['id'])) ? $_GET['id'] : -1;
-    $configForm = new ConfigForm($id, $post);
+    $configForm = new ConfigForm();
+
+    
+    if(empty($post)){
+        // Show config form.
+        $options['template'] = (isset($_GET['template']) && ctype_alpha($_GET['template'])) ? $_GET['template'] : 'default';
+        print $configForm->showForm($id, $options);
+
+    }elseif(isset($post['update'])  &&
+            isset($post['id'])      &&
+            empty($post['id'])      ){
+
+        // Add new item
+        print $configForm->addSamlConfig($post);
+
+    }elseif(isset($post['update'])  &&
+            isset($post['id'])      &&
+            $post['id'] > 0         ){
+
+        // update existing item{
+        print $configForm->updateSamlConfig($post);
+
+    }elseif(isset($post['delete'])  &&
+            $post['id'] > 0         ){
+        // delete existing item
+        print $configForm->deleteSamlConfig($post);
+    }
 }
+
+// Show GLPI footer
 Html::footer();
 

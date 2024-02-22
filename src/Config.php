@@ -55,6 +55,7 @@ use Session;
 use Migration;
 use CommonDBTM;
 use DBConnection;
+use GlpiPlugin\Glpisaml\Config\ConfigItem;
 use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 
 /**
@@ -136,46 +137,52 @@ class Config extends CommonDBTM
      */
     function rawSearchOptions(): array                          //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
     {
-        $index = 0;
-        foreach((new ConfigEntity())->getFields() as $field)
+        // Lets not be as verbose GLPI objects.
+        $index = 1;
+        foreach((new ConfigEntity())->getFields(true) as $field)
         {
+            $field['list'] = false;
            // skip the following fields
-            if($field['fieldName'] != 'id'             &&
-               $field['fieldName'] != 'is_deleted'     &&
-               $field['fieldName'] != 'date_creation'  &&
-               $field['fieldName'] != 'date_mod'       &&
-               $field['fieldName'] != 'is_active'      &&
-               $field['fieldName'] != 'comment'        ){
+            if($field[ConfigItem::FIELD] != 'id'             &&
+               $field[ConfigItem::FIELD] != 'is_deleted'     &&
+               $field[ConfigItem::FIELD] != 'date_creation'  &&
+               $field[ConfigItem::FIELD] != 'date_mod'       &&
+               $field[ConfigItem::FIELD] != 'is_active'      &&
+               $field[ConfigItem::FIELD] != 'comment'        ){
 
-                // Remap DB to Search datatypes
-                if($field['fieldType'] == 'varchar(255)' &&
-                   $field['fieldName'] == 'name'         ){
-                    $field['fieldType'] = 'itemlink';
-                }elseif(strstr($field['fieldType'], 'varchar')){
-                    $field['fieldType'] = 'string';
-                }elseif($field['fieldType'] == 'tinyint'){
-                    $field['fieldType'] = 'bool';
-                }elseif($field['fieldType'] == 'text'){
-                    $field['fieldType'] = 'text';
-                }elseif($field['fieldType'] == 'timestamp'){
-                    $field['fieldType'] = 'date';
-                }elseif(strstr($field['fieldType'], 'int')){
-                    $field['fieldType'] = 'number';
+                // Remap DB fields to Search datatypes
+                if($field[ConfigItem::FIELD] == 'name' ){
+                    // Make sure the default field is 'name'
+                    $field[ConfigItem::TYPE] = 'itemlink';
+                    $field['list']  = true;
+                    $first = 0;
+                }elseif(strstr($field[ConfigItem::TYPE], 'varchar') ){
+                    $field[ConfigItem::TYPE] = 'string';
+                }elseif($field[ConfigItem::TYPE] == 'tinyint' ){
+                    $field[ConfigItem::TYPE] = 'bool';
+                }elseif($field[ConfigItem::TYPE] == 'text' ){
+                    $field[ConfigItem::TYPE] = 'text';
+                }elseif($field[ConfigItem::TYPE] == 'timestamp' ){
+                    $field[ConfigItem::TYPE] = 'date';
+                }elseif(strstr($field[ConfigItem::TYPE], 'int') ){
+                    $field[ConfigItem::TYPE] = 'number';
                 }
 
                 // Build tab array
                 $tab[] = [
-                    'id'                 => $index,
+                    'id'                 => ($first) ? $first : $index,
                     'table'              => self::getTable(),
-                    'field'              => $field['fieldName'],
-                    'name'               => __(str_replace('_', ' ', ucfirst($field['fieldName']))),
-                    'datatype'           => $field['fieldType'],
+                    'field'              => $field[ConfigItem::FIELD],
+                    'name'               => __(str_replace('_', ' ', ucfirst($field[ConfigItem::FIELD]))),
+                    'datatype'           => $field[ConfigItem::TYPE],
+                    'list'               => $field['list'],
                 ];
             }
             $index++;
         }
         return $tab;
     }
+
 
     /**
      * Install table needed for Ticket Filter configuration dropdowns

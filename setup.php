@@ -64,16 +64,16 @@ define('PLUGIN_GLPISAML_TPLDIR', __DIR__ . '/tpl');
  * Init hooks of the plugin.
  * @return void
  */
-function plugin_init_glpisaml() : void                                                  //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+function plugin_init_glpisaml() : void                                                          //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
-    global $PLUGIN_HOOKS;                                                               //NOSONAR
+    global $PLUGIN_HOOKS;                                                                       //NOSONAR
     $plugin = new Plugin();
 
     // INCLUDE LOCALIZED COMPOSER AUTLOAD
-    include_once(__DIR__. '/vendor/autoload.php');                                      //NOSONAR - intentional include_once to load composer autoload;
+    include_once(__DIR__. '/vendor/autoload.php');                                              //NOSONAR - intentional include_once to load composer autoload;
 
     // CSRF
-    $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT][PLUGIN_NAME] = true;                           //NOSONAR - These are GLPI default variable names  
+    $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT][PLUGIN_NAME] = true;                                   //NOSONAR - These are GLPI default variable names  
 
     // CONFIG PAGES
     Plugin::registerClass(Config::class);
@@ -81,21 +81,22 @@ function plugin_init_glpisaml() : void                                          
     // Dont show config buttons if plugin is not enabled.
     if ($plugin->isInstalled(PLUGIN_NAME) || $plugin->isActivated(PLUGIN_NAME)) {
         if (Session::haveRight('config', UPDATE)) {
-            $PLUGIN_HOOKS['config_page'][PLUGIN_NAME]   = 'front/config.php';           //NOSONAR
+            $PLUGIN_HOOKS['config_page'][PLUGIN_NAME]       = 'front/config.php';               //NOSONAR
         }
-        $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME]['config'] = [Config::class, Exclude::class];
+        $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME]['config']  = [Config::class, Exclude::class];
+        $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT][PLUGIN_NAME][] = 'tpl/js/jquery.multi-select.js';
+        $PLUGIN_HOOKS[Hooks::ADD_CSS][PLUGIN_NAME][]        = 'tpl/css/configForm.css';
+
+        // USER AND JIT HANDLING
+        plugin::registerClass(User::class);
+        Plugin::registerClass(Ruleright::class);
+        Plugin::registerClass(Rulerightcollection::class);
+        $PLUGIN_HOOKS[Hooks::RULE_MATCHED][PLUGIN_NAME]     = [User::class => 'updateUser'];
+
+        // POSTINIT HOOK LOGINFLOW TRIGGER
+        Plugin::registerClass(Loginflow::class);
+        $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME]        = 'plugin_glpisaml_evalAuth';       //NOSONAR
     }
-
-    // USER AND JIT HANDLING
-    plugin::registerClass(User::class);
-    Plugin::registerClass(Ruleright::class);
-    Plugin::registerClass(Rulerightcollection::class);
-    $PLUGIN_HOOKS[Hooks::RULE_MATCHED][PLUGIN_NAME] = [User::class => 'updateUser'];
-
-    // POSTINIT HOOK LOGINFLOW TRIGGER
-    Plugin::registerClass(Loginflow::class);
-    $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME]    = 'plugin_glpisaml_evalAuth';                          //NOSONAR
-   
 }
 
 
@@ -103,7 +104,7 @@ function plugin_init_glpisaml() : void                                          
  * Returns the name and the version of the plugin
  * @return array
  */
-function plugin_version_glpisaml() : array                                              //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+function plugin_version_glpisaml() : array                                                      //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
     return [
         'name'           => 'GLPI SAML2',
@@ -128,7 +129,7 @@ function plugin_version_glpisaml() : array                                      
  * Check pre-requisites before install
  * @return boolean
  */
-function plugin_glpisaml_check_prerequisites() : bool                                   //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+function plugin_glpisaml_check_prerequisites() : bool                                           //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
    // https://github.com/pluginsGLPI/example/issues/49#issuecomment-1891552141
     if (!is_readable(__DIR__ . '/vendor/autoload.php') ||
@@ -145,7 +146,7 @@ function plugin_glpisaml_check_prerequisites() : bool                           
  * @param boolean $verbose Whether to display message on failure. Defaults to false
  * @return boolean
  */
-function plugin_glpisaml_check_config($verbose = false) : bool                          //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+function plugin_glpisaml_check_config($verbose = false) : bool                                  //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
    if ($verbose) {
       echo __('Installed / not configured', PLUGIN_NAME);
