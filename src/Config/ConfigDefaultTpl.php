@@ -25,7 +25,7 @@ class ConfigDefaultTpl {
                  ConfigEntity::SP_NAME_FORMAT   => 'emailaddress',
                  ConfigEntity::IDP_ENTITY_ID    => 'Azure SAML Entity ID string',
                  ConfigEntity::IDP_SSO_URL      => 'Azure SAML Single Sign On url',
-                 ConfigEntity::IDP_SSO_URL      => 'Azure SAML Singlo Logoff Url',
+                 ConfigEntity::IDP_SLO_URL      => 'Azure SAML Singlo Logoff Url',
                  ConfigEntity::IDP_CERTIFICATE  => 'Azure base 64 encoded public certificate string',
                  ConfigEntity::AUTHN_CONTEXT    => 'none',
                  ConfigEntity::AUTHN_COMPARE    => 'exact',

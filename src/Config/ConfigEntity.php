@@ -52,7 +52,7 @@ use GlpiPlugin\Glpisaml\Config\ConfigItem;
 /*
  * Class ConfigEntity's job is to populate, evaluate, test, normalize and
  * make sure we always return a consistant, valid, and usable instance of
- * a samlConfiguration thats either based on a template or based on an 
+ * a samlConfiguration thats either based on a template or based on an
  * existing database row
  */
 class ConfigEntity
@@ -100,6 +100,12 @@ class ConfigEntity
      */
     private $isValid            = true;
 
+
+    /**
+     * For debugging, shows how entity was populated
+     */
+    private $populationSource   = null;
+
      /**
      * Contains all field values of a certain configuration
      */
@@ -142,6 +148,7 @@ class ConfigEntity
         if($options['template'] == 'post'       &&
            array_key_exists('postData', $options)   ){
 
+            $this->populationSource = 'post';
             // Only evaluate valid Config Items;
             $configItems = $this->getConstants();
             foreach($options['postData'] as $field => $value){
@@ -154,6 +161,8 @@ class ConfigEntity
 
             // Locate our template file
             $templateClass = 'GlpiPlugin\Glpisaml\Config\Config'.$options['template'].'Tpl';
+            $this->populationSource = $templateClass;
+
             if(!class_exists($templateClass)){
                 //Fallback
                 $templateClass = 'GlpiPlugin\Glpisaml\Config\ConfigDefaultTpl';
@@ -184,6 +193,8 @@ class ConfigEntity
      */
     private function validateAndPopulateDBEntity($id): ConfigEntity
     {
+        $this->populationSource = 'Database:'.$id;
+
         // Get configuration from database;
         $config = new SamlConfig();
         if($config->getFromDB($id)) {
@@ -216,7 +227,7 @@ class ConfigEntity
      * @see https://www.mysqltutorial.org/mysql-basics/mysql-boolean/
      * @todo can we move this to ConfigItem and make it static?             //NOSONAR
      */
-    private function evaluateItem(string $field, string $value, $invalidate = false): array
+    private function evaluateItem(string $field, mixed $value, $invalidate = false): array
     {
         $evaluatedItem = (is_callable(array((new ConfigItem), $field))) ? configItem::$field($value) : ConfigItem::noMethod($field, $value);
         if(isset($evaluatedItem[ConfigItem::EVAL])      &&
@@ -226,10 +237,7 @@ class ConfigEntity
             // Pass or invalidate
             $this->fields[$field] = ($invalidate) ? '' : $value;
             // Add errormessage
-            $msg  = ['field' => (isset($field)) ? $field : 'UNDEFINED',
-                     'value' => (isset($value)) ? $value : 'UNDEFINED',
-                     'error' => (isset($evaluatedItem[ConfigItem::ERRORS])) ? $evaluatedItem[ConfigItem::ERRORS] : 'UNDEFINED'];
-            array_push($this->invalidMessages, $msg);
+            $this->invalidMessages[$field] = (isset($evaluatedItem[ConfigItem::ERRORS])) ? $evaluatedItem[ConfigItem::ERRORS] : 'UNDEFINED';
             // Mark entity invalid
             $this->isValid = false;
         }
@@ -296,6 +304,15 @@ class ConfigEntity
         return (key_exists($fieldName, $this->fields)) ? $this->fields[$fieldName] : false;
     }
 
+    /**
+     * This function will return all registered error messages
+     *
+     * @return array           - Value of the configuration or (bool) false if not found.
+     */
+    public function getErrorMessages(): array
+    {
+            return (count($this->invalidMessages) > 0) ? $this->invalidMessages : [];
+    }
 
     /**
      * Returns the validity state of the currently loaded ConfigEntity
@@ -305,16 +322,6 @@ class ConfigEntity
     public function isValid(): bool
     {
         return $this->isValid;
-    }
-
-    public function getFieldCount(): int
-    {
-        return count($this->fields);
-    }
-
-    public function validateFieldCount(): bool
-    {
-        return (count($this->getConstants()) == $this->getFieldCount()) ? true : false;
     }
 }
 

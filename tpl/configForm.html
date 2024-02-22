@@ -41,11 +41,7 @@
         <h1 class="full-width">{{TITLE}}</h1>
 
         <div class='alert alert-info mb-o rounded-0 border-top-0 border-bottom-0 border-right-0 full-width' role='alert'>
-            {{ACSURL}}
-            {{REDIRECTURL}}
-            {{IP_CERT_VALID}}
-            {{SP_CERT_VALID}}
-            {{VERSION}}
+            {{ERRORS}}
         </div>
 
         <h2 class="full-width">{{HEADER_GENERAL}}</h2>
@@ -174,11 +170,11 @@
         <h2 class="full-width">{{HEADER_SECURITY}}</h2>
 
         <p>
+            <em style="color:red">{{ENFORCE_SSO_ERROR}}</em>
             <label for="{{ENFORCE_SSO_FIELD}}">
                 {{ENFORCE_SSO_LABEL}}
                 <i class="pointer fa fa-info" title="{{ENFORCE_SSO_TITLE}}"></i>
             </label>
-            <em style="color:red">{{ENFORCE_SSO_ERROR}}</em>
             <select {{DISABLED}} name="{{ENFORCE_SSO_FIELD}}" id="{{ENFORCE_SSO_FIELD}}" title="{{ENFORCE_SSO_TITLE}}">
                 {{ENFORCE_SSO_SELECT}}
             </select>

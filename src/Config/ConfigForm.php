@@ -71,23 +71,19 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
         // Validate the configuration;
         $configEntity = new ConfigEntity(-1, ['template' => 'post', 'postData' => $postData]);
         if($configEntity->isValid()){
-            echo 'CREATE <pre>';
-            print $configEntity->validateFieldCount();
-            var_dump($configEntity);
-            die();
+            // Remove ID from the postData
+            unset($postData[ConfigEntity::ID]);
+            $config = new SamlConfig();
+            if($id = $config->add($postData)) {
+                Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.form.php?id=$id");
+            } else {
+                Session::addMessageAfterRedirect(__('Error: Unable to add new GlpiSaml configuration!', PLUGIN_NAME));
+                Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.php");
+            }
+
         }else{
             return $this->generateForm($configEntity);
         }
-       
-        /*
-        $config = new SamlConfig();
-        if($id = $config->add($postData)) {
-            Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.form.php?id=$id");
-        } else {
-            Session::addMessageAfterRedirect(__('Error: Unable to add new GlpiSaml configuration!', PLUGIN_NAME));
-            Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.php");
-        }
-        */
     }
 
     /**
@@ -97,16 +93,22 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
      * @param array $postData $_POST data from form
      * @return void -
      */
-    public function updateSamlConfig($postData) : void
+    public function updateSamlConfig($postData) : string
     {
-        $config = new SamlConfig();
-        if($config->canUpdate()       &&
-           $config->update($postData) ){
-            Session::addMessageAfterRedirect(__('Configuration updates succesfully', PLUGIN_NAME));
-            Html::back();
-        } else {
-            Session::addMessageAfterRedirect(__('Not allowed or error updating SAML configuration!', PLUGIN_NAME));
-            Html::back();
+        // Validate the configuration;
+        $configEntity = new ConfigEntity(-1, ['template' => 'post', 'postData' => $postData]);
+        if($configEntity->isValid()){
+            $config = new SamlConfig();
+            if($config->canUpdate()       &&
+               $config->update($postData) ){
+                Session::addMessageAfterRedirect(__('Configuration updates succesfully', PLUGIN_NAME));
+                Html::back();
+            } else {
+                Session::addMessageAfterRedirect(__('Not allowed or error updating SAML configuration!', PLUGIN_NAME));
+                Html::back();
+            }
+        }else{
+            return $this->generateForm($configEntity);
         }
     }
 
@@ -118,10 +120,6 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
      */
     public function deleteSamlConfig($postData) : void
     {
-        echo 'DELETE';
-        var_dump($postData);
-        die();
-        /*
         $config = new SamlConfig();
         if($config->canPurge()  &&
            $config->delete($postData)){
@@ -131,7 +129,6 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
             Session::addMessageAfterRedirect(__('Not allowed or error deleting SAML configuration!', PLUGIN_NAME));
             Html::back();
         }
-        */
     }
 
     /**
@@ -180,6 +177,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
             if(isset($items[ConfigItem::ERRORS]) && !is_null($items[ConfigItem::ERRORS])){
                 $tplArray = array_merge($tplArray, ['{{'.$tplField."_ERROR}}"   =>  $items[ConfigItem::ERRORS],]);
             }
+
             // Fill template elements
             $tplArray = array_merge($tplArray, [
                 '{{'.$tplField.'_FIELD}}'   =>  $configArray[ConfigItem::FIELD],
@@ -191,6 +189,15 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
 
         // Get Generic field translation
         $tplArray = array_merge($tplArray, $this->getGenericFormTranslations());
+
+        // Handle global errors
+        $emsgs = '';
+        if(!$configEntity->isValid()){
+            foreach($configEntity->getErrorMessages() as $message){
+                $emsgs .= ($message != 'UNDEFINED') ? $message.'<br>' : '';
+            }
+            $tplArray = array_merge($tplArray, ['{{ERRORS}}'    =>   $emsgs]);
+        }
       
         if ($htmlForm = str_replace(array_keys($tplArray), array_values($tplArray), $htmlForm)) {
             // Clean any remaining placeholders like {{ERRORS}}
@@ -203,7 +210,6 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
     /**
      * Returns the generic fields used in the form template
      * including their translations if available.
-     * todo: Make foreach varnames more intuitive.
      *
      * @return array   - Generic form fields with their translations
      */
@@ -212,10 +218,9 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
         $items = $configArray[ConfigItem::EVAL];
         $tplField = strtoupper($configArray[ConfigItem::FIELD]);
         // Start with if datatype is a boolean, generate selectable options
-        if(is_bool($items[ConfigItem::VALUE])) {
-            $tplArray['{{'.$tplField.'_SELECT}}'] = '';
+        if($configArray[ConfigItem::TYPE] == 'tinyint') {
             $options = [ 1 => __('Yes', PLUGIN_NAME),
-                        0 => __('No', PLUGIN_NAME)];
+                         0 => __('No', PLUGIN_NAME)];
         }
         // If fieldname is NameFormat
         if($items[ConfigItem::FIELD] == ConfigEntity::SP_NAME_FORMAT){
@@ -240,6 +245,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
         }
         // Generate our selects if required
         if(isset($options) && is_array($options)) {
+            $tplArray['{{'.$tplField.'_SELECT}}'] = '';
             foreach ($options as $value => $label) {
                 $selected = ($value == $items[ConfigItem::VALUE]) ? 'selected' : '';
                 $tplArray['{{'.$tplField.'_SELECT}}'] .= "<option value='$value' $selected>$label</option>";
