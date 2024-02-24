@@ -6,7 +6,7 @@
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI and the broad ammount of
- *  wishes expressed by the community. 
+ *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------

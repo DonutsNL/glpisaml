@@ -40,6 +40,8 @@
  * ------------------------------------------------------------------------
  **/
 
+// This file is included into the GLPI Plugin base class.
+
 use Plugin;
 use Session;
 use Glpi\Plugin\Hooks;
@@ -51,14 +53,18 @@ use GlpiPlugin\Glpisaml\Ruleright;
 use GlpiPlugin\Glpisaml\RulerightCollection;
 
 // Constants
-define('PLUGIN_GLPISAML_VERSION', '1.0.0');
-define('PLUGIN_GLPISAML_MIN_GLPI', '10.0.0');
-define('PLUGIN_GLPISAML_MAX_GLPI', '10.9.99');
-define('PLUGIN_NAME', 'glpisaml');
-define('PLUGIN_GLPISAML_PHPDIR', Plugin::getPhpDir(PLUGIN_NAME, true));
-define('PLUGIN_GLPISAML_WEBDIR', Plugin::getWebDir(PLUGIN_NAME, false));
-define('PLUGIN_GLPISAML_SRCDIR', __DIR__ . '/src');
-define('PLUGIN_GLPISAML_TPLDIR', __DIR__ . '/tpl');
+define('PLUGIN_GLPISAML_VERSION', '1.0.0');                                                     // GLPI SAML version
+define('PLUGIN_GLPISAML_MIN_GLPI', '10.0.0');                                                   // Min required GLPI version
+define('PLUGIN_GLPISAML_MAX_GLPI', '10.9.99');                                                  // Max GLPI compat version
+define('PLUGIN_NAME', 'glpisaml');                                                              // Plugin name
+define('PLUGIN_GLPISAML_PHPDIR', Plugin::getPhpDir(PLUGIN_NAME, true));                         // Plugin os directory
+define('PLUGIN_GLPISAML_WEBDIR', Plugin::getWebDir(PLUGIN_NAME, false));                        // Plugin web directory
+define('PLUGIN_GLPISAML_SRCDIR', __DIR__ . '/src');                                             // Location of the main classes
+define('PLUGIN_GLPISAML_TPLDIR', __DIR__ . '/tpl');                                             // Location of the templates directory
+define('PLUGIN_GLPISAML_ATOM_URL', 'https://github.com/donutsnl/Phpsaml2/releases.atom');       // Location of the repository versions
+define('PLUGIN_GLPISAML_ACS_PATH', '/front/acs.php');                                           // Location of the assertion service.
+define('PLUGIN_GLPISAML_SLO_PATH', '/front/slo.php');                                           // Location to handle logout requests
+define('PLUGIN_GLPISAML_META_PATH', '/front/meta.php');                                         // Location where to get metadata about sp.
 
 /**
  * Init hooks of the plugin.
@@ -107,7 +113,7 @@ function plugin_init_glpisaml() : void                                          
 function plugin_version_glpisaml() : array                                                      //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
     return [
-        'name'           => 'GLPI SAML2',
+        'name'           => 'GLPI SAML',
         'version'        => PLUGIN_GLPISAML_VERSION,
         'author'         => 'Chris Gralike',
         'license'        => 'GPLv2+',
@@ -131,7 +137,8 @@ function plugin_version_glpisaml() : array                                      
  */
 function plugin_glpisaml_check_prerequisites() : bool                                           //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
-   // https://github.com/pluginsGLPI/example/issues/49#issuecomment-1891552141
+    // include plugin composer
+    // https://github.com/pluginsGLPI/example/issues/49#issuecomment-1891552141
     if (!is_readable(__DIR__ . '/vendor/autoload.php') ||
         !is_file(__DIR__ . '/vendor/autoload.php')     ){
             echo 'Run composer install --no-dev in the plugin directory<br>';

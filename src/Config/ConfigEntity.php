@@ -323,5 +323,134 @@ class ConfigEntity
     {
         return $this->isValid;
     }
+
+    /**
+     * Pupulates and returns the configuration array for the PHP-saml library.
+     *
+     * @return          array   $config
+     * @since           1.0.0
+     * @example         https://github.com/SAML-Toolkits/php-saml/blob/master/settings_example.php
+     */
+    public function getPhpSamlConfig(): array
+    {
+        global $CFG_GLPI;
+        if($this->isValid()){
+
+            return ['strict'                                => $this->fields[ConfigEntity::STRICT],
+                    'debug'                                 => $this->fields[ConfigEntity::DEBUG],
+                    'baseurl'                               => null,
+
+                    // Serviceprovider config
+                    'sp' => [
+                        'entityId'                          => $CFG_GLPI['url_base'].'/',
+                        'assertionConsumerService'          => [
+                            'url'                           => $CFG_GLPI['url_base'].PLUGIN_GLPISAML_ACS_PATH,
+                        ],
+                        'singleLogoutService'               => [
+                            'url'                           => $CFG_GLPI['url_base'].PLUGIN_GLPISAML_SLO_PATH,
+                        ],
+                        'x509cert'                          => $this->fields[ConfigEntity::SP_CERTIFICATE],
+                        'privateKey'                        => $this->fields[ConfigEntity::SP_KEY],
+                        'NameIDFormat'                      => 'urn:oasis:names:tc:SAML:1.1:nameid-format:'.
+                                                                (isset($this->fields[ConfigEntity::SP_NAME_FORMAT]) ? $this->fields[ConfigEntity::SP_NAME_FORMAT]
+                                                                                                                    : 'unspecified'),
+                    ],
+
+                    // Identity provider config
+                    'idp'                                   => [
+                        'entityId'                          => $this->fields[ConfigEntity::IDP_ENTITY_ID],
+                        'singleSignOnService'               => [
+                            'url'                           => $this->fields[ConfigEntity::IDP_SSO_URL],
+                        ],
+                        'singleLogoutService'               => [
+                            'url'                           => $this->fields[ConfigEntity::IDP_SLO_URL],
+                        ],
+                        'x509cert'                          => $this->fields[ConfigEntity::IDP_CERTIFICATE],
+                    ],
+
+                    // Compress requests and responses
+                    'compress'                              => [
+                        'requests'                          => $this->fields[ConfigEntity::COMPRESS_REQ],
+                        'responses'                         => $this->fields[ConfigEntity::COMPRESS_RES],
+                    ],
+
+                    // Security configuration
+                    'security'                              => [
+                        'nameIdEncrypted'                   => $this->fields[ConfigEntity::ENCRYPT_NAMEID],
+                        'authnRequestsSigned'               => $this->fields[ConfigEntity::SIGN_AUTHN],
+                        'logoutRequestSigned'               => $this->fields[ConfigEntity::SIGN_SLO_REQ],
+                        'logoutResponseSigned'              => $this->fields[ConfigEntity::SIGN_SLO_RES],
+
+                        //'signMetadata'                    => false,
+                        //'wantMessagesSigned'              => false,
+                        //'wantAssertionsEncrypted'         => false,
+                        //'wantAssertionsSigned'            => false,
+                        //'wantNameId'                      => true,
+                        //'wantNameIdEncrypted'             => false,
+                        // Set true or don't present this parameter and you will get an AuthContext 'exact' 'urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport'
+                        // Set an array with the possible auth context values: array ('urn:oasis:names:tc:SAML:2.0:ac:classes:Password', 'urn:oasis:names:tc:SAML:2.0:ac:classes:X509'),
+                        'requestedAuthnContext'             => $this->getAuthn($this->fields[ConfigEntity::AUTHN_CONTEXT]),
+                        'requestedAuthnContextComparison'   => (isset($this->fields[ConfigEntity::AUTHN_COMPARE]) ? $this->fields[ConfigEntity::AUTHN_COMPARE] : 'exact'),
+                        'wantXMLValidation'                 => $this->fields[ConfigEntity::XML_VALIDATION],
+                        'relaxDestinationValidation'        => $this->fields[ConfigEntity::DEST_VALIDATION],
+
+                        // Algorithm that the toolkit will use on signing process. Options:
+                        //    'http://www.w3.org/2000/09/xmldsig#rsa-sha1'
+                        //    'http://www.w3.org/2000/09/xmldsig#dsa-sha1'
+                        //    'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
+                        //    'http://www.w3.org/2001/04/xmldsig-more#rsa-sha384'
+                        //    'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
+                        // Notice that sha1 is a deprecated algorithm and should not be used
+                        'signatureAlgorithm'            => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
+                        //'signatureAlgorithm' => XMLSecurityKey::RSA_SHA256,
+
+                        // Algorithm that the toolkit will use on digest process. Options:
+                        //    'http://www.w3.org/2000/09/xmldsig#sha1'
+                        //    'http://www.w3.org/2001/04/xmlenc#sha256'
+                        //    'http://www.w3.org/2001/04/xmldsig-more#sha384'
+                        //    'http://www.w3.org/2001/04/xmlenc#sha512'
+                        // Notice that sha1 is a deprecated algorithm and should not be used
+                        'digestAlgorithm'               => 'http://www.w3.org/2001/04/xmlenc#sha256',
+                        'lowercaseUrlencoding'          => $this->fields[ConfigEntity::LOWERCASE_URL],
+                    ]];
+        }else{
+            // ConfigEntity was not usable!
+            return [];
+        }
+    }
+
+    /**
+     * Calculates correct AuthN required for SAML request
+     *
+     * @return          array   $config
+     * @since           1.0.0
+     * @example         https://github.com/SAML-Toolkits/php-saml/blob/master/settings_example.php
+     */
+    private static function getAuthn($value)
+    {
+        if (preg_match('/^none,.+/i', $value)) {
+            $array  = explode(',', $value);
+            $output = array();
+            foreach ($array as $item) {
+                switch ($item) {
+                    case 'PasswordProtectedTransport':
+                        $output[] = 'urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport';
+                        break;
+                    case 'Password':
+                        $output[] = 'urn:oasis:names:tc:SAML:2.0:ac:classes:Password';
+                        break;
+                    case 'X509':
+                        $output[] = 'urn:oasis:names:tc:SAML:2.0:ac:classes:X509';
+                        break;
+                    default:
+                        $output[] = '';
+                        break;
+                }
+            }
+            return $output;
+        } else {
+            return false;
+        }
+    }
 }
 

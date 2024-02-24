@@ -224,7 +224,7 @@ class LoginState extends CommonDBTM
             ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=COMPRESSED;
             SQL;
             $DB->query($query) or die($DB->error());
-            Session::addMessageAfterRedirect("Installed: $table.");
+            Session::addMessageAfterRedirect("🆗 Installed: $table.");
         }
     }
 
@@ -237,7 +237,7 @@ class LoginState extends CommonDBTM
     public static function uninstall(Migration $migration) : void
     {
         $table = self::getTable();
-        Session::addMessageAfterRedirect("Removed: $table.");
+        Session::addMessageAfterRedirect("🆗 Removed: $table.");
         $migration->dropTable($table);
     }
     

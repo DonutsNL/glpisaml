@@ -59,20 +59,13 @@ use GlpiPlugin\Glpisaml\Config\ConfigItem;
 use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 
 /**
- * Class Handles the installation and listing of configuration front/config.php 
+ * Class Handles the installation and listing of configuration front/config.php
  * is is also the baseclass that extends the CommonDBTM GLPI object. All other
  * glpisaml config classes reference this class for CRUD operations on the config
  * database.
  */
 class Config extends CommonDBTM
 {
-
-    /**
-     * Where can we find the latest version of the plugin?
-     */
-    public const GIT_ATOM_URL  = 'https://github.com/donutsnl/Phpsaml2/releases.atom'; //NOSONAR - WIP
-
-
     /**
      * Tell DBTM to keep history
      * @var    bool     - $dohistory
@@ -97,6 +90,17 @@ class Config extends CommonDBTM
     }
 
     /**
+     * Overloads missing canDelete Setup right and returns canUpdate instead
+     * @param  void
+     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @see             - https://github.com/pluginsGLPI/example/issues/50
+     */
+    public static function canDelete(): bool
+    {
+        return static::canUpdate();
+    }
+
+    /**
      * Overloads missing canPurge Setup right and returns canUpdate instead
      * @param  void
      * @return bool     - Returns true if profile assgined Setup->Setup->Update right
@@ -114,7 +118,7 @@ class Config extends CommonDBTM
      */
     public static function getTypeName($nb = 0): string
     {
-        return __('SAML2 Providers', PLUGIN_NAME);
+        return __('SAML Id Providers', PLUGIN_NAME);
     }
 
     /**
@@ -240,7 +244,7 @@ class Config extends CommonDBTM
             ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=COMPRESSED;
             SQL;
             $DB->query($query) or die($DB->error());
-            Session::addMessageAfterRedirect("Installed: $table.");
+            Session::addMessageAfterRedirect("🆗 Installed: $table.");
         }
 
         // Debug entries Delete when implemented.
@@ -282,8 +286,8 @@ class Config extends CommonDBTM
     {
         $table = self::getTable();
         $migration->backupTables([$table]);
-        Session::addMessageAfterRedirect("Backupped: $table.");
+        Session::addMessageAfterRedirect("🆗 backup: $table.");
         $migration->dropTable($table);
-        Session::addMessageAfterRedirect("Removed: $table.");
+        Session::addMessageAfterRedirect("🆗 Removed: $table.");
     }
 }

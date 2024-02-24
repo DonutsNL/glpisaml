@@ -6,7 +6,7 @@
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI and the broad ammount of
- *  wishes expressed by the community. 
+ *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------
@@ -79,7 +79,7 @@ class Exclude extends CommonDropdown
      */
     public static function getTypeName($nb = 0) : string
     {
-        return __('SAML2 Excludes', PLUGIN_NAME);
+        return __('SAML Excludes', PLUGIN_NAME);
     }
 
     /**
@@ -133,7 +133,7 @@ class Exclude extends CommonDropdown
      */
     public static function getIcon() : string
     {
-        return 'fa-regular fa-paper-plane';
+        return 'fa-regular fa-eye-slash';
     }
 
     /**
@@ -227,15 +227,14 @@ class Exclude extends CommonDropdown
      * @return patterns              Array with all configured patterns
      * @since                        1.1.0
      */
-    public static function ProcessExcludes() : bool
+    public static function ProcessExcludes() : bool                                                         //NOSONAR - Maybe fix complexity in future.
     {
         $excludes = self::getExcludes();
         // Process configured excluded URIs and agents.
         foreach($excludes as $exclude){
-
             if (strpos($_SERVER['REQUEST_URI'], $exclude[Exclude::EXCLUDEPATH]) !== false) {
                 // Do we need to validate client agent?
-                if(!empty($exclude[Exclude::CLIENTAGENT])                                        &&
+                if(!empty($exclude[Exclude::CLIENTAGENT])                                        &&         //NOSONAR - Maybe fix verbosity in future.
                    strpos($_SERVER['HTTP_USER_AGENT'], $exclude[Exclude::CLIENTAGENT]) !== false ){
                     return ($exclude[Exclude::ACTION]) ? true : false;
                 }else{
@@ -280,7 +279,7 @@ class Exclude extends CommonDropdown
             ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=COMPRESSED;
             SQL;
             $DB->query($query) or die($DB->error());
-            Session::addMessageAfterRedirect("Installed: $table.");
+            Session::addMessageAfterRedirect("🆗 Installed: $table.");
             // insert default excludes;
             $query = <<<SQL
             INSERT INTO `$table`(name, comment, action, ClientAgent, ExcludePath)
@@ -315,7 +314,7 @@ class Exclude extends CommonDropdown
             VALUES('Bypass all fusioninventory files', '', '1', '', '/fusioninventory/');
             SQL;
             $DB->query($query) or die($DB->error());
-            Session::addMessageAfterRedirect("Inserted exclude defaults.");
+            Session::addMessageAfterRedirect("🆗 Inserted exclude defaults.");
         }
     }
 
@@ -329,7 +328,7 @@ class Exclude extends CommonDropdown
     public static function uninstall(Migration $migration) : void
     {
         $table = self::getTable();
-        Session::addMessageAfterRedirect("Removed: $table");
+        Session::addMessageAfterRedirect("🆗 Removed: $table");
         $migration->dropTable($table);
     }
 }
