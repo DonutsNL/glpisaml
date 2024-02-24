@@ -156,7 +156,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
      * @param ConfigEntity $configEntity      ID of the item
      * @return string   $htmlForm             raw html form
      */
-    private function generateForm(ConfigEntity $configEntity): string
+    private function generateForm(ConfigEntity $configEntity): string           //NOSONAR - Maybe fix complexity in the future.
     {
         // Read the template file containing the HTML template;
         if (file_exists(self::HTML_TEMPLATE_FILE)) {
@@ -174,10 +174,25 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
             $tplArray = $this->getSelectableFormElements($configArray, $tplArray);
 
             // Handle evaluation errors
-            if(isset($items[ConfigItem::ERRORS]) && !is_null($items[ConfigItem::ERRORS])){
+            if(isset($items[ConfigItem::ERRORS])   &&
+               !is_null($items[ConfigItem::ERRORS])){
                 $tplArray = array_merge($tplArray, ['{{'.$tplField."_ERROR}}"   =>  $items[ConfigItem::ERRORS],]);
             }
 
+            // Handle validations (warning conditions)
+            if(isset($items[ConfigItem::VALIDATE]) && !is_null($items[ConfigItem::VALIDATE])){
+                if(is_array($items[ConfigItem::VALIDATE]['validations'])){
+                    $msg = '';
+                    foreach($items[ConfigItem::VALIDATE]['validations'] as $value) {
+                        $msg .= $value . '<br>';
+                    }
+                    $tplArray = array_merge($tplArray, ['{{'.$tplField."_VALIDATE}}"   =>  $msg,]);
+                }else{
+                    $tplArray = array_merge($tplArray, ['{{'.$tplField."_VALIDATE}}"   =>  $items[ConfigItem::VALIDATE]['validations'],]);
+                }
+            }
+
+            
             // Fill template elements
             $tplArray = array_merge($tplArray, [
                 '{{'.$tplField.'_FIELD}}'   =>  $configArray[ConfigItem::FIELD],

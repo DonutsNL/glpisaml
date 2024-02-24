@@ -64,6 +64,7 @@ class ConfigItem                                                        //NOSONA
     public const RICHVALUE  = 'richvalue';
     public const EVAL       = 'eval';
     public const ERRORS     = 'errors';
+    public const VALIDATE   = 'validate';                               // Could either be single validation or array
     public const CONSTANT   = 'itemconstant';
     public const FORMLABEL  = 'formlabel';
     public const FORMTITLE  = 'formtitle';
@@ -76,7 +77,7 @@ class ConfigItem                                                        //NOSONA
                 self::FIELD     => $field,
                 self::VALIDATOR => __method__,
                 self::EVAL      => false,
-                self::ERRORS    => __("Undefined or no type validation found in ConfigValidate for item: $field", PLUGIN_NAME)];
+                self::ERRORS    => __("⭕ Undefined or no type validation found in ConfigValidate for item: $field", PLUGIN_NAME)];
     }
 
     public static function id(mixed $var): array
@@ -86,7 +87,7 @@ class ConfigItem                                                        //NOSONA
         if($var               &&
             $var != -1        &&
             !is_numeric($var) ){
-            $error = __('ID must be a positive nummeric value!');
+            $error = __('⭕ ID must be a positive nummeric value!');
         }
 
         return [self::FORMLABEL => __('Unique id for a Idp configuration', PLUGIN_NAME),
@@ -107,7 +108,7 @@ class ConfigItem                                                        //NOSONA
                 self::VALUE     => (string) $var,
                 self::FIELD     => __function__,
                 self::VALIDATOR => __method__,
-                self::ERRORS    => ($var) ? null : __('Name is a required field', PLUGIN_NAME)];
+                self::ERRORS    => ($var) ? null : __('⭕ Name is a required field', PLUGIN_NAME)];
     }
 
     public static function conf_domain(mixed $var): array                   //NOSONAR
@@ -118,19 +119,19 @@ class ConfigItem                                                        //NOSONA
                 self::VALUE     => (string) $var,
                 self::FIELD     => __function__,
                 self::VALIDATOR => __method__,
-                self::ERRORS    => ($var) ? null : __('Configuration domain is a required field', PLUGIN_NAME)];
+                self::ERRORS    => ($var) ? null : __('⭕ Configuration domain is a required field', PLUGIN_NAME)];
     }
 
+    // TODO - WIP
     public static function sp_certificate(mixed $var): array                //NOSONAR
     {
-        // TODO: Create nice check and feedback in config form
-        self::parseX509Certificate($var);  
         return [self::FORMLABEL => __('Service provider X509 certificate', PLUGIN_NAME),
                 self::FORMTITLE => __('base64 encoded x509 certificate', PLUGIN_NAME),
                 self::EVAL      => self::VALID,
                 self::VALUE     => $var,
                 self::FIELD     => __function__,
-                self::VALIDATOR => __method__,];
+                self::VALIDATOR => __method__,
+                self::VALIDATE  => self::parseX509Certificate($var)];
     }
 
     public static function sp_private_key(mixed $var): array                //NOSONAR
@@ -162,7 +163,7 @@ class ConfigItem                                                        //NOSONA
                 self::VALUE  => (string) $var,
                 self::FIELD  => __function__,
                 self::VALIDATOR => __method__,
-                self::ERRORS => ($var) ? null : __('Identity provider entity id is a required field', PLUGIN_NAME)];
+                self::ERRORS => ($var) ? null : __('⭕ Identity provider entity id is a required field', PLUGIN_NAME)];
     }
 
     public static function idp_single_sign_on_service(mixed $var): array    //NOSONAR
@@ -170,7 +171,7 @@ class ConfigItem                                                        //NOSONA
         $error = false;
         $options = [FILTER_FLAG_PATH_REQUIRED];
         if(!filter_var($var, FILTER_VALIDATE_URL, $options)){
-            $error = __('Invalid Idp SSO URL, use: scheme://host.domain.tld/path/', PLUGIN_NAME);
+            $error = __('⭕ Invalid Idp SSO URL, use: scheme://host.domain.tld/path/', PLUGIN_NAME);
         }
         
 
@@ -188,7 +189,7 @@ class ConfigItem                                                        //NOSONA
         $error = false;
         $options = [FILTER_FLAG_PATH_REQUIRED];
         if(!filter_var($var, FILTER_VALIDATE_URL, $options)){
-            $error = __('Invalid Idp SLO URL, use: scheme://host.domain.tld/path/', PLUGIN_NAME);
+            $error = __('⭕ Invalid Idp SLO URL, use: scheme://host.domain.tld/path/', PLUGIN_NAME);
         }
 
         return [self::FORMLABEL => __('Identity provider logout URL', PLUGIN_NAME),
@@ -199,15 +200,24 @@ class ConfigItem                                                        //NOSONA
                 self::VALIDATOR => __method__,
                 self::ERRORS    => ($error) ? $error : null,];
     }
+    // TODO - WIP
     public static function idp_certificate(mixed $var): array               //NOSONAR
     {
+        // Is a required field!
+        $e = false;
+        if(($certificate = self::parseX509Certificate($var)) &&
+           (!array_key_exists('subject', $certificate))      ){
+            $e = __('⭕ Valid Idp X509 certificate required! (base64 encoded)', PLUGIN_NAME);
+        }
+
         return [self::FORMLABEL => __('The required Identity Provider certificate', PLUGIN_NAME),
                 self::FORMTITLE => __('Identity provider X509 certificate', PLUGIN_NAME),
-                self::EVAL      => ($var) ? self::VALID : self::INVALID,
+                self::EVAL      => ($e) ? self::INVALID : self::VALID,
                 self::VALUE     => (string) $var,
                 self::FIELD     => __function__,
                 self::VALIDATOR => __method__,
-                self::ERRORS    => ($var) ? null : __('Identity provider certificate is a required field', PLUGIN_NAME)];
+                self::ERRORS    => ($e) ? $e : null,
+                self::VALIDATE  => self::parseX509Certificate($var)];
     }
 
     public static function requested_authn_context(mixed $var): array       //NOSONAR
@@ -218,7 +228,7 @@ class ConfigItem                                                        //NOSONA
                 self::VALUE     => (string) $var,
                 self::FIELD     => __function__,
                 self::VALIDATOR => __method__,
-                self::ERRORS    => ($var) ? null : __('Requested authN context is a required field', PLUGIN_NAME)];
+                self::ERRORS    => ($var) ? null : __('⭕ Requested authN context is a required field', PLUGIN_NAME)];
     }
 
     public static function requested_authn_context_comparison(mixed $var): array  //NOSONAR
@@ -229,7 +239,7 @@ class ConfigItem                                                        //NOSONA
                 self::VALUE     => (string) $var,
                 self::FIELD     => __function__,
                 self::VALIDATOR => __method__,
-                self::ERRORS    => ($var) ? null : __('Requested authN context comparison is a required field', PLUGIN_NAME)];
+                self::ERRORS    => ($var) ? null : __('⭕ Requested authN context comparison is a required field', PLUGIN_NAME)];
     }
 
     public static function conf_icon(mixed $var): array                     //NOSONAR
@@ -426,14 +436,14 @@ class ConfigItem                                                        //NOSONA
     public static function handleAsBool(mixed $var, $field = null): array
     {
         // Default to false if no or an impropriate value is provided.
-        $error = (!empty($var) && !preg_match('/[0-1]/', $var)) ? __("$field can only be 1 or 0", PLUGIN_NAME) : null;
+        $error = (!empty($var) && !preg_match('/[0-1]/', $var)) ? __("⭕ $field can only be 1 or 0", PLUGIN_NAME) : null;
 
         return [self::EVAL   => (is_numeric($var)) ? self::VALID : self::INVALID,
                 self::VALUE  => (!$error) ? $var : 0,
                 self::ERRORS => $error];
     }
 
-    public static function parseX509Certificate(string $certificate): array
+    public static function parseX509Certificate(string $certificate): array|bool         //NOSONAR - Maybe fix complexity in the future
     {
         // Try to parse the reconstructed certificate.
         if (function_exists('openssl_x509_parse')) {
@@ -442,27 +452,26 @@ class ConfigItem                                                        //NOSONA
                 $t = (array_key_exists('validTo', $parsedCertificate)) ? DateTimeImmutable::createFromFormat("ymdHisT", $parsedCertificate['validTo']) : '';
                 $f = (array_key_exists('validFrom', $parsedCertificate)) ? DateTimeImmutable::createFromFormat("ymdHisT", $parsedCertificate['validFrom']) : '';
                 $aged = $n->diff($t);
-                $born = $n->diff($f);
-                $cn= (array_key_exists('subject', $parsedCertificate) && array_key_exists('CN', $parsedCertificate['subject'])) ? $parsedCertificate['subject']['CN'] : '';
+                $born = $f->diff($n);
+                $cn= $parsedCertificate['subject']['CN'];
                 // Check Age
                 $aged = $aged->format('%R%a');
                 if(strpos($aged,'-') !== false){
-                    $validations['validTo'] = __("Warning, certificate with Common Name (CN): $cn is expired: $aged days", PLUGIN_NAME);
+                    $validations['validTo'] = __("⚠️ Warning, certificate with Common Name (CN): $cn is expired: $aged days", PLUGIN_NAME);
                 }
                 $born = $born->format('%R%a');
                 // Check issue date
                 if(strpos($born,'-') !== false){
-                    $validations['validFrom'] = __("Warning, certificate with Common Name (CN): $cn is not valid for: $born days", PLUGIN_NAME);
+                    $validations['validFrom'] = __("⚠️ Warning, certificate with Common Name (CN): $cn issued in the future ($born days)", PLUGIN_NAME);
                 }
-
-                var_dump($validations);
-
+                $parsedCertificate['validations'] = $validations;
                 return $parsedCertificate;
             }else{
-                return ['warning'   => __('Could not parse certificate')];
+                return ['validations'   => __('⚠️ Could not parse, or no valid X509 certificate provided')];
             }
         } else {
-            return ['warning'   => __('OpenSSL extention not available', PLUGIN_NAME)];
+            // Cant parse certificate OpenSSL not availble!
+            return false;
         }
     }
 
