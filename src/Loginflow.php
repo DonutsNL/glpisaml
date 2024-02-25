@@ -100,6 +100,7 @@ class Loginflow extends CommonDBTM
         /**
          * Responsible to generate a login screen using available idp
          * configurations.
+         * @see https://github.com/DonutsNL/glpisaml/issues/7
          * @param void
          * @return string   html form for the login screen
          * @since 1.0.0
