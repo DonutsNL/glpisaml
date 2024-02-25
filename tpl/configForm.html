@@ -77,11 +77,13 @@
         
         <p class="full-width">
             <em style="color:rgb(255, 153, 0)">{{SP_CERTIFICATE_VALIDATE}}</em>
+            <em style="color:rgba(4, 145, 46)">{{SP_CERTIFICATE_CN}}</em>
             <label for="{{SP_CERTIFICATE_FIELD}}">
                 {{SP_CERTIFICATE_LABEL}}
                 <i class="pointer fa fa-info" title="{{SP_CERTIFICATE_TITLE}}"></i>
             </label>
             <textarea {{DISABLED}} name="{{SP_CERTIFICATE_FIELD}}" cols="50" rows="10" id="{{SP_CERTIFICATE_FIELD}}" spaceholder="" title="{{SP_CERTIFICATE_TITLE}}">{{SP_CERTIFICATE_VALUE}}</textarea>
+            
         </p>
 
         <p class="full-width">
@@ -103,7 +105,7 @@
                 {{SP_NAMEID_FORMAT_SELECT}}
             </select>
         </p>
-        <br />
+        <p><br>&nbsp;<br></p>
         <h2 class="full-width">{{HEADER_PROVIDER_CONFIG}}</h2>
         
         <p class="full-width">
@@ -136,11 +138,13 @@
         <p class="full-width">
             <em style="color:rgb(255, 153, 0)">{{IDP_CERTIFICATE_VALIDATE}}</em>  
             <em style="color:red">{{IDP_CERTIFICATE_ERROR}}</em>
+            <em style="color:rgba(4, 145, 46)">{{IDP_CERTIFICATE_CN}}</em>
             <label for="{{IDP_CERTIFICATE_FIELD}}">
                 {{IDP_CERTIFICATE_LABEL}}
                 <i class="pointer fa fa-info" title="{{IDP_CERTIFICATE_TITLE}}"></i>
             </label>
             <textarea {{DISABLED}} name="{{IDP_CERTIFICATE_FIELD}}" cols="50" rows="10" id="{{IDP_CERTIFICATE_FIELD}}" spaceholder="" title="{{IDP_CERTIFICATE_TITLE}}">{{IDP_CERTIFICATE_VALUE}}</textarea>
+            
         </p>
 
         <p class="full-width">

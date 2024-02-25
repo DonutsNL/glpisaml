@@ -58,6 +58,8 @@
 use Session;
 use Migration;
 use CommonDBTM;
+use GlpiPlugin\Glpisaml\Config;
+use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 use GlpiPlugin\Glpisaml\Exclude;
 use GlpiPlugin\Glpisaml\LoginState;
 use OneLogin\Saml2\Auth;
@@ -65,6 +67,8 @@ use OneLogin\Saml2\Settings;
 
 class Loginflow extends CommonDBTM
 {
+
+        public const HTML_TEMPLATE_FILE = PLUGIN_GLPISAML_TPLDIR.'/loginScreen.html';
         /**
          * Evaluates the session and determins if login/logout is required
          * Called by post_init hook via function in hooks.php
@@ -74,7 +78,10 @@ class Loginflow extends CommonDBTM
          */
         public function evalAuth()  : bool
         {
-
+            if(isset($_GET['SAML'])){
+                print "<h1> WE GOT THE LOGIN REQUEST LETS PROCESS</h1>";
+                var_dump($_GET);
+            }
             // Evaluate current login state
             $state = new Loginstate();
             if ($state->isAuthenticated()) {
@@ -87,7 +94,44 @@ class Loginflow extends CommonDBTM
                 return true;
             }
 
-        return true;
+            return true;
+        }
+
+        /**
+         * Responsible to generate a login screen using available idp
+         * configurations.
+         * @param void
+         * @return string   html form for the login screen
+         * @since 1.0.0
+         */
+        public function showLoginScreen(): bool
+        {
+            // Fetch the global DB object;
+            global $DB;
+
+            // Fetch the loginScreen template (replace with TWIG in the future)
+            if (file_exists(self::HTML_TEMPLATE_FILE)) {
+                $htmlForm = file_get_contents(self::HTML_TEMPLATE_FILE);
+            }else{
+                // If no template, fail directly
+                Session::addMessageAfterRedirect(__('GLPI SAML: unable to load loginScreen template file', PLUGIN_NAME));
+                return false;
+            }
+
+            // Fetch the configuration options and generate the buttons;
+            $tplArray['{{LOGIN_BUTTONS}}'] = '';
+            foreach($DB->request(['FROM' => (new Config())::getTable()]) as $key => $value)
+            {
+                $tplArray['{{LOGIN_BUTTONS}}'] .= '<a class="list-group-item d-flex flex-column" onclick="window.location.href=\'?SAML='.$value[ConfigEntity::ID].'\'" title="phpSaml">
+                                                   <i class="'.$value[ConfigEntity::CONF_ICON].'"></i><span>'.$value[ConfigEntity::NAME].'</span></a>';
+            }
+
+            if ($htmlForm = str_replace(array_keys($tplArray), array_values($tplArray), $htmlForm)) {
+                // Clean any remaining placeholders like {{ERRORS}}
+                $htmlForm = preg_replace('/{{.*}}/', '', $htmlForm);
+            }
+
+            print $htmlForm;
         }
 
 }

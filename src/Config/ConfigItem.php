@@ -467,7 +467,7 @@ class ConfigItem                                                        //NOSONA
                 $parsedCertificate['validations'] = $validations;
                 return $parsedCertificate;
             }else{
-                return ['validations'   => __('⚠️ Could not parse, or no valid X509 certificate provided')];
+                return ['validations'   => __('⚠️ No valid X509 certificate found')];
             }
         } else {
             // Cant parse certificate OpenSSL not availble!

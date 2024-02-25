@@ -54,11 +54,25 @@ function plugin_glpisaml_getDropdown() : array                                  
    return [Exclude::class => __("SAML exclusions", PLUGIN_NAME)];
 }
 
+/**
+ * function to inject the loginFlow logic
+ * @return void
+ */
 function plugin_glpisaml_evalAuth() : void                                          //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
     // Call the evalAuth hook;
-    $flow = new Loginflow();
-    $flow->evalAuth();
+    $loginFlow = new Loginflow();
+    $loginFlow->evalAuth();
+}
+
+/**
+ * function to inject the loginflow show loginform.
+ * @return void
+ */
+function plugin_glpisaml_displaylogin() : void                                      //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
+{
+    // Call the showLoginScreen method
+    (new Loginflow())->showLoginScreen();
 }
 
 

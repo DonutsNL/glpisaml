@@ -190,9 +190,11 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
                 }else{
                     $tplArray = array_merge($tplArray, ['{{'.$tplField."_VALIDATE}}"   =>  $items[ConfigItem::VALIDATE]['validations'],]);
                 }
+                if(strlen($items[ConfigItem::VALIDATE]['subject']['CN']) > 0){
+                    $tplArray = array_merge($tplArray, ['{{'.$tplField."_CN}}"   =>  '🆗'.$items[ConfigItem::VALIDATE]['subject']['CN'],]);
+                }
             }
 
-            
             // Fill template elements
             $tplArray = array_merge($tplArray, [
                 '{{'.$tplField.'_FIELD}}'   =>  $configArray[ConfigItem::FIELD],
@@ -283,7 +285,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
             '{{CLOSE_FORM}}'                =>  Html::closeForm(false),
             '{{GLPI_ROOTDOC}}'              =>  Plugin::getWebDir(PLUGIN_NAME, true).'/front/config.form.php',
             '{{TITLE}}'                     =>  __('IDP configuration', PLUGIN_NAME),
-            '{{HEADER_GENERAL}}'            =>  __('General configuration items', PLUGIN_NAME),
+            '{{HEADER_GENERAL}}'            =>  __('Login screen', PLUGIN_NAME),
             '{{SECURITY_HEADER}}'           =>  __('Security configuration', PLUGIN_NAME),
             '{{HEADER_PROVIDER}}'           =>  __('Service provider details', PLUGIN_NAME),
             '{{HEADER_PROVIDER_CONFIG}}'    =>  __('Identity provider details', PLUGIN_NAME),

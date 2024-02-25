@@ -102,6 +102,9 @@ function plugin_init_glpisaml() : void                                          
         // POSTINIT HOOK LOGINFLOW TRIGGER
         Plugin::registerClass(Loginflow::class);
         $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME]        = 'plugin_glpisaml_evalAuth';       //NOSONAR
+
+        // HOOK THE LOGIN SCREEN
+        $PLUGIN_HOOKS[Hooks::DISPLAY_LOGIN][PLUGIN_NAME]     = 'plugin_glpisaml_displaylogin';
     }
 }
 
