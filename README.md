@@ -3,6 +3,11 @@ This is a rewrite of the broadly used phpsaml plugin created by Derrick Smith. P
 
 Rewrite of phpSaml plugin by Derrick Smith with: PHP8 support, GLPI 10+ support, Using GLPI core objects where possible, PSR4 support, Concern based class structures, Focus on code readability, address SONAR LINTING issues, Improve community support, Composer support for updating 3rd party SAML and XML libraries, Introduce discord support channel, Support multiple IDPs, support rule based JIT usercreation.
 
+# Support
+Want to support my work? 
+Star my repo, and I just love coffee: https://www.buymeacoffee.com/donutsnl
+
+
 # Contribute
 Collaboration and diverse minds help create great tools. Want to contribute, you are more than welcome.** Got coding experience**: ask in our discord to be added to the project as collaborator, create a copy/branch, add your code or improvements, create a pullrequest. **No coding experience**: ask in our discord to be added to the project as collaborator, download the latest (not yet functional) version and participate in testing and providing early feedback or help me write user manuals on our wiki collaborator role.
 
@@ -24,6 +29,8 @@ Collaboration and diverse minds help create great tools. Want to contribute, you
 # Credits
 Special credits go to:
 - Derrick Smith (creating the initial version PHPSaml)
+- Raul, @gambware for buying me coffee
+- 
 
 # Get an idea where im going with this:
 https://github.com/DonutsNL/phpsaml2/wiki/Plugin-Logic-and-Structure-Scratchboard
