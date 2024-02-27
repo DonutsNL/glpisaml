@@ -8,11 +8,12 @@ Want to support the work and focus?
 Star my repo, and I just love coffee: https://www.buymeacoffee.com/donutsnl
 
 
-# Contribute
+# Contribute, ideas and help?
+Join our discord at: [https://discord.gg/35tkHxHg](https://discord.gg/yKZB7VQUk6)
+
 Collaboration and diverse minds help create great tools. Want to contribute, you are more than welcome.** Got coding experience**: ask in our discord to be added to the project as collaborator, create a copy/branch, add your code or improvements, create a pullrequest. **No coding experience**: ask in our discord to be added to the project as collaborator, download the latest (not yet functional) version and participate in testing and providing early feedback or help me write user manuals on our wiki collaborator role.
 
 **If you want to code, test or write:**
-- Join our discord at: [https://discord.gg/35tkHxHg](https://discord.gg/yKZB7VQUk6)
 - Make sure you download the plugin into the 'GLPI_HOME\marketplace\glpisaml\' folder.
 - Make sure not to use a production environment for testing!
 - Please create issues if it concerns the code or functionality of the plugin.
