@@ -18,6 +18,7 @@ Collaboration and diverse minds help create great tools. Want to contribute, you
 - Make sure not to use a production environment for testing!
 - Please create issues if it concerns the code or functionality of the plugin.
 - Only code whats in the issue assigned to you.
+- [Follow PSR where possible](https://www.php-fig.org/psr/).
 - Uncertain as a coder? Dont worry, just code, follow the feedback, watch you PR being merged.
 - Please use discord for all other stuff.
 - Contributed, but not 'yet' mentioned in our hall of fame, leave a PM in discord.
