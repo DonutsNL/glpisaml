@@ -29,7 +29,7 @@ Collaboration and diverse minds help create great tools. Want to contribute, you
 # Credits
 Special credits go to:
 - Derrick Smith (creating the initial version PHPSaml)
-- Raul, @gambware for buying me coffee
+- Raul, @gambware for their support to the OSS community (& buying me coffee), cheers!
 - 
 
 # Get an idea where im going with this:
