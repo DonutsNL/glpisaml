@@ -38,13 +38,17 @@ form#phpsaml_config select {
     font-weight: bold;
     padding: 5px;
     margin-bottom: 10px;
-    border-bottom:1px solid #000;
 }
 
 .phpsaml_config_wrapper form {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: 5px;
+}
+
+.fill{
+    height: 100%;
+    min-height:100%;
 }
 
 .phpsaml_config_wrapper form label {

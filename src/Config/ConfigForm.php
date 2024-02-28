@@ -149,6 +149,50 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
         }
     }
 
+    private function generateTwigForm(ConfigEntity $configEntity)
+    {
+        // Define static field translations
+        $tplVars = [
+            'submit'                    =>  __('Save', PLUGIN_NAME),
+            'delete'                    =>  __('Delete', PLUGIN_NAME),
+            'close_form'                =>  Html::closeForm(false),
+            'glpi_rootdoc'              =>  Plugin::getWebDir(PLUGIN_NAME, true).'/front/config.form.php',
+            'title'                     =>  __('IDP configuration', PLUGIN_NAME),
+            'header_general'            =>  __('General', PLUGIN_NAME),
+            'header_security'           =>  __('Security', PLUGIN_NAME),
+            'header_provider'           =>  __('Service provider', PLUGIN_NAME),
+            'header_idp'                =>  __('Identity provider', PLUGIN_NAME),
+            'header_logging'            =>  __('Logging', PLUGIN_NAME),
+            'header_transit'            =>  __('Transit', PLUGIN_NAME),
+            'available'                 =>  __('Available', 'phpsaml'),
+            'selected'                  =>  __('Selected', 'phpsaml'),
+            'inputfields'               =>  $configEntity->getFields(),
+            'inputOptionsBool'          =>  [ 1                             => __('Yes', PLUGIN_NAME),
+                                              0                             => __('No', PLUGIN_NAME)],
+            'inputOptionsNameFormat'    =>  ['unspecified'                  => __('Unspecified', PLUGIN_NAME),
+                                             'emailAddress'                 => __('Email Address', PLUGIN_NAME),
+                                             'transient'                    => __('Transient', PLUGIN_NAME),
+                                             'persistent'                   => __('Persistent', PLUGIN_NAME)],
+            'inputOptionsAuthnContext'  =>  ['PasswordProtectedTransport'   => __('PasswordProtectedTransport', PLUGIN_NAME),
+                                             'Password'                     => __('Password', PLUGIN_NAME),
+                                             'X509'                         => __('X509', PLUGIN_NAME)],
+            'inputOptionsAuthnCompare'  =>  ['exact'                        => __('Exact', PLUGIN_NAME),
+                                             'minimum'                      => __('Minimum', PLUGIN_NAME),
+                                             'maximum'                      => __('Maximum', PLUGIN_NAME),
+                                             'better'                       => __('Better', PLUGIN_NAME)],
+        ];
+
+        //echo "<pre>";
+        //var_dump($tplVars);
+        
+        // Render twig template
+        $loader = new \Twig\Loader\FilesystemLoader(PLUGIN_GLPISAML_TPLDIR);
+        $twig = new \Twig\Environment($loader);
+        $template = $twig->load('configForm.html.twig');
+        echo $template->render($tplVars);
+        exit;
+    }
+
 
     /**
      * Generate configuration form based on provided ConfigEntity
@@ -158,6 +202,9 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
      */
     private function generateForm(ConfigEntity $configEntity): string           //NOSONAR - Maybe fix complexity in the future.
     {
+        // Overrule with twig config.
+        $this->generateTwigForm($configEntity);
+
         // Read the template file containing the HTML template;
         if (file_exists(self::HTML_TEMPLATE_FILE)) {
             $htmlForm = file_get_contents(self::HTML_TEMPLATE_FILE);
@@ -168,6 +215,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
 
         // Populate tplArray ubased on reevaluated ConfigEntity fields
         $tplArray = [];
+        $tplVars = []; // Twig
         foreach($configEntity->getFields() as $configArray){
             $items = $configArray[ConfigItem::EVAL];
             $tplField = strtoupper($configArray[ConfigItem::FIELD]);

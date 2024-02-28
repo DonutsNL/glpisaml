@@ -68,71 +68,62 @@ use OneLogin\Saml2\Settings;
 class Loginflow extends CommonDBTM
 {
 
-        public const HTML_TEMPLATE_FILE = PLUGIN_GLPISAML_TPLDIR.'/loginScreen.html';
-        /**
-         * Evaluates the session and determins if login/logout is required
-         * Called by post_init hook via function in hooks.php
-         * @param void
-         * @return boolean
-         * @since 1.0.0
-         */
-        public function evalAuth()  : bool
-        {
-            if(isset($_GET['SAML'])){
-                print "<h1> WE GOT THE LOGIN REQUEST LETS PROCESS</h1>";
-                var_dump($_GET);
-            }
-            // Evaluate current login state
-            $state = new Loginstate();
-            if ($state->isAuthenticated()) {
-                return true;
-            }
-
-            // Dont peform auth for CLI calls.
-            if (PHP_SAPI === 'cli'         ||
-                Exclude::ProcessExcludes() ){
-                return true;
-            }
-
+    public const HTML_TEMPLATE_FILE = PLUGIN_GLPISAML_TPLDIR.'/loginScreen.html';
+    /**
+     * Evaluates the session and determins if login/logout is required
+     * Called by post_init hook via function in hooks.php
+     * @param void
+     * @return boolean
+     * @since 1.0.0
+     */
+    public function evalAuth()  : bool
+    {
+        if(isset($_GET['SAML'])){
+            print "<h1> WE GOT THE LOGIN REQUEST LETS PROCESS</h1>";
+            var_dump($_GET);
+        }
+        // Evaluate current login state
+        $state = new Loginstate();
+        if ($state->isAuthenticated()) {
             return true;
         }
 
-        /**
-         * Responsible to generate a login screen using available idp
-         * configurations.
-         * @see https://github.com/DonutsNL/glpisaml/issues/7
-         * @param void
-         * @return string   html form for the login screen
-         * @since 1.0.0
-         */
-        public function showLoginScreen(): bool
-        {
-            // Fetch the global DB object;
-            global $DB;
-
-            // Fetch the loginScreen template (replace with TWIG in the future)
-            if (file_exists(self::HTML_TEMPLATE_FILE)) {
-                $htmlForm = file_get_contents(self::HTML_TEMPLATE_FILE);
-            }else{
-                // If no template, fail directly
-                Session::addMessageAfterRedirect(__('GLPI SAML: unable to load loginScreen template file', PLUGIN_NAME));
-                return false;
-            }
-
-            // Fetch the configuration options and generate the buttons;
-            $tplArray['{{LOGIN_BUTTONS}}'] = '';
-            foreach($DB->request(['FROM' => (new Config())::getTable()]) as $key => $value)
-            {
-                $tplArray['{{LOGIN_BUTTONS}}'] .= '<a class="list-group-item d-flex flex-column" onclick="window.location.href=\'?SAML='.$value[ConfigEntity::ID].'\'" title="phpSaml">
-                                                   <i class="'.$value[ConfigEntity::CONF_ICON].'"></i><span>'.$value[ConfigEntity::NAME].'</span></a>';
-            }
-
-            if ($htmlForm = str_replace(array_keys($tplArray), array_values($tplArray), $htmlForm)) {
-                // Clean any remaining placeholders like {{ERRORS}}
-                $htmlForm = preg_replace('/{{.*}}/', '', $htmlForm);
-            }
-
-            print $htmlForm;
+        // Dont peform auth for CLI calls.
+        if (PHP_SAPI === 'cli'         ||
+            Exclude::ProcessExcludes() ){
+            return true;
         }
+
+        return true;
+    }
+
+    /**
+     * Responsible to generate a login screen using available idp
+     * configurations.
+     * @see https://github.com/DonutsNL/glpisaml/issues/7
+     * @param void
+     * @return string   html form for the login screen
+     * @since 1.0.0
+     */
+    public function showLoginScreen(): void
+    {
+        // Define static translatable elements
+        $tplvars['header']     = __('Connect with an external provider', PLUGIN_NAME);
+        $tplvars['noconfig']   = __('No saml configuration found',PLUGIN_NAME);
+
+        // Fetch the global DB object;
+        global $DB;
+        foreach($DB->request(['FROM' => (new Config())::getTable()]) as $value)
+        {
+            $tplvars['buttons'][] = ['id'      => $value[ConfigEntity::ID],
+                                     'icon'    => $value[ConfigEntity::CONF_ICON],
+                                     'name'    => $value[ConfigEntity::NAME]];
+        }
+        // Render twig template
+        $loader = new \Twig\Loader\FilesystemLoader(PLUGIN_GLPISAML_TPLDIR);
+        $twig = new \Twig\Environment($loader);
+        $template = $twig->load('loginScreen.html.twig');
+        echo $template->render($tplvars);
+    }
 
 }

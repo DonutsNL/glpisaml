@@ -447,6 +447,7 @@ class ConfigItem                                                        //NOSONA
     {
         // Try to parse the reconstructed certificate.
         if (function_exists('openssl_x509_parse')) {
+            $validations = [];
             if ($parsedCertificate = openssl_x509_parse($certificate)) {
                 $n = new DateTimeImmutable('now');
                 $t = (array_key_exists('validTo', $parsedCertificate)) ? DateTimeImmutable::createFromFormat("ymdHisT", $parsedCertificate['validTo']) : '';
@@ -454,7 +455,6 @@ class ConfigItem                                                        //NOSONA
                 $aged = $n->diff($t);
                 $born = $f->diff($n);
                 $cn= $parsedCertificate['subject']['CN'];
-                // Check Age
                 $aged = $aged->format('%R%a');
                 if(strpos($aged,'-') !== false){
                     $validations['validTo'] = __("⚠️ Warning, certificate with Common Name (CN): $cn is expired: $aged days", PLUGIN_NAME);

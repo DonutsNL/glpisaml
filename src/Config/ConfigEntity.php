@@ -280,14 +280,15 @@ class ConfigEntity
         $sql = 'SHOW COLUMNS FROM '.SamlConfig::getTable();
         if ($result = $DB->query($sql)) {
             while ($data = $result->fetch_assoc()) {
-                $fields[] = [
+                $fields[$data['Field']] = [
                     ConfigItem::FIELD       => $data['Field'],
                     ConfigItem::TYPE        => $data['Type'],
                     ConfigItem::NULL        => $data['Null'],
                     ConfigItem::CONSTANT    => ($key = array_search($data['Field'], $classConstants)) ? "ConfigEntity::$key" : 'UNDEFINED',
                     ConfigItem::VALUE       => (isset($this->fields[$data['Field']])) ? $this->fields[$data['Field']] : null,
-                    ConfigItem::EVAL        => $this->evaluateItem($data['Field'], (isset($this->fields[$data['Field']])) ? $this->fields[$data['Field']] : ''),
                 ];
+                // Evaluate and merge results.
+                $fields[$data['Field']] = array_merge($fields[$data['Field']], $this->evaluateItem($data['Field'], (isset($this->fields[$data['Field']])) ? $this->fields[$data['Field']] : ''));
             }
         }
         return $fields;
