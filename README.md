@@ -32,7 +32,7 @@ Collaboration and diverse minds help create great tools. Want to contribute, you
 Special credits go to:
 - Derrick Smith (creating the initial version PHPSaml)
 - Raul, @gambware for their support to the OSS community (& buying me coffee), cheers!
-- 
+- @MikeDevresse for providing fixes to the codebase.
 
 # Get an idea where im going with this:
 https://github.com/DonutsNL/phpsaml2/wiki/Plugin-Logic-and-Structure-Scratchboard
