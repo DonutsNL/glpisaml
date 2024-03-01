@@ -1,6 +1,6 @@
 ![GLPI_SAML_by_SpyK60](https://github.com/DonutsNL/glpisaml/assets/97617761/8beb0ec4-ec57-4ec6-8cd6-bc441bef34f4)
 
-# glpi saml2
+# glpi saml
 This is a rewrite of the broadly used phpsaml plugin created by Derrick Smith. PHPSAML was written for GLPI predating version 10, and was maintained by Derrick on a best-effort basis. With new features, limitations and best-practices introduced into GLPI, the original plugin required more and more effort to maintain. Because of this I decided to rewrite the plugin and address these issues. 
 
 Rewrite of phpSaml plugin by Derrick Smith with: PHP8 support, GLPI 10+ support, Using GLPI core objects where possible, PSR4 support, Concern based class structures, Focus on code readability, address SONAR LINTING issues, Improve community support, Composer support for updating 3rd party SAML and XML libraries, Introduce discord support channel, Support multiple IDPs, support rule based JIT usercreation.
