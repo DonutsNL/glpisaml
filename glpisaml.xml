@@ -1,0 +1,49 @@
+<root>
+<name>GLPI SAML2</name>
+<key>glpisaml</key>
+<state>prerelease</state>
+<logo>https://raw.githubusercontent.com/DonutsNL/ticketfilter/main/donut.png</logo>
+<description>
+    <short>
+        <en>Allow SSO agains multiple external identity providers using SAML2.</en>
+    </short>
+    <long>
+        <en>This plugin is a 'rewrite' of Derrick Smiths phpsaml plugin using the latest GLPI10+ best practices like Marketplace, PSR, composer, twig and much more. 
+            Glpisaml allows you to configure multiple external SAML identity providers for SSO. If the external identity provider also implements MFA (like azure) 
+            this plugin can also be used to implement (external) MFA as well.
+
+            Help build a helpfull GLPI community at our discord at: https://discord.gg/35tkHxHg
+        </en>
+    </long>
+</description>
+<homepage>https://github.com/DonutsNL/glpisaml</homepage>
+<download>https://github.com/DonutsNL/glpisaml/releases/</download>
+<issues>https://github.com/DonutsNL/glpisaml/issues</issues>
+<readme>https://github.com/DonutsNL/glpisaml/blob/main/README.md</readme>
+<authors>
+    <author>Chris Gralike</author>
+</authors>
+<versions>
+    <version>
+        <num>1.0.0</num>
+        <compatibility>~10.0.0</compatibility>
+        <download_url>https://github.com/DonutsNL/glpisaml/archive/refs/tags/v0.1.0-beta.zip</download_url>
+    </version>
+</versions>
+<langs>
+    <lang>en_GB</lang>
+</langs>
+<license>GPLv2+</license>
+<tags>
+     <fr>
+         <tag>Management</tag>
+      </fr>
+      <en>
+         <tag>Management</tag>
+      </en>
+</tags>
+<screenshots>
+      <screenshot>https://raw.githubusercontent.com/DonutsNL/ticketfilter/main/TicketFilter_scr1.png</screenshot>
+      <screenshot>https://raw.githubusercontent.com/DonutsNL/ticketfilter/main/TicketFilter_scr2.png</screenshot>
+   </screenshots>
+</root>

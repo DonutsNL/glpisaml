@@ -55,7 +55,7 @@ use GlpiPlugin\Glpisaml\Config\ConfigItem;
  * a samlConfiguration thats either based on a template or based on an
  * existing database row
  */
-class ConfigEntity
+class ConfigEntity extends ConfigItem
 {
     /*
      * ConfigEntity can be reflected by this->getConstants(),
