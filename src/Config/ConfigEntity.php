@@ -62,38 +62,38 @@ class ConfigEntity extends ConfigItem
      * private constants are not!
      * 32 database fields expected
      */
-    public const ID             = 'id';                                     // Database ID
-    public const NAME           = 'name';                                   // Configuration name, not used in SAML handling
-    public const CONF_DOMAIN    = 'conf_domain';                            // Configuration domain, used to identify saml handled logins
-    public const CONF_ICON      = 'conf_icon';                              // Configuration ICON to use in UI elements
-    public const ENFORCE_SSO    = 'enforce_sso';                            // Enforce SSO
-    public const PROXIED        = 'proxied';                                // Handle proxied responses (X-forwarded-for)
-    public const STRICT         = 'strict';                                 // Enforce encryption
-    public const DEBUG          = 'debug';                                  // Enable debug logging
-    public const USER_JIT       = 'user_jit';                               // Enable Just In Time user creation
-    public const SP_CERTIFICATE = 'sp_certificate';                         // Service provider certificate
-    public const SP_KEY         = 'sp_private_key';                         // Service provider certificate key
-    public const SP_NAME_FORMAT = 'sp_nameid_format';                       // Service provider nameID formatting
-    public const IDP_ENTITY_ID  = 'idp_entity_id';                          // Identity provider Entity ID
-    public const IDP_SSO_URL    = 'idp_single_sign_on_service';             // Identity provider Single Sign On Url
-    public const IDP_SLO_URL    = 'idp_single_logout_service';              // Identity provider Logout Url
+    public const ID              = 'id';                                     // Database ID
+    public const NAME            = 'name';                                   // Configuration name, not used in SAML handling
+    public const CONF_DOMAIN     = 'conf_domain';                            // Configuration domain, used to identify saml handled logins
+    public const CONF_ICON       = 'conf_icon';                              // Configuration ICON to use in UI elements
+    public const ENFORCE_SSO     = 'enforce_sso';                            // Enforce SSO
+    public const PROXIED         = 'proxied';                                // Handle proxied responses (X-forwarded-for)
+    public const STRICT          = 'strict';                                 // Enforce encryption
+    public const DEBUG           = 'debug';                                  // Enable debug logging
+    public const USER_JIT        = 'user_jit';                               // Enable Just In Time user creation
+    public const SP_CERTIFICATE  = 'sp_certificate';                         // Service provider certificate
+    public const SP_KEY          = 'sp_private_key';                         // Service provider certificate key
+    public const SP_NAME_FORMAT  = 'sp_nameid_format';                       // Service provider nameID formatting
+    public const IDP_ENTITY_ID   = 'idp_entity_id';                          // Identity provider Entity ID
+    public const IDP_SSO_URL     = 'idp_single_sign_on_service';             // Identity provider Single Sign On Url
+    public const IDP_SLO_URL     = 'idp_single_logout_service';              // Identity provider Logout Url
     public const IDP_CERTIFICATE = 'idp_certificate';                       // Identity provider certificate
-    public const AUTHN_CONTEXT  = 'requested_authn_context';                // Requested authn context (to be provided by Idp)
-    public const AUTHN_COMPARE  = 'requested_authn_context_comparison';     // Requested authn context comparison (to be evaluated by Idp)
-    public const ENCRYPT_NAMEID = 'security_nameidencrypted';               // Encrypt nameId field using service provider certificate
-    public const SIGN_AUTHN     = 'security_authnrequestssigned';           // Sign authN request using service provider certificate
-    public const SIGN_SLO_REQ   = 'security_logoutrequestsigned';           // Sign logout request using service provider certificate
-    public const SIGN_SLO_RES   = 'security_logoutresponsesigned';          // Sign logout response using service provider certificate
-    public const COMPRESS_REQ   = 'compress_requests';                      // Compress all requests
-    public const COMPRESS_RES   = 'compress_responses';                     // Compress all responses
-    public const XML_VALIDATION = 'validate_xml';                           // Validate XML messages
+    public const AUTHN_CONTEXT   = 'requested_authn_context';                // Requested authn context (to be provided by Idp)
+    public const AUTHN_COMPARE   = 'requested_authn_context_comparison';     // Requested authn context comparison (to be evaluated by Idp)
+    public const ENCRYPT_NAMEID  = 'security_nameidencrypted';               // Encrypt nameId field using service provider certificate
+    public const SIGN_AUTHN      = 'security_authnrequestssigned';           // Sign authN request using service provider certificate
+    public const SIGN_SLO_REQ    = 'security_logoutrequestsigned';           // Sign logout request using service provider certificate
+    public const SIGN_SLO_RES    = 'security_logoutresponsesigned';          // Sign logout response using service provider certificate
+    public const COMPRESS_REQ    = 'compress_requests';                      // Compress all requests
+    public const COMPRESS_RES    = 'compress_responses';                     // Compress all responses
+    public const XML_VALIDATION  = 'validate_xml';                           // Validate XML messages
     public const DEST_VALIDATION = 'validate_destination';                  // relax destination validation
-    public const LOWERCASE_URL  = 'lowercase_url_encoding';                 // lowercaseUrlEncoding
-    public const COMMENT        = 'comment';                                // Field for comments on configuration page
-    public const IS_ACTIVE      = 'is_active';                              // Toggle SAML config active or disabled
-    public const IS_DELETED     = 'is_deleted';
-    public const CREATE_DATE    = 'date_creation';
-    public const MOD_DATE       = 'date_mod';
+    public const LOWERCASE_URL   = 'lowercase_url_encoding';                 // lowercaseUrlEncoding
+    public const COMMENT         = 'comment';                                // Field for comments on configuration page
+    public const IS_ACTIVE       = 'is_active';                              // Toggle SAML config active or disabled
+    public const IS_DELETED      = 'is_deleted';
+    public const CREATE_DATE     = 'date_creation';
+    public const MOD_DATE        = 'date_mod';
 
     /**
      * True, if an configuration issue is found its set to false.
