@@ -1,4 +1,4 @@
-![GLPI_SAML_by_SpyK](https://github.com/DonutsNL/glpisaml/assets/97617761/8a02e597-0506-467f-aefd-788a18ba8aa0)
+![GLPI_SAML_by_SpyK60](https://github.com/DonutsNL/glpisaml/assets/97617761/8beb0ec4-ec57-4ec6-8cd6-bc441bef34f4)
 
 # phpsaml2
 This is a rewrite of the broadly used phpsaml plugin created by Derrick Smith. PHPSAML was written for GLPI predating version 10, and was maintained by Derrick on a best-effort basis. With new features, limitations and best-practices introduced into GLPI, the original plugin required more and more effort to maintain. Because of this I decided to rewrite the plugin and address these issues. 
