@@ -2,7 +2,7 @@
 <name>GLPI SAML2</name>
 <key>glpisaml</key>
 <state>prerelease</state>
-<logo>https://raw.githubusercontent.com/DonutsNL/ticketfilter/main/donut.png</logo>
+<logo>https://github.com/DonutsNL/glpisaml/blob/main/tpl/GLPI_SAML_by_SpyK_shield_4040.png</logo>
 <description>
     <short>
         <en>Allow SSO agains multiple external identity providers using SAML2.</en>
