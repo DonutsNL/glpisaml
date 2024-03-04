@@ -67,6 +67,8 @@ class LoginState extends CommonDBTM
     public const USER_ID                    = 'userId';         // Glpi user_id
     public const SESSION_ID                 = 'glpiSessionId';  // Glpi session_id
     public const SESSION_ACTIVE             = 'sessionActive';
+    public const GLPI_LOGGED_IN             = 'glpi_logged_in';
+    public const SAML_LOGGED_IN             = 'saml_logged_in';
     public const LOGIN_DATETIME             = 'loginTime';
     public const LAST_ACTIVITY              = 'lastClickTime';
     public const SAML_CONDITIONS_BEFORE     = 'notBefore';
@@ -75,6 +77,9 @@ class LoginState extends CommonDBTM
     public const IDP_ID                     = 'idpId';
     public const USER_AGENT                 = 'userAgent';
     public const REMOTE_IP                  = 'remoteIP';
+    public const STATE_VALID                = 'stateValid';
+
+    private $state = [self::STATE_VALID => true];
 
     /**
      * Restore object if version has been cached and trigger
@@ -86,30 +91,9 @@ class LoginState extends CommonDBTM
      */
     public function __construct()
     {
-        // Get previous state from cache;
-        global $GLPI_CACHE;
-        $self = $GLPI_CACHE->get('GLPISaml_loginstateObj');
-        echo "$self";
-        //$GLPI_CACHE->set('phpsaml_'.session_id(), true); //NOSONAR - WIP
+        // Populate object.
+        $this->populateState();
     }
-
-    /**
-     * Clean all type.resource for serialization;
-     *
-     * @param   void
-     * @return  void
-     * @since   1.0.0
-     */
-    public function __sleep(){}
-
-    /**
-     * Restore all type.resource for deserialization;
-     *
-     * @param   void
-     * @return  void
-     * @since   1.0.0
-     */
-    public function __wakeup(){}
 
 
     /**
@@ -119,35 +103,53 @@ class LoginState extends CommonDBTM
      * @return  void
      * @since   1.0.0
      */
-    public function isAuthenticated() : bool
+    public function getLoginState(): LoginState
     {
-        return ($this->isSamlAuthenticated() &&
-                $this->isGlpiAuthenticated() )? true : false;
+       return $this;
     }
 
     /**
-     * Validate user is correctly authenticated with external Idp
+     * Validates session state and db state and updates the LoginState object accordingly;
      * @param   void
-     * @return  bool    - true on valid session
+     * @return  void    - true on valid session
      * @since   1.0.0
      */
-    private function isSamlAuthenticated() : bool
+    private function populateState(): void
     {
-        return true;
+        global $DB;
+        // Verify if user is allready authenticated by GLPI.
+        // Name_Accessor: Populated with user->name in Session::class:128 after GLPI login->init;
+        // Id_Accessor: Populated with session_id() in Session::class:107 after GLPI login;
+        $this->state[self::GLPI_LOGGED_IN] = ((isset($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR])) &&
+                                              (isset($_SESSION[self::SESSION_VALID_ID_ACCESSOR] )) )? true : false;
+                                              
+        // Verify session against registered states.
+        // If GLPI is authenticated we should always have a registered session in the LoginState;
+        $result = $DB->request(['FROM' => self::getTable(), 'WHERE' => [self::SESSION_ID => session_id()]]);
+        if (count($result) == 1){
+            // check if its a local or remotely provided auth
+            // do something meaningfull
+            var_dump($result);
+            exit;
+            
+        }elseif(count($result) > 1){
+            // This should never happen!
+        }else{
+            // no registration exists.
+            $this->registerState();
+        }
     }
 
     /**
-     * Validate user is correctly authenticated with GLPI
+     * Validate GLPI registered session or register it as new GLPI session
+     * for SIEM purposes.
      * @param   void
-     * @return  bool    - true on valid GLPI session
+     * @return  void
      * @since   1.0.0
      */
-    private function isGlpiAuthenticated() : bool
+    private function handleGlpiSession(): void  //NOSONAR - WIP
     {
-        // Versions prior to GLPI 0.85 dont support these indexes.
-        return (isset($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR])          &&
-                isset($_SESSION[self::SESSION_VALID_ID_ACCESSOR])           &&
-                $_SESSION[self::SESSION_VALID_ID_ACCESSOR] == session_id()  )? true : false;
+        // Do something
     }
 
     /**
@@ -157,34 +159,28 @@ class LoginState extends CommonDBTM
      * @return  bool
      * @since   1.0.0
      */
-    private function updateState() : bool   //NOSONAR - WIP
+    private function updateState(): bool   //NOSONAR - WIP
     {
         return true;
         // Do something
     }
 
     /**
-     * Fetch the session state for a specific user
-     * @param   int     $id         - Id of the session to fetch
-     * @return  object  Loginstate  - instance of LoginState
+     * Register new session state in the session LoginState database
+     * for external (SIEM) evaluation and interaction
+     * @param   void
+     * @return  bool
      * @since   1.0.0
      */
-    private function getState(int $id) : LoginState //NOSONAR - WIP
-    {
-        return $this;
-    }
-
-    /**
-     * Forcefully invalidate the state of an active session
-     * to enforce logoff and relogin.
-     * @param   $id         - Id of the session to invalidate
-     * @param   $message    - Logoff and log message
-     * @return  bool        - Returns true on success
-     * @since   1.0.0
-     */
-    private function invalidateState(int $id, string $message) : bool   //NOSONAR - WIP
+    public function registerState(): bool   //NOSONAR - WIP
     {
         return true;
+        // Do something
+    }
+
+    public function isAuthenticated(): bool
+    {
+        return $this->state[self::GLPI_LOGGED_IN];
     }
 
     /**

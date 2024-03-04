@@ -225,10 +225,11 @@ class ConfigEntity extends ConfigItem
      * @param  mixed    $val    - value beloging to the field.
      * @return array            - result of the validation including normalized values.
      * @see https://www.mysqltutorial.org/mysql-basics/mysql-boolean/
-     * @todo can we move this to ConfigItem and make it static?             //NOSONAR
      */
     private function evaluateItem(string $field, mixed $value, $invalidate = false): array
     {
+        // TODO: Clean up using class extend instead of external static call. //NOSONAR
+        // TODO: We want coders to be forced to always use configEntity and not create loopholes.   //NOSONAR 
         $evaluatedItem = (is_callable(array((new ConfigItem), $field))) ? configItem::$field($value) : ConfigItem::noMethod($field, $value);
         if(isset($evaluatedItem[ConfigItem::EVAL])      &&
            $evaluatedItem[ConfigItem::EVAL] == 'valid'  ){
@@ -323,6 +324,17 @@ class ConfigEntity extends ConfigItem
     public function isValid(): bool
     {
         return $this->isValid;
+    }
+
+
+    /**
+     * Returns the validity state of the currently loaded ConfigEntity
+     * @param  void
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return $this->fields[ConfigEntity::IS_ACTIVE];
     }
 
     /**

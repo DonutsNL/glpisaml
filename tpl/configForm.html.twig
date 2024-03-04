@@ -50,13 +50,6 @@
 
 <form name="form" method="post" action="{{ glpi_rootdoc }}" id="phpsaml_config">
 <div class="phpsaml_config_wrapper" id="samlForm">
-    
-    <!-- Warnings and errors -->
-    {% if error == true %}
-    <div class='alert alert-info mb-o rounded-0 border-top-0 border-bottom-0 border-right-0 full-width' role='alert'>
-        {{ERRORS}}
-    </div>
-    {% endif %}
     <input type="hidden" name="{{ inputfields.id.field }}" value="{{ inputfields.id.value }}">
 
     <div class="card" style="min-height:100%;">
@@ -70,7 +63,7 @@
                    data-bs-target="#general" 
                    type="button" role="tab" 
                    aria-controls="general" 
-                   aria-selected="true"><b>{{ header_general }}</b></a>
+                   aria-selected="true"><b>{{ header_general }} {{ general_warning }}</b></a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" 
@@ -81,7 +74,7 @@
                    type="button" 
                    role="tab" 
                    aria-controls="transit" 
-                   aria-selected="true"><b>{{ header_transit }}</b></a>
+                   aria-selected="true"><b>{{ header_transit }} {{ header_warning }}</b></a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" 
@@ -92,7 +85,7 @@
                    type="button" 
                    role="tab" 
                    aria-controls="provider" 
-                   aria-selected="false"><b>{{ header_provider }}</b></a>
+                   aria-selected="false"><b>{{ header_provider }} {{ provider_warning }}</b></a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" 
@@ -103,7 +96,7 @@
                    type="button" 
                    role="tab" 
                    aria-controls="idp" 
-                   aria-selected="false"><b>{{ header_idp }}</b></a>
+                   aria-selected="false"><b>{{ header_idp }} {{ idp_warning }}</b></a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" 
@@ -114,7 +107,7 @@
                    type="button" 
                    role="tab" 
                    aria-controls="security" 
-                   aria-selected="false"><b>{{ header_security }}</b></a>
+                   aria-selected="false"><b>{{ header_security }} {{ security_warning }}</b></a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" 
@@ -125,38 +118,39 @@
                    type="button" 
                    role="tab" 
                    aria-controls="logging" 
-                   aria-selected="false"><b>{{ header_logging }}</b></a>
+                   aria-selected="false"><b>{{ header_logging }} {{ logging_warning }}</b></a>
             </li>
         </ul>
         <div class="tab-content" id="myTabContent">
-            <!-- General config -->
+            <!-- ################################################################################-->
+            <!-- General details -->
             <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
                 <div class="card-body">
                     <!-- name field -->
                     <div class="row g-2">
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.name.field }}" class="form-label">{{ inputfields.name.formlabel }}</label>
+                            <label for="{{ inputfields.name.field }}" class="form-label"><sup style="color:red;">*</sup> {{ inputfields.name.formlabel }}</label>
+                            <input class="w-100" type="text" name="{{ inputfields.name.field }}" id="{{ inputfields.name.field }}" spaceholder="" title="" value="{{ inputfields.name.value }}">
                             {% if inputfields.name.errors == true %}
                                 <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.name.errors }}</div>
                             {% endif %}
-                            <input class="w-100" type="text" name="{{ inputfields.name.field }}" id="{{ inputfields.name.field }}" spaceholder="" title="" value="{{ inputfields.name.value }}">
                         </div>
                         <!-- domain field -->
                         <div class="col-md-5 p-2">
                             <label for="{{ inputfields.conf_domain.field }}" class="form-label">{{ inputfields.conf_domain.formlabel }}</label>
+                            <input class="w-100" type="text" name="{{ inputfields.conf_domain.field }}" id="{{ inputfields.conf_domain.field }}" spaceholder="" title="" value="{{ inputfields.conf_domain.value }}">
                             {% if inputfields.conf_domain.errors == true %}
                                 <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.conf_domain.errors }}</div>
                             {% endif %}
-                            <input class="w-100" type="text" name="{{ inputfields.conf_domain.field }}" id="{{ inputfields.conf_domain.field }}" spaceholder="" title="" value="{{ inputfields.conf_domain.value }}">
                         </div>
                    
                         <!-- icon field -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.conf_icon.field }}" class="form-label">{{ inputfields.conf_icon.formlabel }}</label>
+                            <label for="{{ inputfields.conf_icon.field }}" class="form-label"><sup style="color:red;">*</sup> {{ inputfields.conf_icon.formlabel }}</label>
+                            <input class="w-100" type="text" name="{{ inputfields.conf_icon.field }}" id="{{ inputfields.conf_icon.field }}" spaceholder="" title="" value="{{ inputfields.conf_icon.value }}">
                             {% if inputfields.conf_icon.errors == true %}
                                 <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.conf_icon.errors }}</div>
                             {% endif %}
-                            <input class="w-100" type="text" name="{{ inputfields.conf_icon.field }}" id="{{ inputfields.conf_icon.field }}" spaceholder="" title="" value="{{ inputfields.conf_icon.value }}">
                         </div>
 
                         <!-- Comment field -->
@@ -209,6 +203,8 @@
                     </div>
                 </div>
             </div>
+            <!-- ################################################################################-->
+            <!-- transit tab -->
             <div class="tab-pane fade show" id="transit" role="tabpanel" aria-labelledby="transit-tab">
                 <div class="card-body">
                     <div class="row g-2">
@@ -331,7 +327,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- ################################################################################-->
             <!-- Service provider details -->
             <div class="tab-pane fade" id="provider" role="tabpanel" aria-labelledby="provider-tab">
@@ -385,7 +380,6 @@
                     </div>                
                 </div>
             </div>
-
             <!-- ################################################################################-->
             <!-- Identity provider details -->
             <div class="tab-pane fade" id="idp" role="tabpanel" aria-labelledby="idp-tab">
@@ -474,14 +468,12 @@
                     </div>
                 </div>
             </div>
-
             <!-- ################################################################################-->
             <!-- Security details -->
             <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="idp-tab">
                 <!-- Security configuration -->
                 <div class="card-body">
-                    <div class="row g-2">
-                        
+                    <div class="row g-2">      
                         <!-- enforce SSO -->
                         <div class="col-md-5 p-2">
                             <label for="{{ inputfields.enforce_sso.field }}" class="form-label">{{ inputfields.enforce_sso.formlabel }}</label>
@@ -617,15 +609,16 @@
                     </div>
                 </div>
             </div>
-
             <!-- ################################################################################-->
             <!-- Security details -->
             <div class="tab-pane fade" id="logging" role="tabpanel" aria-labelledby="idp-tab">
-                <div class="card-header">
-                    <b>{{ header_logging }}</b>
-                </div>
-                <div class="card-body" style="background-color:rgb(230, 245, 249);">
-                    Logging
+                <div class="card-body">
+                    <div class="row g-2">      
+                        <!-- enforce SSO -->
+                        <div class="col-md-5 p-2">
+                            Logging placeholder
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

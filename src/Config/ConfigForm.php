@@ -102,10 +102,10 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
             if($config->canUpdate()       &&
                $config->update($postData) ){
                 Session::addMessageAfterRedirect(__('Configuration updates succesfully', PLUGIN_NAME));
-                Html::back();
+                Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
             } else {
                 Session::addMessageAfterRedirect(__('Not allowed or error updating SAML configuration!', PLUGIN_NAME));
-                Html::back();
+                Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
             }
         }else{
             return $this->generateForm($configEntity);
@@ -127,7 +127,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
             Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.php");
         } else {
             Session::addMessageAfterRedirect(__('Not allowed or error deleting SAML configuration!', PLUGIN_NAME));
-            Html::back();
+            Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
         }
     }
 
@@ -149,10 +149,63 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
         }
     }
 
+     /**
+     * Figures out if there are errors in one of the tabs and displays a
+     * warning sign if an error is found
+     *
+     * @param array $fields     from ConfigEntity->getFields()
+     */
+    private function getTabWarnings(array $fields): array
+    {
+        // What fields are in what tab
+        $tabFields = ['general_warning'     => [configEntity::NAME,
+                                                configEntity::CONF_DOMAIN,
+                                                configEntity::CONF_ICON,
+                                                configEntity::COMMENT,
+                                                configEntity::IS_ACTIVE,
+                                                configEntity::DEBUG],
+                      'transit_warning'     => [configEntity::COMPRESS_REQ,
+                                                configEntity::COMPRESS_RES,
+                                                configEntity::PROXIED,
+                                                configEntity::XML_VALIDATION,
+                                                configEntity::DEST_VALIDATION,
+                                                configEntity::LOWERCASE_URL],
+                      'provider_warning'    => [configEntity::SP_CERTIFICATE,
+                                                configEntity::SP_KEY,
+                                                configEntity::SP_NAME_FORMAT],
+                      'idp_warning'         => [configEntity::IDP_ENTITY_ID,
+                                                configEntity::IDP_SSO_URL,
+                                                configEntity::IDP_SLO_URL,
+                                                configEntity::IDP_CERTIFICATE,
+                                                configEntity::AUTHN_CONTEXT,
+                                                configEntity::AUTHN_COMPARE],
+                      'security_warning'    => [configEntity::ENFORCE_SSO,
+                                                configEntity::STRICT,
+                                                configEntity::USER_JIT,
+                                                configEntity::ENCRYPT_NAMEID,
+                                                configEntity::SIGN_AUTHN,
+                                                configEntity::SIGN_SLO_REQ,
+                                                configEntity::SIGN_SLO_RES]];
+        // Parse config fields
+        foreach($tabFields as $tab => $entityFields){
+            foreach($entityFields as $field) {
+                if(!empty($fields[$field]['errors'])){
+                    $warnings[$tab] = '⚠️';
+                }
+            }
+        }
+        // Return warnings if any.
+        return (is_array($warnings)) ? $warnings : [];
+    }
+
     private function generateForm(ConfigEntity $configEntity)
     {
+        $fields = $configEntity->getFields();
+        // Get warnings tabs
+        $tplVars  = [];
+        $tplVars = array_merge($tplVars, $this->getTabWarnings($fields));
         // Define static field translations
-        $tplVars = [
+        $tplVars = array_merge($tplVars, [
             'submit'                    =>  __('Save', PLUGIN_NAME),
             'delete'                    =>  __('Delete', PLUGIN_NAME),
             'close_form'                =>  Html::closeForm(false),
@@ -166,7 +219,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
             'header_transit'            =>  __('Transit', PLUGIN_NAME),
             'available'                 =>  __('Available', 'phpsaml'),
             'selected'                  =>  __('Selected', 'phpsaml'),
-            'inputfields'               =>  $configEntity->getFields(),
+            'inputfields'               =>  $fields,
             'inputOptionsBool'          =>  [ 1                             => __('Yes', PLUGIN_NAME),
                                               0                             => __('No', PLUGIN_NAME)],
             'inputOptionsNameFormat'    =>  ['unspecified'                  => __('Unspecified', PLUGIN_NAME),
@@ -180,7 +233,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
                                              'minimum'                      => __('Minimum', PLUGIN_NAME),
                                              'maximum'                      => __('Maximum', PLUGIN_NAME),
                                              'better'                       => __('Better', PLUGIN_NAME)],
-        ];
+        ]);
 
         //echo "<pre>";
         //var_dump($tplVars);

@@ -43,7 +43,7 @@
  **/
 
 use GlpiPlugin\Glpisaml\Exclude;
-use GlpiPlugin\Glpisaml\Loginflow;
+use GlpiPlugin\Glpisaml\LoginFlow;
 
 /**
  * Add Excludes to setup dropdown menu.
@@ -61,8 +61,7 @@ function plugin_glpisaml_getDropdown() : array                                  
 function plugin_glpisaml_evalAuth() : void                                          //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
     // Call the evalAuth hook;
-    $loginFlow = new Loginflow();
-    $loginFlow->evalAuth();
+    (new LoginFlow())->doAuth();
 }
 
 /**
@@ -72,7 +71,7 @@ function plugin_glpisaml_evalAuth() : void                                      
 function plugin_glpisaml_displaylogin() : void                                      //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
 {
     // Call the showLoginScreen method
-    (new Loginflow())->showLoginScreen();
+    (new LoginFlow())->showLoginScreen();
 }
 
 

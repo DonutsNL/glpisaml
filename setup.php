@@ -48,7 +48,7 @@ use Glpi\Plugin\Hooks;
 use GlpiPlugin\Glpisaml\User;
 use GlpiPlugin\Glpisaml\Config;
 use GlpiPlugin\Glpisaml\Exclude;
-use GlpiPlugin\Glpisaml\Loginflow;
+use GlpiPlugin\Glpisaml\LoginFlow;
 use GlpiPlugin\Glpisaml\Ruleright;
 use GlpiPlugin\Glpisaml\RulerightCollection;
 
@@ -65,6 +65,10 @@ define('PLUGIN_GLPISAML_ATOM_URL', 'https://github.com/donutsnl/Phpsaml2/release
 define('PLUGIN_GLPISAML_ACS_PATH', '/front/acs.php');                                           // Location of the assertion service.
 define('PLUGIN_GLPISAML_SLO_PATH', '/front/slo.php');                                           // Location to handle logout requests
 define('PLUGIN_GLPISAML_META_PATH', '/front/meta.php');                                         // Location where to get metadata about sp.
+define('PLUGIN_GLPISAML_CONF_PATH', '/front/config.php');                                       // Location of the config page
+define('PLUGIN_GLPISAML_CONF_FORM', '/front/config.form.php');
+define('PLUGIN_GLPISAML_CONFJS_PATH', 'tpl/js/jquery.multi-select.js');                         // Location of the config Js
+define('PLUGIN_GLPISAML_CONFCSS_PATH', 'tpl/css/configForm.css');                               // Location of the config CSS
 
 /**
  * Init hooks of the plugin.
@@ -87,11 +91,11 @@ function plugin_init_glpisaml() : void                                          
     // Dont show config buttons if plugin is not enabled.
     if ($plugin->isInstalled(PLUGIN_NAME) || $plugin->isActivated(PLUGIN_NAME)) {
         if (Session::haveRight('config', UPDATE)) {
-            $PLUGIN_HOOKS['config_page'][PLUGIN_NAME]       = 'front/config.php';               //NOSONAR
+            $PLUGIN_HOOKS['config_page'][PLUGIN_NAME]       = PLUGIN_GLPISAML_CONF_PATH;      //NOSONAR
         }
         $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME]['config']  = [Config::class, Exclude::class];
-        $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT][PLUGIN_NAME][] = 'tpl/js/jquery.multi-select.js';
-        $PLUGIN_HOOKS[Hooks::ADD_CSS][PLUGIN_NAME][]        = 'tpl/css/configForm.css';
+        $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT][PLUGIN_NAME][] = PLUGIN_GLPISAML_CONFJS_PATH;
+        $PLUGIN_HOOKS[Hooks::ADD_CSS][PLUGIN_NAME][]        = PLUGIN_GLPISAML_CONFCSS_PATH;
 
         // USER AND JIT HANDLING
         plugin::registerClass(User::class);
@@ -100,7 +104,7 @@ function plugin_init_glpisaml() : void                                          
         $PLUGIN_HOOKS[Hooks::RULE_MATCHED][PLUGIN_NAME]     = [User::class => 'updateUser'];
 
         // POSTINIT HOOK LOGINFLOW TRIGGER
-        Plugin::registerClass(Loginflow::class);
+        Plugin::registerClass(LoginFlow::class);
         $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME]        = 'plugin_glpisaml_evalAuth';       //NOSONAR
 
         // HOOK THE LOGIN SCREEN

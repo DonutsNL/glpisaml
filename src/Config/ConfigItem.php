@@ -249,7 +249,8 @@ class ConfigItem                                                        //NOSONA
                 self::EVAL      => self::VALID,
                 self::VALUE     => (string) $var,
                 self::VALIDATOR => __method__,
-                self::FIELD     => __function__,];
+                self::FIELD     => __function__,
+                self::ERRORS    => ($var) ? null : __('⭕ Configuration icon is a required field', PLUGIN_NAME)];
     }
 
     public static function comment(mixed $var): array                       //NOSONAR

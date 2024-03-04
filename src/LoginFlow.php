@@ -55,20 +55,25 @@
 
  namespace GlpiPlugin\Glpisaml;
 
-use Session;
-use Migration;
-use CommonDBTM;
-use GlpiPlugin\Glpisaml\Config;
-use GlpiPlugin\Glpisaml\Config\ConfigEntity;
+use Plugin;
+use Html;
 use GlpiPlugin\Glpisaml\Exclude;
 use GlpiPlugin\Glpisaml\LoginState;
+use GlpiPlugin\Glpisaml\Config;
+use GlpiPlugin\Glpisaml\Config\ConfigEntity;
+
 use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\Settings;
 
-class Loginflow extends CommonDBTM
+class LoginFlow
 {
 
+    /**
+     * Where to find the loginScreen template.
+     * @since 1.0.0
+     */
     public const HTML_TEMPLATE_FILE = PLUGIN_GLPISAML_TPLDIR.'/loginScreen.html';
+
     /**
      * Evaluates the session and determins if login/logout is required
      * Called by post_init hook via function in hooks.php
@@ -76,11 +81,12 @@ class Loginflow extends CommonDBTM
      * @return boolean
      * @since 1.0.0
      */
-    public function evalAuth()  : bool
+    public function doAuth()  : bool
     {
-        if(isset($_GET['SAML'])){
+        if(isset($_POST['phpsaml'])){
             print "<h1> WE GOT THE LOGIN REQUEST LETS PROCESS</h1>";
-            var_dump($_GET);
+            print $_POST['phpsaml'];
+            html::redirect('/');//exit;
         }
         // Evaluate current login state
         $state = new Loginstate();
@@ -107,18 +113,14 @@ class Loginflow extends CommonDBTM
      */
     public function showLoginScreen(): void
     {
-        // Define static translatable elements
-        $tplvars['header']     = __('Connect with an external provider', PLUGIN_NAME);
-        $tplvars['noconfig']   = __('No saml configuration found',PLUGIN_NAME);
-
         // Fetch the global DB object;
-        global $DB;
-        foreach($DB->request(['FROM' => (new Config())::getTable()]) as $value)
-        {
-            $tplvars['buttons'][] = ['id'      => $value[ConfigEntity::ID],
-                                     'icon'    => $value[ConfigEntity::CONF_ICON],
-                                     'name'    => $value[ConfigEntity::NAME]];
-        }
+        $tplvars = Config::getLoginButtons();
+
+        // Define static translatable elements
+        $tplvars['action']     = Plugin::getWebDir(PLUGIN_NAME, true);
+        $tplvars['header']     = __('Login with external provider', PLUGIN_NAME);
+        $tplvars['noconfig']   = __('No valid saml configuration found', PLUGIN_NAME);
+
         // Render twig template
         $loader = new \Twig\Loader\FilesystemLoader(PLUGIN_GLPISAML_TPLDIR);
         $twig = new \Twig\Environment($loader);

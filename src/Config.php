@@ -189,6 +189,30 @@ class Config extends CommonDBTM
 
 
     /**
+     * Get all valid configurations and return config buttons only if config is valid
+     * and active.
+     * @return  array
+     * @see                             - src/Loginflow/showLoginScreen()
+     */
+    public static function getLoginButtons(): array
+    {
+        $tplvars = [];
+        global $DB;
+        foreach( $DB->request(['FROM' => self::getTable()]) as $value)
+        {
+            // Only populate buttons that are considered valid by ConfigEntity;
+            $configEntity = new ConfigEntity($value[ConfigEntity::ID]);
+            if($configEntity->isValid() && $configEntity->isActive()){
+                $tplvars['buttons'][] = ['id'      => $value[ConfigEntity::ID],
+                                        'icon'    => $value[ConfigEntity::CONF_ICON],
+                                        'name'    => $value[ConfigEntity::NAME]];
+            }
+        }
+        return $tplvars;
+    }
+
+
+    /**
      * Install table needed for Ticket Filter configuration dropdowns
      * @param   Migration $migration    - Plugin migration information;
      * @return  void
