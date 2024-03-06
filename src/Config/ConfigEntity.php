@@ -391,12 +391,10 @@ class ConfigEntity extends ConfigItem
 
     public function getRequestedAuthnContextArray(): array
     {
-
-        var_dump($this->fields[ConfigEntity::AUTHN_CONTEXT]);
         if(strstr($this->fields[ConfigEntity::AUTHN_CONTEXT], ':')){
             return explode(':', $this->fields[ConfigEntity::AUTHN_CONTEXT]);
         }else{
-            return [$this->fields[ConfigEntity::AUTHN_CONTEXT][ConfigEntity::VALUE]];
+            return [$this->fields[ConfigEntity::AUTHN_CONTEXT]];
         }
     }
 

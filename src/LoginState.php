@@ -91,7 +91,7 @@ class LoginState extends CommonDBTM
      */
     public function __construct()
     {
-        // Populate object.
+        // Populate the stateObject.
         $this->populateState();
     }
 
@@ -117,12 +117,7 @@ class LoginState extends CommonDBTM
     private function populateState(): void
     {
         global $DB;
-        // Verify if user is allready authenticated by GLPI.
-        // Name_Accessor: Populated with user->name in Session::class:128 after GLPI login->init;
-        // Id_Accessor: Populated with session_id() in Session::class:107 after GLPI login;
-        $this->state[self::GLPI_LOGGED_IN] = ((isset($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR])) &&
-                                              (isset($_SESSION[self::SESSION_VALID_ID_ACCESSOR] )) )? true : false;
-                                              
+        $this->evaluateGlpiState();
         // Verify session against registered states.
         // If GLPI is authenticated we should always have a registered session in the LoginState;
         $result = $DB->request(['FROM' => self::getTable(), 'WHERE' => [self::SESSION_ID => session_id()]]);
@@ -138,6 +133,15 @@ class LoginState extends CommonDBTM
             // no registration exists.
             $this->registerState();
         }
+    }
+
+    private function evaluateGlpiState(): void
+    {
+        // Verify if user is allready authenticated by GLPI.
+        // Name_Accessor: Populated with user->name in Session::class:128 after GLPI login->init;
+        // Id_Accessor: Populated with session_id() in Session::class:107 after GLPI login;
+        $this->state[self::GLPI_LOGGED_IN] = ((isset($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR])) &&
+                                              (isset($_SESSION[self::SESSION_VALID_ID_ACCESSOR] )) )? true : false;
     }
 
     /**

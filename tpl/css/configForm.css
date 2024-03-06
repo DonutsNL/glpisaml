@@ -1,106 +1,20 @@
-form#phpsaml_config label,
-form#phpsaml_config input,
-form#phpsaml_config textbox,
-form#phpsaml_config textarea,
-form#phpsaml_config select {
-    font-size: 14px;
-}
-
-form#phpsaml_config input,
-form#phpsaml_config textbox,
-form#phpsaml_config textarea,
-form#phpsaml_config select {
-    margin-bottom:5px;
-}
-
-.multiselect {
-    width: 100%;
-}
-
-/*
-.phpsaml_config_wrapper {
-}
-*/
-
-.phpsaml_config_wrapper h1 {
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 4px;
-    padding: 5px;
-    border-radius: 0;
-    margin: 0;
-    padding: 10px 5px;
-    background-color: #F1F1F1;
-}
-
-.phpsaml_config_wrapper h2 {
-    font-size: 16px;
-    font-weight: bold;
-    padding: 5px;
-    margin-bottom: 10px;
-}
-
-.phpsaml_config_wrapper form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 5px;
-}
-
-.fill{
-    height: 100%;
-    min-height:100%;
-}
-
-.phpsaml_config_wrapper form label {
-  font-weight: bold;
-  display: block;
-  margin-bottom:5px;
-}
-.phpsaml_config_wrapper form p {
-  margin: 0;
-  padding: 5px;
-}
-
-.phpsaml_config_wrapper form input,
-.phpsaml_config_wrapper form textarea {
-    display: block;
-    width: 100%;
-    -webkit-box-sizing: border-box;
-       -moz-box-sizing: border-box;
-            box-sizing: border-box;
-}
-
-.phpsaml_config_wrapper form input {
-    height:30px;
-}
-
-.phpsaml_config_wrapper form textarea {
-    min-height:250px;
-}
-
-.phpsaml_config_wrapper form input:focus,
-.phpsaml_config_wrapper form textarea:focus,
-.phpsaml_config_wrapper form select:focus {
-    border-color: rgba(82, 168, 236, 0.8);
-      -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
-      -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
-      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
-      outline: 0;
-      outline: thin dotted \9;
-}
-
-.full-width {
-  grid-column: span 2;
-}
-
-.errors {
-    display: block;
+.explain {
+    font-size: 10px;
     min-height: 50px;
-    width: 100%;
-    background-color:rgb(219, 57, 45);
-    border: 1px gray solid;
-    border-radius: 5px;
-    color:antiquewhite;
-    padding: 2px 10px 2px 10px;
-    font-size: 12px;
+    text-align: justify;
+    vertical-align: top;
+    font-style: italic;
+}
+
+.glpisaml textarea {
+    -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+            box-sizing: border-box;
+    width:100%;
+    min-height:150px;
+    font-size:10px;
+}
+
+.glpisaml input {
+    font-size:12px;
 }

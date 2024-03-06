@@ -194,7 +194,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
                                                 configEntity::SIGN_SLO_REQ,
                                                 configEntity::SIGN_SLO_RES]];
         // Parse config fields
-        $warnings = '';
+        $warnings = [];
         foreach($tabFields as $tab => $entityFields){
             foreach($entityFields as $field) {
                 if(!empty($fields[$field]['errors'])){
@@ -252,9 +252,6 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
                                              'maximum'                      => __('Maximum', PLUGIN_NAME),
                                              'better'                       => __('Better', PLUGIN_NAME)],
         ]);
-
-        //echo "<pre>";
-        //var_dump($tplVars);
         
         // Render twig template
         $loader = new \Twig\Loader\FilesystemLoader(PLUGIN_GLPISAML_TPLDIR);

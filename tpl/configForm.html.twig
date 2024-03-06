@@ -12,6 +12,14 @@
         
     });
 </script>
+<!-- Show config support or not -->
+{% if inputfields.debug.value == false %}
+<style>
+    .explanation {
+        display:none;
+    }
+</style>
+{% endif %}
 
 <form name="form" method="post" action="{{ glpi_rootdoc }}" id="phpsaml_config">
 <div class="phpsaml_config_wrapper" id="samlForm">
@@ -86,7 +94,7 @@
                    aria-selected="false"><b>{{ header_logging }} {{ logging_warning }}</b></a>
             </li>
         </ul>
-        <div class="tab-content flex-fill" id="myTabContent">
+        <div class="tab-content flex-fill glpisaml" id="myTabContent">
             <!-- ################################################################################-->
             <!-- General details -->
             <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
@@ -94,80 +102,122 @@
                     <!-- name field -->
                     <div class="row g-2">
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.name.field }}" class="form-label"><sup style="color:red;">*</sup> {{ inputfields.name.formlabel }}</label>
-                            <input class="w-100" type="text" name="{{ inputfields.name.field }}" id="{{ inputfields.name.field }}" spaceholder="" title="" value="{{ inputfields.name.value }}">
-                            {% if inputfields.name.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.name.errors }}</div>
-                            {% endif %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <sup style="color:red;">*</sup><b> {{ inputfields.name.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.name.formexplain }}</div>
+                                    {% if inputfields.name.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.name.errors }}</div>
+                                    {% endif %}
+                                    <input class="w-100" type="text" name="{{ inputfields.name.field }}" id="{{ inputfields.name.field }}" spaceholder="" title="" value="{{ inputfields.name.value }}">
+                                </div>
+                            </div>
                         </div>
                         <!-- domain field -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.conf_domain.field }}" class="form-label"><sup style="color:red;">*</sup> {{ inputfields.conf_domain.formlabel }}</label>
-                            <input class="w-100" type="text" name="{{ inputfields.conf_domain.field }}" id="{{ inputfields.conf_domain.field }}" spaceholder="" title="" value="{{ inputfields.conf_domain.value }}">
-                            {% if inputfields.conf_domain.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.conf_domain.errors }}</div>
-                            {% endif %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <sup style="color:red;">*</sup><b> {{ inputfields.conf_domain.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.conf_domain.formexplain }}</div>
+                                    {% if inputfields.conf_domain.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.conf_domain.errors }}</div>
+                                    {% endif %}
+                                    <input class="w-100" type="text" name="{{ inputfields.conf_domain.field }}" id="{{ inputfields.conf_domain.field }}" spaceholder="" title="" value="{{ inputfields.conf_domain.value }}"> 
+                                </div>
+                            </div>
                         </div>
                    
                         <!-- icon field -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.conf_icon.field }}" class="form-label"><sup style="color:red;">*</sup> {{ inputfields.conf_icon.formlabel }}</label>
-                            <input class="w-100" type="text" name="{{ inputfields.conf_icon.field }}" id="{{ inputfields.conf_icon.field }}" spaceholder="" title="" value="{{ inputfields.conf_icon.value }}">
-                            {% if inputfields.conf_icon.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.conf_icon.errors }}</div>
-                            {% endif %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <sup style="color:red;">*</sup><b>{{ inputfields.conf_icon.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.conf_icon.formexplain }}</div>
+                                    {% if inputfields.conf_icon.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.conf_icon.errors }}</div>
+                                    {% endif %}
+                                    <input class="w-100" type="text" name="{{ inputfields.conf_icon.field }}" id="{{ inputfields.conf_icon.field }}" spaceholder="" title="" value="{{ inputfields.conf_icon.value }}">
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Comment field -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.comment.field }}" class="form-label">{{ inputfields.comment.formlabel }}</label>
-                            {% if inputfields.comment.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.comment.errors }}</div>
-                            {% endif %}
-                            <textarea name="{{ inputfields.comment.field }}" cols="50" rows="10" id="{{ inputfields.comment.field }}" spaceholder="" title="{{ inputfields.comment.title}}">{{ inputfields.comment.value }}</textarea>
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.comment.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.comment.formexplain }}</div>
+                                    {% if inputfields.comment.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.comment.errors }}</div>
+                                    {% endif %}
+                                    <textarea name="{{ inputfields.comment.field }}" cols="50" rows="10" id="{{ inputfields.comment.field }}" spaceholder="" title="{{ inputfields.comment.formtitle}}">{{ inputfields.comment.value }}</textarea>
+                                </div>
+                            </div>
                         </div>
 
                          <!-- enabled -->
                          <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.is_active.field }}" class="form-label">{{ inputfields.is_active.formlabel }}</label>
-                            {% if inputfields.is_active.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.is_active.errors }}</div>
-                            {% endif %}
-                            <select name="{{ inputfields.is_active.field }}" id="{{ inputfields.is_active.field }}" title="{{ inputfields.is_active.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.is_active.value == key %}
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.is_active.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.is_active.formexplain }}</div>
+                                    {% if inputfields.is_active.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.is_active.errors }}</div>
+                                    {% endif %}
+                                    <select name="{{ inputfields.is_active.field }}" id="{{ inputfields.is_active.field }}" title="{{ inputfields.is_active.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.is_active.value == key %}
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Debug mode -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.debug.field }}" class="form-label">{{ inputfields.debug.formlabel }}</label>
-                            {% if inputfields.debug.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.debug.errors }}</div>
-                            {% endif %}
-                            <select name="{{ inputfields.debug.field }}" id="{{ inputfields.debug.field }}" title="{{ inputfields.debug.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.debug.value == key %}
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.debug.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.debug.formexplain }}</div>
+                                    {% if inputfields.debug.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.debug.errors }}</div>
+                                    {% endif %}
+                                    <select name="{{ inputfields.debug.field }}" id="{{ inputfields.debug.field }}" title="{{ inputfields.debug.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.debug.value == key %}
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-
                     </div>
                 </div>
             </div>
+
             <!-- ################################################################################-->
             <!-- transit tab -->
             <div class="tab-pane fade show" id="transit" role="tabpanel" aria-labelledby="transit-tab">
@@ -175,119 +225,161 @@
                     <div class="row g-2">
                         <!-- compress_requests -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.compress_requests.field }}" class="form-label">{{ inputfields.compress_requests.formlabel }}</label>
-                            {% if inputfields.compress_requests.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.compress_requests.errors }}</div>
-                            {% endif %}
-                            <select name="{{ inputfields.compress_requests.field }}" id="{{ inputfields.compress_requests.field }}" title="{{ inputfields.compress_requests.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.compress_requests.value == key %}
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.compress_requests.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.compress_requests.formexplain }}</div>
+                                    {% if inputfields.compress_requests.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.compress_requests.errors }}</div>
+                                    {% endif %}
+                                    <select name="{{ inputfields.compress_requests.field }}" id="{{ inputfields.compress_requests.field }}" title="{{ inputfields.compress_requests.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.compress_requests.value == key %}
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- compress_responses -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.compress_responses.field }}" class="form-label">{{ inputfields.compress_responses.formlabel }}</label>
-                            {% if inputfields.compress_responses.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.compress_requests.errors }}</div>
-                            {% endif %}
-                            <select name="{{ inputfields.compress_responses.field }}" id="{{ inputfields.compress_responses.field }}" title="{{ inputfields.compress_responses.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.compress_responses.value == key %}
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.compress_responses.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.compress_responses.formexplain }}</div>
+                                    {% if inputfields.compress_responses.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.compress_requests.errors }}</div>
+                                    {% endif %}
+                                    <select name="{{ inputfields.compress_responses.field }}" id="{{ inputfields.compress_responses.field }}" title="{{ inputfields.compress_responses.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.compress_responses.value == key %}
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- enforce SSO -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.proxied.field }}" class="form-label">{{ inputfields.proxied.formlabel }}</label>
-                            {% if inputfields.proxied.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.proxied.errors }}</div>
-                            {% endif %}
-                            <select name="{{ inputfields.proxied.field }}" id="{{ inputfields.proxied.field }}" title="{{ inputfields.proxied.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.proxied.value == key %}
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.proxied.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.proxied.formexplain }}</div>
+                                    {% if inputfields.proxied.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.proxied.errors }}</div>
+                                    {% endif %}
+                                    <select name="{{ inputfields.proxied.field }}" id="{{ inputfields.proxied.field }}" title="{{ inputfields.proxied.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.proxied.value == key %}
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- validate_xml -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.validate_xml.field }}" class="form-label">{{ inputfields.validate_xml.formlabel }}</label>
-                            {% if inputfields.validate_xml.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.validate_xml.errors }}</div>
-                            {% endif %}
-                            <select name="{{ inputfields.validate_xml.field }}" id="{{ inputfields.validate_xml.field }}" title="{{ inputfields.validate_xml.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.validate_xml.value == key %}
-                                    
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.validate_xml.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.validate_xml.formexplain }}</div>
+                                    {% if inputfields.validate_xml.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.validate_xml.errors }}</div>
+                                    {% endif %}
+                                    <select name="{{ inputfields.validate_xml.field }}" id="{{ inputfields.validate_xml.field }}" title="{{ inputfields.validate_xml.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.validate_xml.value == key %}
+                                            
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- validate_destination -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.validate_destination.field }}" class="form-label">{{ inputfields.validate_destination.formlabel }}</label>
-                            {% if inputfields.validate_destination.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.validate_destination.errors }}</div>
-                            {% endif %}
-                            <select name="{{ inputfields.validate_destination.field }}" id="{{ inputfields.validate_destination.field }}" title="{{ inputfields.validate_destination.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.validate_destination.value == key %}
-                                    
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.validate_destination.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.validate_destination.formexplain }}</div>
+                                    {% if inputfields.validate_destination.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.validate_destination.errors }}</div>
+                                    {% endif %}
+                                    <select name="{{ inputfields.validate_destination.field }}" id="{{ inputfields.validate_destination.field }}" title="{{ inputfields.validate_destination.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.validate_destination.value == key %}
+                                            
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- lowercase_url_encoding -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.lowercase_url_encoding.field }}" class="form-label">{{ inputfields.lowercase_url_encoding.formlabel }}</label>
-                            {% if inputfields.lowercase_url_encoding.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.lowercase_url_encoding.errors }}</div>
-                            {% endif %}
-                            <select name="{{ inputfields.lowercase_url_encoding.field }}" id="{{ inputfields.lowercase_url_encoding.field }}" title="{{ inputfields.lowercase_url_encoding.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.lowercase_url_encoding.value == key %}
-                                    
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.lowercase_url_encoding.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.lowercase_url_encoding.formexplain }}</div>
+                                    {% if inputfields.lowercase_url_encoding.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.lowercase_url_encoding.errors }}</div>
+                                    {% endif %}
+                                    <select name="{{ inputfields.lowercase_url_encoding.field }}" id="{{ inputfields.lowercase_url_encoding.field }}" title="{{ inputfields.lowercase_url_encoding.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.lowercase_url_encoding.value == key %}
+                                            
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -298,48 +390,69 @@
                 <div class="card-body">
 
                     <!-- sp_certificate -->
-                    <div class="col-md-5 p-2">
-                        <label for="{{ inputfields.sp_certificate.field }}" class="form-label">{{ inputfields.sp_certificate.formlabel }}</label>
-                        <textarea name="{{ inputfields.sp_certificate.field }}" cols="80" rows="10" id="{{ inputfields.sp_certificate.field }}" spaceholder="" title="{{ inputfields.sp_certificate.title}}">{{ inputfields.sp_certificate.value|raw }}</textarea>
-                        {% if inputfields.sp_certificate.errors == true %}
-                            <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.sp_certificate.errors }}</div>
-                        {% endif %}
-                        
-                        {% if inputfields.sp_certificate.validate.subject.CN == true %}
-                            <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">🆗 Valid certificate found: {{ inputfields.sp_certificate.validate.subject.CN }}</div>
-                        {% endif %}
-                        {% if inputfields.sp_certificate.validate.validations.validTo == true %}
-                            <div id="textHelper" class="form-text" style="color:rgb(180, 120, 8);">{{ inputfields.sp_certificate.validate.validations.validTo }}</div>
-                        {% endif %}
-                        {% if inputfields.sp_certificate.validate.validations.validFrom == true %}
-                            <div id="textHelper" class="form-text" style="color:rgb(180, 120, 8);">{{ inputfields.sp_certificate.validate.validations.validFrom }}</div>
-                        {% endif %}
+                    <div class="col-md-9 p-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <b>{{ inputfields.sp_certificate.formtitle }}</b>
+                            </div>
+                            <div class="card-body">
+                                <div class="explain explanation">{{ inputfields.sp_certificate.formexplain }}</div>
+                                <div><textarea class="textareas" name="{{ inputfields.sp_certificate.field }}" style="position:relative;" spaceholder="" title="{{ inputfields.sp_certificate.formtitle}}">{{ inputfields.sp_certificate.value|raw }}</textarea></div>
+                                {% if inputfields.sp_certificate.errors == true %}
+                                    <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.sp_certificate.errors }}</div>
+                                {% endif %}
+                                
+                                {% if inputfields.sp_certificate.validate.subject.CN == true %}
+                                    <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">🆗 Valid certificate found: {{ inputfields.sp_certificate.validate.subject.CN }}</div>
+                                {% endif %}
+                                {% if inputfields.sp_certificate.validate.validations.validTo == true %}
+                                    <div id="textHelper" class="form-text" style="color:rgb(180, 120, 8);">{{ inputfields.sp_certificate.validate.validations.validTo }}</div>
+                                {% endif %}
+                                {% if inputfields.sp_certificate.validate.validations.validFrom == true %}
+                                    <div id="textHelper" class="form-text" style="color:rgb(180, 120, 8);">{{ inputfields.sp_certificate.validate.validations.validFrom }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- sp_private_key -->
-                    <div class="col-md-5 p-2">
-                        <label for="{{ inputfields.sp_private_key.field }}" class="form-label">{{ inputfields.sp_private_key.formlabel }}</label>
-                        <textarea name="{{ inputfields.sp_private_key.field }}" cols="80" rows="10" id="{{ inputfields.sp_private_key.field }}" spaceholder="" title="{{ inputfields.sp_private_key.title}}">{{ inputfields.sp_private_key.value|raw }}</textarea>
-                        {% if inputfields.sp_private_key.errors == true %}
-                            <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.sp_private_key.errors }}</div>
-                        {% endif %}
+                    <div class="col-md-9 p-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <b>{{ inputfields.sp_private_key.formtitle }}</b>
+                            </div>
+                            <div class="card-body">
+                                <div class="explain explanation">{{ inputfields.sp_private_key.formexplain }}</div>
+                                <textarea name="{{ inputfields.sp_private_key.field }}" id="{{ inputfields.sp_private_key.field }}" spaceholder="" title="{{ inputfields.sp_private_key.formtitle}}">{{ inputfields.sp_private_key.value|raw }}</textarea>
+                                {% if inputfields.sp_private_key.errors == true %}
+                                    <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.sp_private_key.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- sp_nameid_format -->
-                    <div class="col-md-7 p-1">
-                        <label for="{{ inputfields.sp_nameid_format.field }}" class="form-label">{{ inputfields.sp_nameid_format.formlabel }}</label>
-                        {% if inputfields.sp_nameid_format.errors == true %}
-                            <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.sp_nameid_format.errors }}</div>
-                        {% endif %}
-                        <select name="{{ inputfields.sp_nameid_format.field }}" id="{{ inputfields.sp_nameid_format.field }}">
-                                {% for key, spname in inputOptionsNameFormat %}
-                                    {% if inputfields.sp_nameid_format.value == key %}
-                                        <option selected value="{{ key }}">{{ spname }}</option>
-                                    {% else %}
-                                        <option value="{{ key }}">{{ spname }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                        </select>
+                    <div class="col-md-9 p-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <b>{{ inputfields.sp_nameid_format.formtitle }}</b>
+                            </div>
+                            <div class="card-body">
+                                <div class="explain explanation">{{ inputfields.sp_nameid_format.formexplain }}</div>
+                                {% if inputfields.sp_nameid_format.errors == true %}
+                                    <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.sp_nameid_format.errors }}</div>
+                                {% endif %}
+                                <select name="{{ inputfields.sp_nameid_format.field }}" id="{{ inputfields.sp_nameid_format.field }}">
+                                        {% for key, spname in inputOptionsNameFormat %}
+                                            {% if inputfields.sp_nameid_format.value == key %}
+                                                <option selected value="{{ key }}">{{ spname }}</option>
+                                            {% else %}
+                                                <option value="{{ key }}">{{ spname }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                </select>
+                            </div>
+                        </div>
                     </div>                
                 </div>
             </div>
@@ -349,85 +462,126 @@
                 <div class="card-body">
 
                      <!-- idp_entity_id -->
-                     <div class="col-md-7 p-1">
-                        <label for="{{ inputfields.idp_entity_id.field }}" class="form-label">{{ inputfields.idp_entity_id.formlabel }}</label>
-                        <input class="w-100" type="text" name="{{ inputfields.idp_entity_id.field }}" id="{{ inputfields.idp_entity_id.field }}" spaceholder="" title="" value="{{ inputfields.idp_entity_id.value }}">
-                        {% if inputfields.idp_entity_id.errors == true %}
-                            <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_entity_id.errors }}</div>
-                        {% endif %}
+                     <div class="col-md-9 p-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <b>{{ inputfields.idp_entity_id.formtitle }}</b>
+                            </div>
+                            <div class="card-body">
+                                <div class="explain explanation">{{ inputfields.idp_entity_id.formexplain }}</div>
+                                <input class="w-100" type="text" name="{{ inputfields.idp_entity_id.field }}" id="{{ inputfields.idp_entity_id.field }}" spaceholder="" title="" value="{{ inputfields.idp_entity_id.value }}">
+                                {% if inputfields.idp_entity_id.errors == true %}
+                                    <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_entity_id.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- idp_single_sign_on_service -->
-                    <div class="col-md-7 p-1">
-                        <label for="{{ inputfields.idp_single_sign_on_service.field }}" class="form-label">{{ inputfields.idp_single_sign_on_service.formlabel }}</label>
-                        <input class="w-100" type="text" name="{{ inputfields.idp_single_sign_on_service.field }}" id="{{ inputfields.idp_single_sign_on_service.field }}" spaceholder="" title="" value="{{ inputfields.idp_single_sign_on_service.value }}">
-                        {% if inputfields.idp_single_sign_on_service.errors == true %}
-                            <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_single_sign_on_service.errors }}</div>
-                        {% endif %}
+                    <div class="col-md-9 p-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <b>{{ inputfields.idp_single_sign_on_service.formtitle }}</b>
+                            </div>
+                            <div class="card-body">
+                                <div class="explain explanation">{{ inputfields.idp_single_sign_on_service.formexplain }}</div>
+                                <input class="w-100" type="text" name="{{ inputfields.idp_single_sign_on_service.field }}" id="{{ inputfields.idp_single_sign_on_service.field }}" spaceholder="" title="" value="{{ inputfields.idp_single_sign_on_service.value }}">
+                                {% if inputfields.idp_single_sign_on_service.errors == true %}
+                                    <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_single_sign_on_service.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- idp_single_logout_service -->
-                    <div class="col-md-7 p-1">
-                        <label for="{{ inputfields.idp_single_logout_service.field }}" class="form-label">{{ inputfields.idp_single_logout_service.formlabel }}</label>
-                        <input class="w-100" type="text" name="{{ inputfields.idp_single_logout_service.field }}" id="{{ inputfields.idp_single_logout_service.field }}" spaceholder="" title="" value="{{ inputfields.idp_single_logout_service.value }}">
-                        {% if inputfields.idp_single_logout_service.errors == true %}
-                            <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_single_logout_service.errors }}</div>
-                        {% endif %}
+                    <div class="col-md-9 p-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <b>{{ inputfields.idp_single_logout_service.formtitle }}</b>
+                            </div>
+                            <div class="card-body">
+                                <div class="explain explanation">{{ inputfields.idp_single_logout_service.formexplain }}</div>
+                                <input class="w-100" type="text" name="{{ inputfields.idp_single_logout_service.field }}" id="{{ inputfields.idp_single_logout_service.field }}" spaceholder="" title="" value="{{ inputfields.idp_single_logout_service.value }}">
+                                {% if inputfields.idp_single_logout_service.errors == true %}
+                                    <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_single_logout_service.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- idp_certificate -->
-                    <div class="col-md-5 p-2">
-                        <label for="{{ inputfields.idp_certificate.field }}" class="form-label">{{ inputfields.idp_certificate.formlabel }}</label>
-                        <textarea name="{{ inputfields.idp_certificate.field }}" cols="80" rows="10" id="{{ inputfields.idp_certificate.field }}" spaceholder="" title="{{ inputfields.idp_certificate.title}}">{{ inputfields.idp_certificate.value|raw }}</textarea>
-                        {% if inputfields.idp_certificate.errors == true %}
-                            <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_certificate.errors }}</div>
-                        {% endif %}
-                        {% if inputfields.idp_certificate.validate.subject.CN == true %}
-                            <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">🆗 Valid Certificate found: {{ inputfields.idp_certificate.validate.subject.CN }}</div>
-                        {% endif %}
-                        {% if inputfields.idp_certificate.validate.validations.validTo == true %}
-                            <div id="textHelper" class="form-text" style="color:rgb(180, 140, 8);">{{ inputfields.idp_certificate.validate.validations.validTo }}</div>
-                        {% endif %}
-                        {% if inputfields.idp_certificate.validate.validations.validFrom == true %}
-                            <div id="textHelper" class="form-text" style="color:rgb(180, 140, 8);">{{ inputfields.idp_certificate.validate.validations.validFrom }}</div>
-                        {% endif %}
+                    <div class="col-md-9 p-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <b>{{ inputfields.idp_certificate.formtitle }}</b>
+                            </div>
+                            <div class="card-body">
+                                <div class="explain explanation">{{ inputfields.idp_certificate.formexplain }}</div>
+                                <textarea name="{{ inputfields.idp_certificate.field }}" cols="80" rows="10" id="{{ inputfields.idp_certificate.field }}" spaceholder="" title="{{ inputfields.idp_certificate.formtitle}}">{{ inputfields.idp_certificate.value|raw }}</textarea>
+                                {% if inputfields.idp_certificate.errors == true %}
+                                    <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_certificate.errors }}</div>
+                                {% endif %}
+                                {% if inputfields.idp_certificate.validate.subject.CN == true %}
+                                    <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">🆗 Valid Certificate found: {{ inputfields.idp_certificate.validate.subject.CN }}</div>
+                                {% endif %}
+                                {% if inputfields.idp_certificate.validate.validations.validTo == true %}
+                                    <div id="textHelper" class="form-text" style="color:rgb(180, 140, 8);">{{ inputfields.idp_certificate.validate.validations.validTo }}</div>
+                                {% endif %}
+                                {% if inputfields.idp_certificate.validate.validations.validFrom == true %}
+                                    <div id="textHelper" class="form-text" style="color:rgb(180, 140, 8);">{{ inputfields.idp_certificate.validate.validations.validFrom }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- requested_authn_context -->
-                    <div class="col-md-7 p-1">
-                        <label for="{{ inputfields.requested_authn_context.field }}" class="form-label">{{ inputfields.requested_authn_context.formlabel }}</label>
-                        <select id="keep-order" multiple="multiple" aria-label="multiple select" name="{{ inputfields.requested_authn_context.field }}[]">
-                            {% for key, authn in inputOptionsAuthnContext %}
-                                    {%set selected = false %}
-                                    {% for value in inputfields.requested_authn_context.value %}
-                                        {% if value == key %}
-                                            {% set selected = 'selected' %}
-                                            {{value }} - {{ key }}
-                                        {% endif %}
-                                    {% endfor %}
-                                        <option {{ selected }} value="{{ key }}">{{ authn }}</option>
-                                {% endfor %}
-                        </select>
-                        {% if inputfields.requested_authn_context.errors == true %}
-                            <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.requested_authn_context.errors }}</div>
-                        {% endif %}	
+                    <div class="col-md-9 p-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <b>{{ inputfields.requested_authn_context.formtitle }}</b>
+                            </div>
+                            <div class="card-body">
+                                <div class="explain explanation">{{ inputfields.requested_authn_context.formexplain }}</div>
+                                <select id="keep-order" multiple="multiple" aria-label="multiple select" name="{{ inputfields.requested_authn_context.field }}[]">
+                                    {% for key, authn in inputOptionsAuthnContext %}
+                                            {%set selected = false %}
+                                            {% for value in inputfields.requested_authn_context.value %}
+                                                {% if value == key %}
+                                                    {% set selected = 'selected' %}
+                                                {% endif %}
+                                            {% endfor %}
+                                                <option {{ selected }} value="{{ key }}">{{ authn }}</option>
+                                        {% endfor %}
+                                </select>
+                                {% if inputfields.requested_authn_context.errors == true %}
+                                    <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.requested_authn_context.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- requested_authn_context -->
-                    <div class="col-md-7 p-1">
-                        <label for="{{ inputfields.requested_authn_context_comparison.field }}" class="form-label">{{ inputfields.requested_authn_context_comparison.formtitle }} </label>
-                        <select name="{{ inputfields.requested_authn_context_comparison.field }}" id="{{ inputfields.requested_authn_context_comparison.field }}" title="{{ inputfields.requested_authn_context_comparison.field }}">
-                                {% for key, authnc in inputOptionsAuthnCompare %}
-                                    {% if inputfields.requested_authn_context_comparison.value == key %}
-                                        <option selected value="{{ key }}">{{ authnc }}</option>
-                                    {% else %}
-                                        <option value="{{ key }}">{{ authnc }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                        </select>	
-                        {% if inputfields.requested_authn_context_comparison.errors == true %}
-                            <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.requested_authn_context_comparison.errors }}</div>
-                        {% endif %}
+                    <div class="col-md-9 p-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <b>{{ inputfields.requested_authn_context_comparison.formtitle }}</b>
+                            </div>
+                            <div class="card-body">
+                                <div class="explain explanation">{{ inputfields.requested_authn_context_comparison.formexplain }}</div>
+                                <select name="{{ inputfields.requested_authn_context_comparison.field }}" id="{{ inputfields.requested_authn_context_comparison.field }}" title="{{ inputfields.requested_authn_context_comparison.field }}">
+                                        {% for key, authnc in inputOptionsAuthnCompare %}
+                                            {% if inputfields.requested_authn_context_comparison.value == key %}
+                                                <option selected value="{{ key }}">{{ authnc }}</option>
+                                            {% else %}
+                                                <option value="{{ key }}">{{ authnc }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                </select>	
+                                {% if inputfields.requested_authn_context_comparison.errors == true %}
+                                    <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.requested_authn_context_comparison.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -436,138 +590,198 @@
             <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="idp-tab">
                 <!-- Security configuration -->
                 <div class="card-body">
-                    <div class="row g-2">      
+                    <div class="row g-2"> 
+
                         <!-- enforce SSO -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.enforce_sso.field }}" class="form-label">{{ inputfields.enforce_sso.formlabel }}</label>
-                            <select name="{{ inputfields.enforce_sso.field }}" id="{{ inputfields.enforce_sso.field }}" title="{{ inputfields.enforce_sso.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.enforce_sso.value == key %}
-                                    <option selected value="{{ key }}" >{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
-                            {% if inputfields.enforce_sso.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.enforce_sso.errors }}</div>
-                            {% endif %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.enforce_sso.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.enforce_sso.formexplain }}</div>
+
+                                    <select name="{{ inputfields.enforce_sso.field }}" 
+                                            id="{{ inputfields.enforce_sso.field }}" 
+                                            title="{{ inputfields.enforce_sso.formtitle }}">
+                                        {% for key, yesno in inputOptionsBool %}
+                                            {% if inputfields.enforce_sso.value == key %}
+                                                <option selected value="{{ key }}" >{{ yesno }}</option>
+                                            {% else %}
+                                                <option value="{{ key }}">{{ yesno }}</option>
+                                            {% endif %}
+                                        {% else %}
+                                            <option selected value="0">No!</option><option value="1">Yes!</option>
+                                        {% endfor %}
+                                    </select>
+
+                                    {% if inputfields.enforce_sso.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.enforce_sso.errors }}</div>
+                                    {% endif %}
+                              </div>
+                            </div>
                         </div>
 
                         <!-- Strict mode -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.strict.field }}" class="form-label">{{ inputfields.strict.formlabel }}</label>
-                            <select name="{{ inputfields.strict.field }}" id="{{ inputfields.strict.field }}" title="{{ inputfields.strict.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.strict.value == key %}
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
-                            {% if inputfields.strict.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.strict.errors }}</div>
-                            {% endif %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.strict.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.strict.formexplain }}</div>
+
+                                    <select name="{{ inputfields.strict.field }}" id="{{ inputfields.strict.field }}" title="{{ inputfields.strict.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.strict.value == key %}
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                    {% if inputfields.strict.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.strict.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
 
-                         <!-- Jit usercreation mode -->
-                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.user_jit.field }}" class="form-label">{{ inputfields.user_jit.formlabel }}</label>
-                            <select name="{{ inputfields.user_jit.field }}" id="{{ inputfields.user_jit.field }}" title="{{ inputfields.user_jit.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.user_jit.value == key %}
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
-                            {% if inputfields.user_jit.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.user_jit.errors }}</div>
-                            {% endif %}
+                        <!-- Jit usercreation mode -->
+                        <div class="col-md-5 p-2">
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.user_jit.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.user_jit.formexplain }}</div>
+
+                                    <select name="{{ inputfields.user_jit.field }}" id="{{ inputfields.user_jit.field }}" title="{{ inputfields.user_jit.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.user_jit.value == key %}
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                    {% if inputfields.user_jit.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.user_jit.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
 
                         <!-- security_nameidencrypted -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.security_nameidencrypted.field }}" class="form-label">{{ inputfields.security_nameidencrypted.formlabel }}</label>
-                            <select name="{{ inputfields.security_nameidencrypted.field }}" id="{{ inputfields.security_nameidencrypted.field }}" title="{{ inputfields.security_nameidencrypted.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.security_nameidencrypted.value == key %}
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
-                            {% if inputfields.security_nameidencrypted.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_nameidencrypted.errors }}</div>
-                            {% endif %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.security_nameidencrypted.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.security_nameidencrypted.formexplain }}</div>
+                            
+                                    <select name="{{ inputfields.security_nameidencrypted.field }}" id="{{ inputfields.security_nameidencrypted.field }}" title="{{ inputfields.security_nameidencrypted.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.security_nameidencrypted.value == key %}
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                    {% if inputfields.security_nameidencrypted.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_nameidencrypted.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
 
                         <!-- security_authnrequestssigned -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.security_authnrequestssigned.field }}" class="form-label">{{ inputfields.security_authnrequestssigned.formlabel }}</label>
-                            <select name="{{ inputfields.security_authnrequestssigned.field }}" id="{{ inputfields.security_authnrequestssigned.field }}" title="{{ inputfields.security_authnrequestssigned.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.security_authnrequestssigned.value == key %}
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
-                            {% if inputfields.security_authnrequestssigned.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_authnrequestssigned.errors }}</div>
-                            {% endif %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.security_authnrequestssigned.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.security_authnrequestssigned.formexplain }}</div>    
+
+                                    <select name="{{ inputfields.security_authnrequestssigned.field }}" id="{{ inputfields.security_authnrequestssigned.field }}" title="{{ inputfields.security_authnrequestssigned.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.security_authnrequestssigned.value == key %}
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                    {% if inputfields.security_authnrequestssigned.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_authnrequestssigned.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
 
                         <!-- security_authnrequestssigned -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.security_logoutrequestsigned.field }}" class="form-label">{{ inputfields.security_logoutrequestsigned.formlabel }}</label>
-                            <select name="{{ inputfields.security_logoutrequestsigned.field }}" id="{{ inputfields.security_logoutrequestsigned.field }}" title="{{ inputfields.security_logoutrequestsigned.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.security_logoutrequestsigned.value == key %}
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
-                            {% if inputfields.security_logoutrequestsigned.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_logoutrequestsigned.errors }}</div>
-                            {% endif %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.security_logoutrequestsigned.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.security_logoutrequestsigned.formexplain }}</div>    
+
+                                    <select name="{{ inputfields.security_logoutrequestsigned.field }}" id="{{ inputfields.security_logoutrequestsigned.field }}" title="{{ inputfields.security_logoutrequestsigned.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.security_logoutrequestsigned.value == key %}
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                    {% if inputfields.security_logoutrequestsigned.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_logoutrequestsigned.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
 
                         <!-- security_authnrequestssigned -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.security_logoutresponsesigned.field }}" class="form-label">{{ inputfields.security_logoutresponsesigned.formlabel }}</label>
-                            <select name="{{ inputfields.security_logoutresponsesigned.field }}" id="{{ inputfields.security_logoutresponsesigned.field }}" title="{{ inputfields.security_logoutrequestsigned.title }}">
-                            {% for key, yesno in inputOptionsBool %}
-                                {% if inputfields.security_logoutresponsesigned.value == key %}
-                                    <option selected value="{{ key }}">{{ yesno }}</option>
-                                {% else %}
-                                    <option value="{{ key }}">{{ yesno }}</option>
-                                {% endif %}
-                            {% else %}
-                                <option selected value="0">No!</option><option value="1">Yes!</option>
-                            {% endfor %}
-                            </select>
-                            {% if inputfields.security_logoutresponsesigned.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_logoutresponsesigned.errors }}</div>
-                            {% endif %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>{{ inputfields.security_logoutresponsesigned.formtitle }}</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="explain explanation">{{ inputfields.security_logoutresponsesigned.formexplain }}</div>
+
+                                    <select name="{{ inputfields.security_logoutresponsesigned.field }}" id="{{ inputfields.security_logoutresponsesigned.field }}" title="{{ inputfields.security_logoutrequestsigned.formtitle }}">
+                                    {% for key, yesno in inputOptionsBool %}
+                                        {% if inputfields.security_logoutresponsesigned.value == key %}
+                                            <option selected value="{{ key }}">{{ yesno }}</option>
+                                        {% else %}
+                                            <option value="{{ key }}">{{ yesno }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option selected value="0">No!</option><option value="1">Yes!</option>
+                                    {% endfor %}
+                                    </select>
+                                    {% if inputfields.security_logoutresponsesigned.errors == true %}
+                                        <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_logoutresponsesigned.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -586,22 +800,23 @@
             </div>
         </div>
     </div>
-        <div class="buttons-bar d-flex py-2 itil-footer">
-            <div class="form-buttons col-lg d-flex justify-content-between ms-auto ms-lg-0">
-                <div>
-                    <button class="btn btn-primary" type="submit" name="update" title="Save">
-                        <i class="far fa-save"></i>
-                        <span class="d-none d-xl-block">{{ submit }}</span>
-                     </button>
-                </div>
-                <div>
-                    <button class="btn btn-outline-danger" type="submit" name="delete" title="" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Put in trashbin">
-                        <i class="ti ti-trash"></i>
-                        <span class="d-none d-xl-block">{{ delete }}</span>
-                     </button>
-                </div>
+    <div class="itil-footer m-2">
+        <div class="header">
+        <div class="form-buttons col-lg d-flex justify-content-between ms-auto ms-lg-0">
+            <div>
+                <button class="btn btn-primary" type="submit" name="update" title="Save">
+                    <i class="far fa-save"></i>
+                    <span class="d-none d-xl-block">{{ submit }}</span>
+                    </button>
+            </div>
+            <div>
+                <button class="btn btn-outline-danger" type="submit" name="delete" title="" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Put in trashbin">
+                    <i class="ti ti-trash"></i>
+                    <span class="d-none d-xl-block">{{ delete }}</span>
+                    </button>
             </div>
         </div>
-    <div>&nbsp;</div>
+        </div>
+    </div>
 </div>
 {{ close_form|raw }}

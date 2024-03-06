@@ -40,34 +40,27 @@
  *  @link       https://github.com/DonutsNL/GLPISaml
  * ------------------------------------------------------------------------
  *
- * POV: The correct object name should be 'Authflow.' But people tend to
- * generalize and not care for the individual steps of IAAA,
- * so for maintainability purposes I chose to call it 'login' instead
- * of 'Auth' where Auth might also cause duplication issues where Auth is
- * also being handled by OneLogin\PhpSaml\Auth.
- * 
  * The concern this class adresses is added because we want to add support
  * for multiple idp's. Deciding what idp to use might involve more complex
  * algorithms then we used (1:1) in the previous version of phpSaml. These
  * can then be implemented here.
- * 
+ *
  **/
 
- namespace GlpiPlugin\Glpisaml;
+namespace GlpiPlugin\Glpisaml;
 
-use Plugin;
 use Html;
-use GlpiPlugin\Glpisaml\Exclude;
-use GlpiPlugin\Glpisaml\LoginState;
-use GlpiPlugin\Glpisaml\Config;
-use GlpiPlugin\Glpisaml\Config\ConfigEntity;
-
+use Plugin;
+use Session;
 use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\Settings;
+use GlpiPlugin\Glpisaml\Config;
+use GlpiPlugin\Glpisaml\Exclude;
+use GlpiPlugin\Glpisaml\LoginState;
+use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 
-class LoginFlow
+class LoginFlow 
 {
-
     /**
      * Where to find the loginScreen template.
      * @since 1.0.0
@@ -83,24 +76,97 @@ class LoginFlow
      */
     public function doAuth()  : bool
     {
-        if(isset($_POST['phpsaml'])){
-            print "<h1> WE GOT THE LOGIN REQUEST LETS PROCESS</h1>";
-            print $_POST['phpsaml'];
-            html::redirect('/');//exit;
+        global $CFG_GLPI;
+
+        // process SAML excluded paths
+        if ($this->isExcluded()) {
+            return true;
         }
-        // Evaluate current login state
+        
+        // Check if a SAML button was pressed and handle request!
+        if (isset($_POST['phpsaml'])) {
+            html::redirect($CFG_GLPI["root_doc"].'/#YESGOTLOGIN');
+        }
+
+        // Check if the logout button was pressed and handle request!
+        if (strpos($_SERVER['REQUEST_URI'], 'front/logout.php') !== false) {
+            // Stops GLPI from processing cookiebased autologin.
+            $_SESSION['noAUTO'] = 1;
+            $this->performGlpiLogOff();
+            $this->performSamlLogOff();
+        }
+
+        // Else validate the state possibly redirect back to login
+        // resetting the state if there is an issue.
         $state = new Loginstate();
         if ($state->isAuthenticated()) {
             return true;
+        }else{
+            return false;
         }
+    }
 
-        // Dont peform auth for CLI calls.
-        if (PHP_SAPI === 'cli'         ||
-            Exclude::ProcessExcludes() ){
-            return true;
+    /**
+     * Makes sure user is logged out of GLPI
+     * @return void
+     */
+    protected function performGlpiLogOff(): void
+    {
+        $validId   = @$_SESSION['valid_id'];
+        $cookieKey = array_search($validId, $_COOKIE);
+        
+        Session::destroy();
+        
+        //Remove cookie to allow new login
+        $cookiePath = ini_get('session.cookie_path');
+        
+        if (isset($_COOKIE[$cookieKey])) {
+           setcookie($cookieKey, '', time() - 3600, $cookiePath);
+           unset($_COOKIE[$cookieKey]);
         }
+    }
+    
 
-        return true;
+     /**
+     * Makes sure user is logged out of responsible IDP provider
+     * @return void
+     */
+    protected function performSamlLogOff(): void
+    {
+        global $CFG_GLPI;
+        /*
+        $returnTo           = null;
+        $parameters         = [];
+        $nameId             = (isset(self::$nameid))        ? self::$nameid         : null;
+        $sessionIndex       = (isset(self::$sessionindex))  ? self::$sessionindex   : null;
+        $nameIdFormat       = (isset(self::$nameidformat))  ? self::$nameidformat   : null;
+
+        if (!empty(self::$phpsamlsettings['idp']['singleLogoutService'])){
+            try {
+                self::auth();
+                self::$auth->logout($returnTo, $parameters, $nameId, $sessionIndex, false, $nameIdFormat);
+            } catch (Exception $e) {
+                $error = $e->getMessage();
+                Toolbox::logInFile("php-errors", $error . "\n", true);
+                
+                Html::nullHeader("Login", $CFG_GLPI["url_base"] . '/index.php');
+                echo '<div class="center b">'.$error.'<br><br>';
+                // Logout whit noAUto to manage auto_login with errors
+                echo '<a href="' . $CFG_GLPI["url_base"] .'/index.php">' .__('Log in again') . '</a></div>';
+                Html::nullFooter();
+            }
+        }
+        */
+    }
+
+    protected function isExcluded(): bool
+    {
+        //https://github.com/derricksmith/phpsaml/issues/159
+        // Dont perform auth on CLI, asserter service and manually excluded files.
+        // TODO: do some form of logging in the sessionState table so we know whats going on under the hood.
+        return (PHP_SAPI == 'cli'           ||
+                Exclude::ProcessExcludes()  ||
+                strpos($_SERVER['REQUEST_URI'], 'acs.php') !== false) ? true : false;
     }
 
     /**
