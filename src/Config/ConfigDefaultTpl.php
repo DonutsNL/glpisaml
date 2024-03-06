@@ -2,6 +2,7 @@
 
 namespace GlpiPlugin\Glpisaml\Config;
 
+use OneLogin\Saml2\Constants as Saml2Const;
 use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 
 /**
@@ -22,7 +23,7 @@ class ConfigDefaultTpl {
                  ConfigEntity::USER_JIT         => true,
                  ConfigEntity::SP_CERTIFICATE   => 'base64 encoded service provider certificate string',
                  ConfigEntity::SP_KEY           => 'base64 encoded service provider private key string',
-                 ConfigEntity::SP_NAME_FORMAT   => 'emailaddress',
+                 ConfigEntity::SP_NAME_FORMAT   =>  Saml2Const::NAMEID_EMAIL_ADDRESS,
                  ConfigEntity::IDP_ENTITY_ID    => 'Azure SAML Entity ID string',
                  ConfigEntity::IDP_SSO_URL      => 'Azure SAML Single Sign On url',
                  ConfigEntity::IDP_SLO_URL      => 'Azure SAML Singlo Logoff Url',

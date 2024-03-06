@@ -128,11 +128,12 @@ class ConfigEntity extends ConfigItem
         if(!$id || $id == -1) {
             // negative identifier equals populate using a template file
             $options = (!empty($options['template'])) ? $options : ['template' => 'default'];
-            return $this->validateAndPopulateTemplateEntity($options);
+            $this->validateAndPopulateTemplateEntity($options);
         } else {
             // positive identifier equals populate using on a database row
-            return $this->validateAndPopulateDBEntity($id);
+            $this->validateAndPopulateDBEntity($id);
         }
+        return $this;
     }
 
 
@@ -142,12 +143,11 @@ class ConfigEntity extends ConfigItem
      * @param  array   $options      - name of the Config[NAME]Tpl class to use as template.
      * @return object  ConfigEntity    - returns instance of ConfigEntity.
      */
-    private function validateAndPopulateTemplateEntity(array $options): ConfigEntity    //NOSONAR we are to lazy to split method further.
+    private function validateAndPopulateTemplateEntity(array $options): void    //NOSONAR we are to lazy to split method further.
     {
         // Create entity based on post inputs
         if($options['template'] == 'post'       &&
            array_key_exists('postData', $options)   ){
-
             $this->populationSource = 'post';
             // Only evaluate valid Config Items;
             $configItems = $this->getConstants();
@@ -156,13 +156,10 @@ class ConfigEntity extends ConfigItem
                     $this->evaluateItem($field, $value);
                 }
             }
-
         }else{
-
             // Locate our template file
             $templateClass = 'GlpiPlugin\Glpisaml\Config\Config'.$options['template'].'Tpl';
             $this->populationSource = $templateClass;
-
             if(!class_exists($templateClass)){
                 //Fallback
                 $templateClass = 'GlpiPlugin\Glpisaml\Config\ConfigDefaultTpl';
@@ -177,11 +174,7 @@ class ConfigEntity extends ConfigItem
                 // Might be issue, we assume the correct fields are declared in returned array.
                 $this->evaluateItem($field, $value);
             }
-            
         }
-        // Do some final consistancy check here.
-
-        return $this;
     }
 
 
@@ -191,7 +184,7 @@ class ConfigEntity extends ConfigItem
      * @param  int      $id             - id of the database row to fetch
      * @return object   ConfigEntity    - returns instance of ConfigEntity.
      */
-    private function validateAndPopulateDBEntity($id): ConfigEntity
+    private function validateAndPopulateDBEntity($id): void
     {
         $this->populationSource = 'Database:'.$id;
 
@@ -207,11 +200,9 @@ class ConfigEntity extends ConfigItem
         }else{
             // Return the default configuration, this exception can be verified
             // by checking the absence of the 'id' field in the returned ConfigEntity.
-            return $this->validateAndPopulateTemplateEntity(['template' => 'default']);
+            $this->validateAndPopulateTemplateEntity(['template' => 'default']);
         }
         // Do some final consistancy check here.
-
-        return $this;
     }
 
 
@@ -230,7 +221,8 @@ class ConfigEntity extends ConfigItem
     {
         // TODO: Clean up using class extend instead of external static call. //NOSONAR
         // TODO: We want coders to be forced to always use configEntity and not create loopholes.   //NOSONAR 
-        $evaluatedItem = (is_callable(array((new ConfigItem), $field))) ? configItem::$field($value) : ConfigItem::noMethod($field, $value);
+        $evaluatedItem = (method_exists(get_parent_class($this), $field)) ? $this->$field($value) : $this->noMethod($field, $value);
+
         if(isset($evaluatedItem[ConfigItem::EVAL])      &&
            $evaluatedItem[ConfigItem::EVAL] == 'valid'  ){
             $this->fields[$field] = $evaluatedItem[ConfigItem::VALUE];
@@ -264,10 +256,11 @@ class ConfigEntity extends ConfigItem
 
 
     /**
-     * This function will return contextual information about the available
-     * configuration fields.
+     * This function will return contextual and actual information about the handled
+     * configuration fields. It will also perform advanced validations and correct
+     * invalid configuration options before save in database.
      *
-     * Intended for generating Config->searchOptions, perform unittests and debugging.
+     * Intended for generating Config->searchOptions, ConfigForm->showForm().
      *
      * @param  bool     $debug  - If true will only return fields without predefined class Constant and preloaded value.
      * @return array            - ConfigEntity field information
@@ -292,6 +285,65 @@ class ConfigEntity extends ConfigItem
                 $fields[$data['Field']] = array_merge($fields[$data['Field']], $this->evaluateItem($data['Field'], (isset($this->fields[$data['Field']])) ? $this->fields[$data['Field']] : ''));
             }
         }
+        // Validate spcert and key if provided
+        $fields = $this->validateAdvancedConfig($fields);
+        return $fields;
+    }
+
+    public function getFieldsForDB(): array
+    {
+        foreach($this->getFields() as $key => $value){
+            $return[$key] = $value[ConfigItem::VALUE];
+        }
+        return $return;
+    }
+
+    /**
+     * Validate advanced configuration options and correct params if not supported by provided setup.
+     *
+     * @param  array $fields from getFields()
+     * @return array $fields with corrected configuration options
+     */
+    private function validateAdvancedConfig(array $fields): array
+    {
+        $disable = false;
+        if(empty($fields[configEntity::SP_CERTIFICATE][ConfigItem::VALUE]) || empty($fields[configEntity::SP_KEY][ConfigItem::VALUE])){
+            $disable = true;
+        }else{
+            // Perform key validation
+            if(!$this->validateCertKeyPairModulus($fields[configEntity::SP_CERTIFICATE][configItem::VALUE], $fields[configEntity::SP_KEY][configItem::VALUE])){
+                $fields[configEntity::SP_KEY][configItem::ERRORS] = __('⚠️ SP private key does not seem to match provided SP certificates modulus.', PLUGIN_NAME);
+                $disable = true;
+            } // Only show key issue on error.
+        }
+        if($disable){
+            // Strict cannot be enabled without valid certificate!
+            if($fields[configEntity::STRICT][configItem::VALUE] == true){
+                $fields[configEntity::STRICT][configItem::VALUE] = false;
+                $fields[configEntity::STRICT][configItem::ERRORS] = __('⚠️ Will be defaulted back to "No" because SP certificate is not valid!', PLUGIN_NAME);
+            }
+            // Strict cannot be enabled without valid certificate!
+            if($fields[configEntity::ENCRYPT_NAMEID][configItem::VALUE] == true){
+                $fields[configEntity::ENCRYPT_NAMEID][configItem::VALUE] = false;
+                $fields[configEntity::ENCRYPT_NAMEID][configItem::ERRORS] = __('⚠️ Will be defaulted back to "No" because SP certificate is not valid!', PLUGIN_NAME);
+            }
+            // Strict cannot be enabled without valid certificate!
+            if($fields[configEntity::SIGN_AUTHN][configItem::VALUE] == true){
+                $fields[configEntity::SIGN_AUTHN][configItem::VALUE] = false;
+                $fields[configEntity::SIGN_AUTHN][configItem::ERRORS] = __('⚠️ Will be defaulted back to "No" because SP certificate is not valid!', PLUGIN_NAME);
+            }
+            // Strict cannot be enabled without valid certificate!
+            if($fields[configEntity::SIGN_SLO_REQ][configItem::VALUE] == true){
+                $fields[configEntity::SIGN_SLO_REQ][configItem::VALUE] = false;
+                $fields[configEntity::SIGN_SLO_REQ][configItem::ERRORS] = __('⚠️ Will be defaulted back to "No" because SP certificate is not valid!', PLUGIN_NAME);
+            }
+            // Strict cannot be enabled without valid certificate!
+            if($fields[configEntity::SIGN_SLO_RES][configItem::VALUE] == true){
+                $fields[configEntity::SIGN_SLO_RES][configItem::VALUE] = false;
+                $fields[configEntity::SIGN_SLO_RES][configItem::ERRORS] = __('⚠️ Will be defaulted back to "No" because SP certificate is not valid!', PLUGIN_NAME);
+            }
+        }
+
         return $fields;
     }
 
@@ -337,6 +389,17 @@ class ConfigEntity extends ConfigItem
         return $this->fields[ConfigEntity::IS_ACTIVE];
     }
 
+    public function getRequestedAuthnContextArray(): array
+    {
+
+        var_dump($this->fields[ConfigEntity::AUTHN_CONTEXT]);
+        if(strstr($this->fields[ConfigEntity::AUTHN_CONTEXT], ':')){
+            return explode(':', $this->fields[ConfigEntity::AUTHN_CONTEXT]);
+        }else{
+            return [$this->fields[ConfigEntity::AUTHN_CONTEXT][ConfigEntity::VALUE]];
+        }
+    }
+
     /**
      * Pupulates and returns the configuration array for the PHP-saml library.
      *
@@ -352,8 +415,6 @@ class ConfigEntity extends ConfigItem
             return ['strict'                                => $this->fields[ConfigEntity::STRICT],
                     'debug'                                 => $this->fields[ConfigEntity::DEBUG],
                     'baseurl'                               => null,
-
-                    // Serviceprovider config
                     'sp' => [
                         'entityId'                          => $CFG_GLPI['url_base'].'/',
                         'assertionConsumerService'          => [
@@ -368,8 +429,6 @@ class ConfigEntity extends ConfigItem
                                                                 (isset($this->fields[ConfigEntity::SP_NAME_FORMAT]) ? $this->fields[ConfigEntity::SP_NAME_FORMAT]
                                                                                                                     : 'unspecified'),
                     ],
-
-                    // Identity provider config
                     'idp'                                   => [
                         'entityId'                          => $this->fields[ConfigEntity::IDP_ENTITY_ID],
                         'singleSignOnService'               => [
@@ -380,14 +439,10 @@ class ConfigEntity extends ConfigItem
                         ],
                         'x509cert'                          => $this->fields[ConfigEntity::IDP_CERTIFICATE],
                     ],
-
-                    // Compress requests and responses
                     'compress'                              => [
                         'requests'                          => $this->fields[ConfigEntity::COMPRESS_REQ],
                         'responses'                         => $this->fields[ConfigEntity::COMPRESS_RES],
                     ],
-
-                    // Security configuration
                     'security'                              => [
                         'nameIdEncrypted'                   => $this->fields[ConfigEntity::ENCRYPT_NAMEID],
                         'authnRequestsSigned'               => $this->fields[ConfigEntity::SIGN_AUTHN],

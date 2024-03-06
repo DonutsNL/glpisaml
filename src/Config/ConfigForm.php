@@ -48,6 +48,7 @@ use Html;
 use Plugin;
 use Session;
 use GlpiPlugin\Glpisaml\Config as SamlConfig;
+use OneLogin\Saml2\Constants as Saml2Const;
 
 
 /**
@@ -74,7 +75,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
             // Remove ID from the postData
             unset($postData[ConfigEntity::ID]);
             $config = new SamlConfig();
-            if($id = $config->add($postData)) {
+            if($id = $config->add($configEntity->getFieldsForDB())) {
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.form.php?id=$id");
             } else {
                 Session::addMessageAfterRedirect(__('Error: Unable to add new GlpiSaml configuration!', PLUGIN_NAME));
@@ -98,16 +99,22 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
         // Validate the configuration;
         $configEntity = new ConfigEntity(-1, ['template' => 'post', 'postData' => $postData]);
         if($configEntity->isValid()){
+            $post = $configEntity->getFieldsForDB();
+            $post['_glpi_csrf_token'] = $postData['_glpi_csrf_token'];  // Add csrf token
+            unset($post['date_creation']);                              // Dont update create date
+            unset($post['is_deleted']);                                 // Dont update deletion flag.
+
             $config = new SamlConfig();
             if($config->canUpdate()       &&
-               $config->update($postData) ){
-                Session::addMessageAfterRedirect(__('Configuration updates succesfully', PLUGIN_NAME));
+               $config->update($post) ){
+                Session::addMessageAfterRedirect(__('Configuration updated succesfully', PLUGIN_NAME));
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
             } else {
-                Session::addMessageAfterRedirect(__('Not allowed or error updating SAML configuration!', PLUGIN_NAME));
+                Session::addMessageAfterRedirect(__('You are not allowed or there is an SQL error updating SAML configuration!', PLUGIN_NAME));
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
             }
         }else{
+            Session::addMessageAfterRedirect(__('Configuration is not valid, update is prevented', PLUGIN_NAME));
             return $this->generateForm($configEntity);
         }
     }
@@ -187,9 +194,15 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
                                                 configEntity::SIGN_SLO_REQ,
                                                 configEntity::SIGN_SLO_RES]];
         // Parse config fields
+        $warnings = '';
         foreach($tabFields as $tab => $entityFields){
             foreach($entityFields as $field) {
                 if(!empty($fields[$field]['errors'])){
+                    $warnings[$tab] = '⚠️';
+                }
+                // Add cert validation warnings
+                if(!empty($fields[$field]['validate']['validations']['validTo'])   ||
+                   !empty($fields[$field]['validate']['validations']['validFrom']) ){
                     $warnings[$tab] = '⚠️';
                 }
             }
@@ -204,6 +217,10 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
         // Get warnings tabs
         $tplVars  = [];
         $tplVars = array_merge($tplVars, $this->getTabWarnings($fields));
+       
+        // Get AuthN context as array
+        $fields[ConfigEntity::AUTHN_CONTEXT][ConfigEntity::VALUE] = $configEntity->getRequestedAuthnContextArray();
+       
         // Define static field translations
         $tplVars = array_merge($tplVars, [
             'submit'                    =>  __('Save', PLUGIN_NAME),
@@ -220,15 +237,16 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
             'available'                 =>  __('Available', 'phpsaml'),
             'selected'                  =>  __('Selected', 'phpsaml'),
             'inputfields'               =>  $fields,
-            'inputOptionsBool'          =>  [ 1                             => __('Yes', PLUGIN_NAME),
-                                              0                             => __('No', PLUGIN_NAME)],
-            'inputOptionsNameFormat'    =>  ['unspecified'                  => __('Unspecified', PLUGIN_NAME),
-                                             'emailAddress'                 => __('Email Address', PLUGIN_NAME),
-                                             'transient'                    => __('Transient', PLUGIN_NAME),
-                                             'persistent'                   => __('Persistent', PLUGIN_NAME)],
+            'inputOptionsBool'          =>  [ 1                                 => __('Yes', PLUGIN_NAME),
+                                              0                                 => __('No', PLUGIN_NAME)],
+            'inputOptionsNameFormat'    =>  [Saml2Const::NAMEID_UNSPECIFIED     => __('Unspecified', PLUGIN_NAME),
+                                             Saml2Const::NAMEID_EMAIL_ADDRESS   => __('Email Address', PLUGIN_NAME),
+                                             Saml2Const::NAMEID_TRANSIENT       => __('Transient', PLUGIN_NAME),
+                                             Saml2Const::NAMEID_PERSISTENT      => __('Persistent', PLUGIN_NAME)],
             'inputOptionsAuthnContext'  =>  ['PasswordProtectedTransport'   => __('PasswordProtectedTransport', PLUGIN_NAME),
                                              'Password'                     => __('Password', PLUGIN_NAME),
-                                             'X509'                         => __('X509', PLUGIN_NAME)],
+                                             'X509'                         => __('X509', PLUGIN_NAME),
+                                             'none'                         => __('none', PLUGIN_NAME)],
             'inputOptionsAuthnCompare'  =>  ['exact'                        => __('Exact', PLUGIN_NAME),
                                              'minimum'                      => __('Minimum', PLUGIN_NAME),
                                              'maximum'                      => __('Maximum', PLUGIN_NAME),

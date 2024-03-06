@@ -274,27 +274,10 @@ class Config extends CommonDBTM
         // Debug entries Delete when implemented.
         $query = <<<SQL
         INSERT INTO $table
-        VALUES('1', 'test 1', '@Donuts.nl', 'icon', '1', '1', '1', '1', '1', 'sp_cert',
-               'sp_key','email address','idp_entity_id','sso_url','slo_url','idp_cert',
-               'authn1','authn2','1','1','1','1','1','1','1','1','1','comment','1','0',
-               CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-        SQL;
-        $DB->query($query) or die($DB->error());
-        //
-        $query = <<<SQL
-        INSERT INTO $table
-        VALUES('2', 'test 2', '@Donuts.nl', 'icon', '1', '1', '1', '1', '1', 'sp_cert',
-               'sp_key','email address','idp_entity_id','sso_url','slo_url','idp_cert',
-               'authn1','authn2','1','1','1','1','1','1','1','1','1','comment','1','0',
-               CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-        SQL;
-        $DB->query($query) or die($DB->error());
-        //
-        $query = <<<SQL
-        INSERT INTO $table
-        VALUES('3', 'test 3', '@Donuts.nl', 'icon', '1', '1', '1', '1', '1', 'sp_cert',
-               'sp_key','email address','idp_entity_id','sso_url','slo_url','idp_cert',
-               'authn1','authn2','1','1','1','1','1','1','1','1','1','comment','1','0',
+        VALUES('1', 'Example configuration', '@Donuts.nl', 'fa-brands fa-microsoft', '1', '1', '1', '1', '1', '-----BEGIN CERTIFICATE-----[YOUR BASE64 ENCODED SP CERT]-----END CERTIFICATE-----',
+               '-----BEGIN PRIVATE KEY-----[YOUR PRIVATE KEY]-----END PRIVATE KEY-----','urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress','https://sts.windows.net/[EntityID]/','https://login.microsoftonline.com/[APPID]/saml2',
+               'https://login.microsoftonline.com/[APPID]/saml2','-----BEGIN CERTIFICATE-----[YOUR BASE64 ENCODED IDP CERT]-----END CERTIFICATE-----',
+               'none','exact','1','1','1','1','1','1','1','1','1','Example configuration comment','1','0',
                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         SQL;
         $DB->query($query) or die($DB->error());

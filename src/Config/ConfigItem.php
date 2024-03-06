@@ -53,24 +53,26 @@ use Plugin;
  * assigning them to the configEntity or invalidates the passed value with an
  * understandable translatable errormessage.
  */
-class ConfigItem                                                        //NOSONAR
+class ConfigItem    //NOSONAR
 {
-    public const FIELD      = 'field';
-    public const TYPE       = 'datatype';
-    public const NULL       = 'notnull';
-    public const VALUE      = 'value';
-    public const VALID      = 'valid';
-    public const INVALID    = 'invalid';
-    public const RICHVALUE  = 'richvalue';
-    public const EVAL       = 'eval';
-    public const ERRORS     = 'errors';
-    public const VALIDATE   = 'validate';                               // Could either be single validation or array
-    public const CONSTANT   = 'itemconstant';
-    public const FORMLABEL  = 'formlabel';
-    public const FORMTITLE  = 'formtitle';
-    public const VALIDATOR  = 'validator';
+    public const FIELD      = 'field';                                  // Name of the database field
+    public const TYPE       = 'datatype';                               // Database type
+    public const NULL       = 'notnull';                                // NOT NULL setting
+    public const VALUE      = 'value';                                  // Database value
+    public const VALID      = 'valid';                                  // Is content valid?
+    public const INVALID    = 'invalid';                                // Is content invalid?
+    public const RICHVALUE  = 'richvalue';                              // Rich values (like date object)
+    public const EVAL       = 'eval';                                   // Evaluated properties
+    public const ERRORS     = 'errors';                                 // Encountered problems notnull will prevent DB update/inserts
+    public const VALIDATE   = 'validate';                               // Could either be string or array
+    public const CONSTANT   = 'itemconstant';                           // What class constant is used for item
+    public const FORMLABEL  = 'formlabel';                              // Form label to use with field
+    public const FORMTITLE  = 'formtitle';                              // Form title to use with field
+    public const VALIDATOR  = 'validator';                              // What validator was used
 
-    public static function noMethod(string $field, string $varue): array
+
+
+    protected function noMethod(string $field, string $varue): array
     {
         return [self::FORMLABEL => self::INVALID,
                 self::VALUE     => $varue,
@@ -80,7 +82,9 @@ class ConfigItem                                                        //NOSONA
                 self::ERRORS    => __("⭕ Undefined or no type validation found in ConfigValidate for item: $field", PLUGIN_NAME)];
     }
 
-    public static function id(mixed $var): array
+
+
+    protected function id(mixed $var): array
     {
         // Do some validation
         $error = false;
@@ -100,7 +104,9 @@ class ConfigItem                                                        //NOSONA
         ];
     }
 
-    public static function name(mixed $var): array
+
+
+    protected function name(mixed $var): array
     {
         return [self::FORMLABEL => __('Friendly name for the Idp configuration', PLUGIN_NAME),
                 self::FORMTITLE => __('IDP Friendly name', PLUGIN_NAME),
@@ -111,7 +117,9 @@ class ConfigItem                                                        //NOSONA
                 self::ERRORS    => ($var) ? null : __('⭕ Name is a required field', PLUGIN_NAME)];
     }
 
-    public static function conf_domain(mixed $var): array                   //NOSONAR
+
+
+    protected function conf_domain(mixed $var): array //NOSONAR
     {
         return [self::FORMLABEL => __('User domain for Idp config matching', PLUGIN_NAME),
                 self::FORMTITLE => __('Userdomain', PLUGIN_NAME),
@@ -122,9 +130,12 @@ class ConfigItem                                                        //NOSONA
                 self::ERRORS    => ($var) ? null : __('⭕ Configuration domain is a required field', PLUGIN_NAME)];
     }
 
-    // TODO - WIP
-    public static function sp_certificate(mixed $var): array                //NOSONAR
+
+
+    protected function sp_certificate(mixed $var): array //NOSONAR
     {
+        // Certificate is not required, if missing the ConfigEntity will toggle
+        // depending security options false.
         return [self::FORMLABEL => __('Service provider X509 certificate', PLUGIN_NAME),
                 self::FORMTITLE => __('base64 encoded x509 certificate', PLUGIN_NAME),
                 self::EVAL      => self::VALID,
@@ -134,8 +145,12 @@ class ConfigItem                                                        //NOSONA
                 self::VALIDATE  => self::parseX509Certificate($var)];
     }
 
-    public static function sp_private_key(mixed $var): array                //NOSONAR
+
+
+    protected function sp_private_key(mixed $var): array //NOSONAR
     {
+        // Private is not required, if missing or invalid the ConfigEntity will toggle
+        // depending security options to false.
         return [self::FORMLABEL => __('Service Provider certificate key', PLUGIN_NAME),
                 self::FORMTITLE => __('SP Certificate private key', PLUGIN_NAME),
                 self::EVAL      => self::VALID,
@@ -144,7 +159,9 @@ class ConfigItem                                                        //NOSONA
                 self::VALIDATOR => __method__,];
     }
 
-    public static function sp_nameid_format(mixed $var): array              //NOSONAR
+
+
+    protected function sp_nameid_format(mixed $var): array //NOSONAR
     {
         return [self::FORMLABEL => __('Service Provider provided nameId format', PLUGIN_NAME),
                 self::FORMTITLE => __('Service Provider nameID format', PLUGIN_NAME),
@@ -155,7 +172,9 @@ class ConfigItem                                                        //NOSONA
                 self::ERRORS => ($var) ? null : __('Service provider name id is a required field', PLUGIN_NAME)];
     }
 
-    public static function idp_entity_id(mixed $var): array                 //NOSONAR
+
+
+    protected function idp_entity_id(mixed $var): array //NOSONAR
     {
         return [self::FORMLABEL => __('Identity provider Entity ID', PLUGIN_NAME),
                 self::FORMTITLE => __('Identity Provider Entity ID', PLUGIN_NAME),
@@ -166,7 +185,9 @@ class ConfigItem                                                        //NOSONA
                 self::ERRORS => ($var) ? null : __('⭕ Identity provider entity id is a required field', PLUGIN_NAME)];
     }
 
-    public static function idp_single_sign_on_service(mixed $var): array    //NOSONAR
+
+
+    protected function idp_single_sign_on_service(mixed $var): array //NOSONAR
     {
         $error = false;
         $options = [FILTER_FLAG_PATH_REQUIRED];
@@ -184,7 +205,8 @@ class ConfigItem                                                        //NOSONA
                 self::ERRORS    => ($error) ? $error : null,];
     }
 
-    public static function idp_single_logout_service(mixed $var): array     //NOSONAR
+
+    protected function idp_single_logout_service(mixed $var): array //NOSONAR
     {
         $error = false;
         $options = [FILTER_FLAG_PATH_REQUIRED];
@@ -200,8 +222,9 @@ class ConfigItem                                                        //NOSONA
                 self::VALIDATOR => __method__,
                 self::ERRORS    => ($error) ? $error : null,];
     }
-    // TODO - WIP
-    public static function idp_certificate(mixed $var): array               //NOSONAR
+
+
+    protected function idp_certificate(mixed $var): array //NOSONAR
     {
         // Is a required field!
         $e = false;
@@ -220,18 +243,32 @@ class ConfigItem                                                        //NOSONA
                 self::VALIDATE  => self::parseX509Certificate($var)];
     }
 
-    public static function requested_authn_context(mixed $var): array       //NOSONAR
+
+    protected function requested_authn_context(mixed $var): array //NOSONAR
     {
+        // Normalize multiselect for database insert, form will pass an array
+        // Database field expects a string.
+        $val = '';
+        if(is_array($var)){
+            $j = (count($var)-1);
+            for($i = 0; $i <= $j; $i++){
+                $val .= ($i == $j) ? $var[$i] : $var[$i].':';
+            }
+        }else{
+            $val = $var;
+        }
+        $val = (empty($val)) ? 'none' : $val;
+
         return [self::FORMLABEL => __('Required AuthN context', PLUGIN_NAME),
                 self::FORMTITLE => __('Required AuthN context', PLUGIN_NAME),
-                self::EVAL      => ($var) ? self::VALID : self::INVALID,
-                self::VALUE     => (string) $var,
+                self::EVAL      => ($val) ? self::VALID : self::INVALID,
+                self::VALUE     => (string) $val,
                 self::FIELD     => __function__,
                 self::VALIDATOR => __method__,
-                self::ERRORS    => ($var) ? null : __('⭕ Requested authN context is a required field', PLUGIN_NAME)];
+                self::ERRORS    => ($val) ? null : __('⭕ Requested authN context is a required field', PLUGIN_NAME)];
     }
 
-    public static function requested_authn_context_comparison(mixed $var): array  //NOSONAR
+    protected function requested_authn_context_comparison(mixed $var): array  //NOSONAR
     {
         return [self::FORMLABEL => __('Required AuthN comparison', PLUGIN_NAME),
                 self::FORMTITLE => __('Required AuthN comparison', PLUGIN_NAME),
@@ -242,7 +279,7 @@ class ConfigItem                                                        //NOSONA
                 self::ERRORS    => ($var) ? null : __('⭕ Requested authN context comparison is a required field', PLUGIN_NAME)];
     }
 
-    public static function conf_icon(mixed $var): array                     //NOSONAR
+    protected function conf_icon(mixed $var): array                     //NOSONAR
     {
         return [self::FORMLABEL => __('Icon to use with this configuration', PLUGIN_NAME),
                 self::FORMTITLE => __('Login screen icon', PLUGIN_NAME),
@@ -253,7 +290,7 @@ class ConfigItem                                                        //NOSONA
                 self::ERRORS    => ($var) ? null : __('⭕ Configuration icon is a required field', PLUGIN_NAME)];
     }
 
-    public static function comment(mixed $var): array                       //NOSONAR
+    protected function comment(mixed $var): array                       //NOSONAR
     {
         return [self::FORMLABEL => __('Comments', PLUGIN_NAME),
                 self::FORMTITLE => __('Comments', PLUGIN_NAME),
@@ -264,7 +301,7 @@ class ConfigItem                                                        //NOSONA
     }
 
     // Might cast it into an EPOCH date with invalid values.
-    public static function date_creation(mixed $var): array                 //NOSONAR
+    protected function date_creation(mixed $var): array                 //NOSONAR
     {
         return [self::FORMLABEL => __('Date the config was created', PLUGIN_NAME),
                 self::FORMTITLE => __('Creation date', PLUGIN_NAME),
@@ -276,7 +313,7 @@ class ConfigItem                                                        //NOSONA
     }
 
     // Might cast it into an EPOCH date with invalid values.
-    public static function date_mod(mixed $var): array                      //NOSONAR
+    protected function date_mod(mixed $var): array                      //NOSONAR
     {
         return [self::FORMLABEL => __('Date the config was modified', PLUGIN_NAME),
                 self::FORMTITLE => __('Modification date', PLUGIN_NAME),
@@ -289,8 +326,10 @@ class ConfigItem                                                        //NOSONA
 
     // BOOLEANS, We accept mixed, normalize in the handleAsBool function.
     // non ints are defaulted to boolean false.
-    public static function is_deleted(mixed $var): array                    //NOSONAR
+    protected function is_deleted(mixed $var): array                    //NOSONAR
     {
+        if(empty($var)){ $var = '0'; }
+
         return array_merge([self::FORMLABEL     => __('Is field marked deleted', PLUGIN_NAME),
                             self::FORMTITLE     => __('is deleted', PLUGIN_NAME),
                             self::FIELD         => __function__,
@@ -298,7 +337,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, 'is_deleted'));
     }
 
-    public static function is_active(mixed $var): array                     //NOSONAR
+    protected function is_active(mixed $var): array                     //NOSONAR
     {
         return array_merge([self::FORMLABEL     => __('Is configuration active', PLUGIN_NAME),
                             self::FORMTITLE     => __('Is active', PLUGIN_NAME),
@@ -307,7 +346,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::IS_ACTIVE));
     }
 
-    public static function enforce_sso(mixed $var): array                   //NOSONAR 
+    protected function enforce_sso(mixed $var): array                   //NOSONAR 
     {
         return array_merge([self::FORMLABEL     => __('Is SSO enforced?', PLUGIN_NAME),
                             self::FORMTITLE     => __('SSO Enforced (depr)', PLUGIN_NAME),
@@ -316,7 +355,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::ENFORCE_SSO));
     }
 
-    public static function proxied(mixed $var): array
+    protected function proxied(mixed $var): array
     {
         return array_merge([self::FORMLABEL     => __('Is GLPI proxied', PLUGIN_NAME),
                             self::FORMTITLE     => __('Proxied', PLUGIN_NAME),
@@ -325,7 +364,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::PROXIED));
     }
 
-    public static function strict(mixed $var): array
+    protected function strict(mixed $var): array
     {
         return array_merge([self::FORMLABEL     => __('Is encryption enforced?', PLUGIN_NAME),
                             self::FORMTITLE     => __('Enforce SP encryption', PLUGIN_NAME),
@@ -334,7 +373,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::STRICT));
     }
 
-    public static function debug(mixed $var): array
+    protected function debug(mixed $var): array
     {
         return array_merge([self::FORMLABEL     => __('Is debug enabled?'),
                             self::FORMTITLE     => __('Enable debug', PLUGIN_NAME),
@@ -343,7 +382,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::DEBUG));
     }
 
-    public static function user_jit(mixed $var): array                      //NOSONAR
+    protected function user_jit(mixed $var): array //NOSONAR
     {
         return array_merge([self::FORMLABEL     => __('Is just in time usercreation enabled?'),
                             self::FORMTITLE     => __('Enable User JIT', PLUGIN_NAME),
@@ -352,7 +391,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::USER_JIT));
     }
 
-    public static function security_nameidencrypted(mixed $var): array        //NOSONAR
+    protected function security_nameidencrypted(mixed $var): array //NOSONAR
     {
         return array_merge([self::FORMLABEL     => __('Is nameId encrypted?'),
                             self::FORMTITLE     => __('Encrypt NameID', PLUGIN_NAME),
@@ -361,7 +400,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::ENCRYPT_NAMEID));
     }
 
-    public static function security_authnrequestssigned(mixed $var): array    //NOSONAR
+    protected function security_authnrequestssigned(mixed $var): array //NOSONAR
     {
         return array_merge([self::FORMLABEL     => __('Is AuthN request encrypted?'),
                             self::FORMTITLE     => __('Encrypt authN request', PLUGIN_NAME),
@@ -370,7 +409,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::SIGN_AUTHN));
     }
 
-    public static function security_logoutrequestsigned(mixed $var): array    //NOSONAR
+    protected function security_logoutrequestsigned(mixed $var): array //NOSONAR
     {
         return array_merge([self::FORMLABEL     => __('Is the logout request Signed?'),
                             self::FORMTITLE     => __('Sign logout request', PLUGIN_NAME),
@@ -379,7 +418,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::SIGN_SLO_REQ));
     }
 
-    public static function security_logoutresponsesigned(mixed $var): array   //NOSONAR
+    protected function security_logoutresponsesigned(mixed $var): array //NOSONAR
     {
         return array_merge([self::FORMLABEL     => __('Is logout response signed?'),
                             self::FORMTITLE     => __('Sign logout response', PLUGIN_NAME),
@@ -388,7 +427,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::SIGN_SLO_RES));
     }
 
-    public static function compress_requests(mixed $var): array               //NOSONAR
+    protected function compress_requests(mixed $var): array //NOSONAR
     {
         return array_merge([self::FORMLABEL     => __('Are requests compressed?'),
                             self::FORMTITLE     => __('Compress Idp requests', PLUGIN_NAME),
@@ -397,7 +436,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::COMPRESS_REQ));
     }
 
-    public static function compress_responses(mixed $var): array              //NOSONAR
+    protected function compress_responses(mixed $var): array //NOSONAR
     {
         return array_merge([self::FORMLABEL     => __('Are responses compressed?'),
                             self::FORMTITLE     => __('Compress Idp responses', PLUGIN_NAME),
@@ -406,7 +445,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::COMPRESS_RES));
     }
 
-    public static function validate_xml(mixed $var): array                    //NOSONAR
+    protected function validate_xml(mixed $var): array //NOSONAR
     {
         return array_merge([self::FORMLABEL     => __('Should we validate XML?'),
                             self::FORMTITLE     => __('Validate XML body', PLUGIN_NAME),
@@ -415,7 +454,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::XML_VALIDATION));
     }
 
-    public static function validate_destination(mixed $var): array            //NOSONAR
+    protected function validate_destination(mixed $var): array //NOSONAR
     {
         return array_merge([self::FORMLABEL     => __('Should we validate destinations?'),
                             self::FORMTITLE     => __('Validate destination', PLUGIN_NAME),
@@ -424,7 +463,7 @@ class ConfigItem                                                        //NOSONA
                             self::handleAsBool($var, ConfigEntity::DEST_VALIDATION));
     }
 
-    public static function lowercase_url_encoding(mixed $var): array          //NOSONAR
+    protected function lowercase_url_encoding(mixed $var): array //NOSONAR
     {
         return array_merge([self::FORMLABEL     => __('Should we use lowercase encodings?'),
                             self::FORMTITLE     => __('Use lowercase encoding', PLUGIN_NAME),
@@ -434,17 +473,17 @@ class ConfigItem                                                        //NOSONA
     }
 
     // Make sure we allways return the correct boolean datatype.
-    public static function handleAsBool(mixed $var, $field = null): array
+    protected function handleAsBool(mixed $var, $field = null): array
     {
         // Default to false if no or an impropriate value is provided.
         $error = (!empty($var) && !preg_match('/[0-1]/', $var)) ? __("⭕ $field can only be 1 or 0", PLUGIN_NAME) : null;
 
         return [self::EVAL   => (is_numeric($var)) ? self::VALID : self::INVALID,
-                self::VALUE  => (!$error) ? $var : 0,
+                self::VALUE  => (!$error) ? $var : '0',
                 self::ERRORS => $error];
     }
 
-    public static function parseX509Certificate(string $certificate): array|bool         //NOSONAR - Maybe fix complexity in the future
+    protected function parseX509Certificate(string $certificate): array|bool         //NOSONAR - Maybe fix complexity in the future
     {
         // Try to parse the reconstructed certificate.
         if (function_exists('openssl_x509_parse')) {
@@ -473,6 +512,16 @@ class ConfigItem                                                        //NOSONA
         } else {
             // Cant parse certificate OpenSSL not availble!
             return false;
+        }
+    }
+
+    protected function validateCertKeyPairModulus(string $certificate, string $privateKey): bool         //NOSONAR - Maybe fix complexity in the future
+    {
+        if (function_exists('openssl_x509_parse') && function_exists('openssl_x509_check_private_key')){
+            return (openssl_x509_check_private_key($certificate, [$privateKey, ''])) ? true : false;
+        }else{
+            // Cannot validate always return true;
+            return true;
         }
     }
 

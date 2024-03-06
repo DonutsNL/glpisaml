@@ -1,39 +1,4 @@
 <script>
-    $(function() {
-        $('#keep-order').multiSelect({
-            keepOrder: true,
-            selectableHeader: '<b>{{AVAILABLE}}</b>',
-            selectionHeader: '<b>{{SELECTED}}</b>',
-            cssClass: 'multiselect',
-            afterSelect: function(value, text){
-                var get_val = $("#{{REQUESTED_AUTHN_CONTEXT_FIELD}}").val();
-                var array = [];
-                if (get_val) var array = get_val.split(',');
-                if(!array.includes(value)){
-                    array.push(value);
-                }
-                var string = array.toString();
-                $("#{{REQUESTED_AUTHN_CONTEXT_FIELD}}").val(string);
-                
-            },
-            afterDeselect: function(value, text){
-                var get_val = $("#{{REQUESTED_AUTHN_CONTEXT_FIELD}}").val();
-                var array = [];
-                if (get_val){
-                    var array = get_val.split(',');
-                }
-                
-                var index = array.indexOf(value.toString());
-                if (index !== -1) {
-                  array.splice(index, 1);
-                }
-                var string = array.toString();
-                $("#{{REQUESTED_AUTHN_CONTEXT_FIELD}}").val(string);
-                
-                
-            }
-        });
-    });
     // Remember tab state
     $(function() {
         $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -121,7 +86,7 @@
                    aria-selected="false"><b>{{ header_logging }} {{ logging_warning }}</b></a>
             </li>
         </ul>
-        <div class="tab-content" id="myTabContent">
+        <div class="tab-content flex-fill" id="myTabContent">
             <!-- ################################################################################-->
             <!-- General details -->
             <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
@@ -137,7 +102,7 @@
                         </div>
                         <!-- domain field -->
                         <div class="col-md-5 p-2">
-                            <label for="{{ inputfields.conf_domain.field }}" class="form-label">{{ inputfields.conf_domain.formlabel }}</label>
+                            <label for="{{ inputfields.conf_domain.field }}" class="form-label"><sup style="color:red;">*</sup> {{ inputfields.conf_domain.formlabel }}</label>
                             <input class="w-100" type="text" name="{{ inputfields.conf_domain.field }}" id="{{ inputfields.conf_domain.field }}" spaceholder="" title="" value="{{ inputfields.conf_domain.value }}">
                             {% if inputfields.conf_domain.errors == true %}
                                 <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.conf_domain.errors }}</div>
@@ -339,16 +304,15 @@
                         {% if inputfields.sp_certificate.errors == true %}
                             <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.sp_certificate.errors }}</div>
                         {% endif %}
-                        {% if inputfields.debug == true %}
-                            {% if inputfields.sp_certificate.validate.subject.CN == true %}
-                                <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">Debug_Cert_Valid: {{ inputfields.sp_certificate.validate.subject.CN }}</div>
-                            {% endif %}
-                            {% if inputfields.sp_certificate.validations.validTo == true %}
-                                <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">Debug_Cert_Warning: {{ inputfields.sp_certificate.validations.validTo }}</div>
-                            {% endif %}
-                            {% if inputfields.sp_certificate.validations.validFrom == true %}
-                                <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">Debug_Cert_Warning: {{ inputfields.sp_certificate.validations.validFrom }}</div>
-                            {% endif %}
+                        
+                        {% if inputfields.sp_certificate.validate.subject.CN == true %}
+                            <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">🆗 Valid certificate found: {{ inputfields.sp_certificate.validate.subject.CN }}</div>
+                        {% endif %}
+                        {% if inputfields.sp_certificate.validate.validations.validTo == true %}
+                            <div id="textHelper" class="form-text" style="color:rgb(180, 120, 8);">{{ inputfields.sp_certificate.validate.validations.validTo }}</div>
+                        {% endif %}
+                        {% if inputfields.sp_certificate.validate.validations.validFrom == true %}
+                            <div id="textHelper" class="form-text" style="color:rgb(180, 120, 8);">{{ inputfields.sp_certificate.validate.validations.validFrom }}</div>
                         {% endif %}
                     </div>
 
@@ -367,7 +331,7 @@
                         {% if inputfields.sp_nameid_format.errors == true %}
                             <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.sp_nameid_format.errors }}</div>
                         {% endif %}
-                        <select id="keep-order">
+                        <select name="{{ inputfields.sp_nameid_format.field }}" id="{{ inputfields.sp_nameid_format.field }}">
                                 {% for key, spname in inputOptionsNameFormat %}
                                     {% if inputfields.sp_nameid_format.value == key %}
                                         <option selected value="{{ key }}">{{ spname }}</option>
@@ -375,8 +339,7 @@
                                         <option value="{{ key }}">{{ spname }}</option>
                                     {% endif %}
                                 {% endfor %}
-                        </select>	
-                        <input type="hidden" name="{{ inputfields.sp_nameid_format.field }}" id="{{ inputfields.sp_nameid_format.field }}" spaceholder="" title="" value="{{ inputfields.sp_nameid_format.value }}">
+                        </select>
                     </div>                
                 </div>
             </div>
@@ -388,83 +351,83 @@
                      <!-- idp_entity_id -->
                      <div class="col-md-7 p-1">
                         <label for="{{ inputfields.idp_entity_id.field }}" class="form-label">{{ inputfields.idp_entity_id.formlabel }}</label>
+                        <input class="w-100" type="text" name="{{ inputfields.idp_entity_id.field }}" id="{{ inputfields.idp_entity_id.field }}" spaceholder="" title="" value="{{ inputfields.idp_entity_id.value }}">
                         {% if inputfields.idp_entity_id.errors == true %}
                             <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_entity_id.errors }}</div>
                         {% endif %}
-                        <input class="w-100" type="text" name="{{ inputfields.idp_entity_id.field }}" id="{{ inputfields.idp_entity_id.field }}" spaceholder="" title="" value="{{ inputfields.idp_entity_id.value }}">
                     </div>
 
                     <!-- idp_single_sign_on_service -->
                     <div class="col-md-7 p-1">
                         <label for="{{ inputfields.idp_single_sign_on_service.field }}" class="form-label">{{ inputfields.idp_single_sign_on_service.formlabel }}</label>
+                        <input class="w-100" type="text" name="{{ inputfields.idp_single_sign_on_service.field }}" id="{{ inputfields.idp_single_sign_on_service.field }}" spaceholder="" title="" value="{{ inputfields.idp_single_sign_on_service.value }}">
                         {% if inputfields.idp_single_sign_on_service.errors == true %}
                             <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_single_sign_on_service.errors }}</div>
                         {% endif %}
-                        <input class="w-100" type="text" name="{{ inputfields.idp_single_sign_on_service.field }}" id="{{ inputfields.idp_single_sign_on_service.field }}" spaceholder="" title="" value="{{ inputfields.idp_single_sign_on_service.value }}">
                     </div>
 
                     <!-- idp_single_logout_service -->
                     <div class="col-md-7 p-1">
                         <label for="{{ inputfields.idp_single_logout_service.field }}" class="form-label">{{ inputfields.idp_single_logout_service.formlabel }}</label>
+                        <input class="w-100" type="text" name="{{ inputfields.idp_single_logout_service.field }}" id="{{ inputfields.idp_single_logout_service.field }}" spaceholder="" title="" value="{{ inputfields.idp_single_logout_service.value }}">
                         {% if inputfields.idp_single_logout_service.errors == true %}
                             <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_single_logout_service.errors }}</div>
                         {% endif %}
-                        <input class="w-100" type="text" name="{{ inputfields.idp_single_logout_service.field }}" id="{{ inputfields.idp_single_logout_service.field }}" spaceholder="" title="" value="{{ inputfields.idp_single_logout_service.value }}">
                     </div>
 
                     <!-- idp_certificate -->
                     <div class="col-md-5 p-2">
                         <label for="{{ inputfields.idp_certificate.field }}" class="form-label">{{ inputfields.idp_certificate.formlabel }}</label>
+                        <textarea name="{{ inputfields.idp_certificate.field }}" cols="80" rows="10" id="{{ inputfields.idp_certificate.field }}" spaceholder="" title="{{ inputfields.idp_certificate.title}}">{{ inputfields.idp_certificate.value|raw }}</textarea>
                         {% if inputfields.idp_certificate.errors == true %}
                             <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.idp_certificate.errors }}</div>
                         {% endif %}
-                        <textarea name="{{ inputfields.idp_certificate.field }}" cols="80" rows="10" id="{{ inputfields.idp_certificate.field }}" spaceholder="" title="{{ inputfields.idp_certificate.title}}">{{ inputfields.idp_certificate.value|raw }}</textarea>
-                        {% if inputfields.debug == true %}
-                            {% if inputfields.idp_certificate.validate.subject.CN == true %}
-                                <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">Debug_Cert_Valid: {{ inputfields.idp_certificate.validate.subject.CN }}</div>
-                            {% endif %}
-                            {% if inputfields.idp_certificate.validations.validTo == true %}
-                                <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">Debug_Cert_Warning: {{ inputfields.idp_certificate.validations.validTo }}</div>
-                            {% endif %}
-                            {% if inputfields.idp_certificate.validations.validFrom == true %}
-                                <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">Debug_Cert_Warning: {{ inputfields.idp_certificate.validations.validFrom }}</div>
-                            {% endif %}
+                        {% if inputfields.idp_certificate.validate.subject.CN == true %}
+                            <div id="textHelper" class="form-text" style="color:rgb(71, 180, 8);">🆗 Valid Certificate found: {{ inputfields.idp_certificate.validate.subject.CN }}</div>
+                        {% endif %}
+                        {% if inputfields.idp_certificate.validate.validations.validTo == true %}
+                            <div id="textHelper" class="form-text" style="color:rgb(180, 140, 8);">{{ inputfields.idp_certificate.validate.validations.validTo }}</div>
+                        {% endif %}
+                        {% if inputfields.idp_certificate.validate.validations.validFrom == true %}
+                            <div id="textHelper" class="form-text" style="color:rgb(180, 140, 8);">{{ inputfields.idp_certificate.validate.validations.validFrom }}</div>
                         {% endif %}
                     </div>
 
                     <!-- requested_authn_context -->
                     <div class="col-md-7 p-1">
                         <label for="{{ inputfields.requested_authn_context.field }}" class="form-label">{{ inputfields.requested_authn_context.formlabel }}</label>
+                        <select id="keep-order" multiple="multiple" aria-label="multiple select" name="{{ inputfields.requested_authn_context.field }}[]">
+                            {% for key, authn in inputOptionsAuthnContext %}
+                                    {%set selected = false %}
+                                    {% for value in inputfields.requested_authn_context.value %}
+                                        {% if value == key %}
+                                            {% set selected = 'selected' %}
+                                            {{value }} - {{ key }}
+                                        {% endif %}
+                                    {% endfor %}
+                                        <option {{ selected }} value="{{ key }}">{{ authn }}</option>
+                                {% endfor %}
+                        </select>
                         {% if inputfields.requested_authn_context.errors == true %}
                             <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.requested_authn_context.errors }}</div>
-                        {% endif %}
-                        <select id="keep-order" multiple="multiple">
-                                {% for key, authn in inputOptionsAuthnContext %}
-                                    {% if inputfields.requested_authn_context.value == key %}
-                                        <option selected value="{{ key }}">{{ authn }}</option>
-                                    {% else %}
-                                        <option value="{{ key }}">{{ authn }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                        </select>	
-                        <input type="hidden" name="{{ inputfields.requested_authn_context.field }}" id="{{ inputfields.requested_authn_context.field }}" spaceholder="" title="" value="{{ inputfields.requested_authn_context.value }}">
+                        {% endif %}	
                     </div>
 
                     <!-- requested_authn_context -->
                     <div class="col-md-7 p-1">
-                        <label for="{{ inputfields.requested_authn_context_comparison.field }}" class="form-label">{{ inputfields.requested_authn_context_comparison.formtitle }}</label>
-                        {% if inputfields.requested_authn_context_comparison.errors == true %}
-                            <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.requested_authn_context_comparison.errors }}</div>
-                        {% endif %}
+                        <label for="{{ inputfields.requested_authn_context_comparison.field }}" class="form-label">{{ inputfields.requested_authn_context_comparison.formtitle }} </label>
                         <select name="{{ inputfields.requested_authn_context_comparison.field }}" id="{{ inputfields.requested_authn_context_comparison.field }}" title="{{ inputfields.requested_authn_context_comparison.field }}">
                                 {% for key, authnc in inputOptionsAuthnCompare %}
-                                    {% if inputfields.requested_authn_context.value == key %}
+                                    {% if inputfields.requested_authn_context_comparison.value == key %}
                                         <option selected value="{{ key }}">{{ authnc }}</option>
                                     {% else %}
                                         <option value="{{ key }}">{{ authnc }}</option>
                                     {% endif %}
                                 {% endfor %}
                         </select>	
+                        {% if inputfields.requested_authn_context_comparison.errors == true %}
+                            <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.requested_authn_context_comparison.errors }}</div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -477,9 +440,6 @@
                         <!-- enforce SSO -->
                         <div class="col-md-5 p-2">
                             <label for="{{ inputfields.enforce_sso.field }}" class="form-label">{{ inputfields.enforce_sso.formlabel }}</label>
-                            {% if inputfields.enforce_sso.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.enforce_sso.errors }}</div>
-                            {% endif %}
                             <select name="{{ inputfields.enforce_sso.field }}" id="{{ inputfields.enforce_sso.field }}" title="{{ inputfields.enforce_sso.title }}">
                             {% for key, yesno in inputOptionsBool %}
                                 {% if inputfields.enforce_sso.value == key %}
@@ -491,14 +451,14 @@
                                 <option selected value="0">No!</option><option value="1">Yes!</option>
                             {% endfor %}
                             </select>
+                            {% if inputfields.enforce_sso.errors == true %}
+                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.enforce_sso.errors }}</div>
+                            {% endif %}
                         </div>
 
                         <!-- Strict mode -->
                         <div class="col-md-5 p-2">
                             <label for="{{ inputfields.strict.field }}" class="form-label">{{ inputfields.strict.formlabel }}</label>
-                            {% if inputfields.strict.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.strict.errors }}</div>
-                            {% endif %}
                             <select name="{{ inputfields.strict.field }}" id="{{ inputfields.strict.field }}" title="{{ inputfields.strict.title }}">
                             {% for key, yesno in inputOptionsBool %}
                                 {% if inputfields.strict.value == key %}
@@ -510,14 +470,14 @@
                                 <option selected value="0">No!</option><option value="1">Yes!</option>
                             {% endfor %}
                             </select>
+                            {% if inputfields.strict.errors == true %}
+                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.strict.errors }}</div>
+                            {% endif %}
                         </div>
 
                          <!-- Jit usercreation mode -->
                          <div class="col-md-5 p-2">
                             <label for="{{ inputfields.user_jit.field }}" class="form-label">{{ inputfields.user_jit.formlabel }}</label>
-                            {% if inputfields.user_jit.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.user_jit.errors }}</div>
-                            {% endif %}
                             <select name="{{ inputfields.user_jit.field }}" id="{{ inputfields.user_jit.field }}" title="{{ inputfields.user_jit.title }}">
                             {% for key, yesno in inputOptionsBool %}
                                 {% if inputfields.user_jit.value == key %}
@@ -529,14 +489,14 @@
                                 <option selected value="0">No!</option><option value="1">Yes!</option>
                             {% endfor %}
                             </select>
+                            {% if inputfields.user_jit.errors == true %}
+                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.user_jit.errors }}</div>
+                            {% endif %}
                         </div>
 
                         <!-- security_nameidencrypted -->
                         <div class="col-md-5 p-2">
                             <label for="{{ inputfields.security_nameidencrypted.field }}" class="form-label">{{ inputfields.security_nameidencrypted.formlabel }}</label>
-                            {% if inputfields.security_nameidencrypted.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_nameidencrypted.errors }}</div>
-                            {% endif %}
                             <select name="{{ inputfields.security_nameidencrypted.field }}" id="{{ inputfields.security_nameidencrypted.field }}" title="{{ inputfields.security_nameidencrypted.title }}">
                             {% for key, yesno in inputOptionsBool %}
                                 {% if inputfields.security_nameidencrypted.value == key %}
@@ -548,14 +508,14 @@
                                 <option selected value="0">No!</option><option value="1">Yes!</option>
                             {% endfor %}
                             </select>
+                            {% if inputfields.security_nameidencrypted.errors == true %}
+                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_nameidencrypted.errors }}</div>
+                            {% endif %}
                         </div>
 
                         <!-- security_authnrequestssigned -->
                         <div class="col-md-5 p-2">
                             <label for="{{ inputfields.security_authnrequestssigned.field }}" class="form-label">{{ inputfields.security_authnrequestssigned.formlabel }}</label>
-                            {% if inputfields.security_authnrequestssigned.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_authnrequestssigned.errors }}</div>
-                            {% endif %}
                             <select name="{{ inputfields.security_authnrequestssigned.field }}" id="{{ inputfields.security_authnrequestssigned.field }}" title="{{ inputfields.security_authnrequestssigned.title }}">
                             {% for key, yesno in inputOptionsBool %}
                                 {% if inputfields.security_authnrequestssigned.value == key %}
@@ -567,14 +527,14 @@
                                 <option selected value="0">No!</option><option value="1">Yes!</option>
                             {% endfor %}
                             </select>
+                            {% if inputfields.security_authnrequestssigned.errors == true %}
+                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_authnrequestssigned.errors }}</div>
+                            {% endif %}
                         </div>
 
                         <!-- security_authnrequestssigned -->
                         <div class="col-md-5 p-2">
                             <label for="{{ inputfields.security_logoutrequestsigned.field }}" class="form-label">{{ inputfields.security_logoutrequestsigned.formlabel }}</label>
-                            {% if inputfields.security_logoutrequestsigned.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_logoutrequestsigned.errors }}</div>
-                            {% endif %}
                             <select name="{{ inputfields.security_logoutrequestsigned.field }}" id="{{ inputfields.security_logoutrequestsigned.field }}" title="{{ inputfields.security_logoutrequestsigned.title }}">
                             {% for key, yesno in inputOptionsBool %}
                                 {% if inputfields.security_logoutrequestsigned.value == key %}
@@ -586,14 +546,14 @@
                                 <option selected value="0">No!</option><option value="1">Yes!</option>
                             {% endfor %}
                             </select>
+                            {% if inputfields.security_logoutrequestsigned.errors == true %}
+                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_logoutrequestsigned.errors }}</div>
+                            {% endif %}
                         </div>
 
                         <!-- security_authnrequestssigned -->
                         <div class="col-md-5 p-2">
                             <label for="{{ inputfields.security_logoutresponsesigned.field }}" class="form-label">{{ inputfields.security_logoutresponsesigned.formlabel }}</label>
-                            {% if inputfields.security_logoutresponsesigned.errors == true %}
-                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_logoutresponsesigned.errors }}</div>
-                            {% endif %}
                             <select name="{{ inputfields.security_logoutresponsesigned.field }}" id="{{ inputfields.security_logoutresponsesigned.field }}" title="{{ inputfields.security_logoutrequestsigned.title }}">
                             {% for key, yesno in inputOptionsBool %}
                                 {% if inputfields.security_logoutresponsesigned.value == key %}
@@ -605,6 +565,9 @@
                                 <option selected value="0">No!</option><option value="1">Yes!</option>
                             {% endfor %}
                             </select>
+                            {% if inputfields.security_logoutresponsesigned.errors == true %}
+                                <div id="textHelper" class="form-text" style="color:red;">{{ inputfields.security_logoutresponsesigned.errors }}</div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -623,10 +586,22 @@
             </div>
         </div>
     </div>
-    <div class="card" style="min-height:100%;">
-        <input  type="submit" name="update" value="{{ submit }}" class="submit" >
-        <input  type="submit" name="delete" value="{{ delete }}" class="purge" >
-    </div>
+        <div class="buttons-bar d-flex py-2 itil-footer">
+            <div class="form-buttons col-lg d-flex justify-content-between ms-auto ms-lg-0">
+                <div>
+                    <button class="btn btn-primary" type="submit" name="update" title="Save">
+                        <i class="far fa-save"></i>
+                        <span class="d-none d-xl-block">{{ submit }}</span>
+                     </button>
+                </div>
+                <div>
+                    <button class="btn btn-outline-danger" type="submit" name="delete" title="" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Put in trashbin">
+                        <i class="ti ti-trash"></i>
+                        <span class="d-none d-xl-block">{{ delete }}</span>
+                     </button>
+                </div>
+            </div>
+        </div>
     <div>&nbsp;</div>
 </div>
 {{ close_form|raw }}
