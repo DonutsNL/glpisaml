@@ -317,30 +317,26 @@ class ConfigEntity extends ConfigItem
             } // Only show key issue on error.
         }
         if($disable){
+            $errormsg = __('⚠️ Will be defaulted to "No" because the provided SP certificate does not look valid!', PLUGIN_NAME);
             // Strict cannot be enabled without valid certificate!
-            if($fields[configEntity::STRICT][configItem::VALUE] == true){
-                $fields[configEntity::STRICT][configItem::VALUE] = false;
-                $fields[configEntity::STRICT][configItem::ERRORS] = __('⚠️ Will be defaulted back to "No" because SP certificate is not valid!', PLUGIN_NAME);
-            }
-            // Strict cannot be enabled without valid certificate!
-            if($fields[configEntity::ENCRYPT_NAMEID][configItem::VALUE] == true){
+            if($fields[configEntity::ENCRYPT_NAMEID][configItem::VALUE]){
                 $fields[configEntity::ENCRYPT_NAMEID][configItem::VALUE] = false;
-                $fields[configEntity::ENCRYPT_NAMEID][configItem::ERRORS] = __('⚠️ Will be defaulted back to "No" because SP certificate is not valid!', PLUGIN_NAME);
+                $fields[configEntity::ENCRYPT_NAMEID][configItem::ERRORS] = $errormsg;
             }
             // Strict cannot be enabled without valid certificate!
-            if($fields[configEntity::SIGN_AUTHN][configItem::VALUE] == true){
+            if($fields[configEntity::SIGN_AUTHN][configItem::VALUE]){
                 $fields[configEntity::SIGN_AUTHN][configItem::VALUE] = false;
-                $fields[configEntity::SIGN_AUTHN][configItem::ERRORS] = __('⚠️ Will be defaulted back to "No" because SP certificate is not valid!', PLUGIN_NAME);
+                $fields[configEntity::SIGN_AUTHN][configItem::ERRORS] = $errormsg;
             }
             // Strict cannot be enabled without valid certificate!
-            if($fields[configEntity::SIGN_SLO_REQ][configItem::VALUE] == true){
+            if($fields[configEntity::SIGN_SLO_REQ][configItem::VALUE]){
                 $fields[configEntity::SIGN_SLO_REQ][configItem::VALUE] = false;
-                $fields[configEntity::SIGN_SLO_REQ][configItem::ERRORS] = __('⚠️ Will be defaulted back to "No" because SP certificate is not valid!', PLUGIN_NAME);
+                $fields[configEntity::SIGN_SLO_REQ][configItem::ERRORS] = $errormsg;
             }
             // Strict cannot be enabled without valid certificate!
-            if($fields[configEntity::SIGN_SLO_RES][configItem::VALUE] == true){
+            if($fields[configEntity::SIGN_SLO_RES][configItem::VALUE]){
                 $fields[configEntity::SIGN_SLO_RES][configItem::VALUE] = false;
-                $fields[configEntity::SIGN_SLO_RES][configItem::ERRORS] = __('⚠️ Will be defaulted back to "No" because SP certificate is not valid!', PLUGIN_NAME);
+                $fields[configEntity::SIGN_SLO_RES][configItem::ERRORS] = $errormsg;
             }
         }
 
@@ -495,7 +491,7 @@ class ConfigEntity extends ConfigItem
     private static function getAuthn($value)
     {
         if (preg_match('/^none,.+/i', $value)) {
-            $array  = explode(',', $value);
+            $array  = explode(':', $value);
             $output = array();
             foreach ($array as $item) {
                 switch ($item) {

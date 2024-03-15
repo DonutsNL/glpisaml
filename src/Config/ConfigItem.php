@@ -136,7 +136,15 @@ class ConfigItem    //NOSONAR
     protected function sp_certificate(mixed $var): array //NOSONAR
     {
         // Certificate is not required, if missing the ConfigEntity will toggle
-        // depending security options false.
+        // depending security options false if there is an error. Provided certificate
+        // string (if any) should be valid.
+         $e = false;
+        if((!empty($var))                                     &&
+           ($certificate = self::parseX509Certificate($var)) &&
+           (!array_key_exists('subject', $certificate))      ){
+
+            $e = __('⭕ Provided certificate does not like look a valid (base64 encoded) certificate', PLUGIN_NAME);
+        }
         return [self::FORMEXPLAIN => __('The base62 encoded x509 service provider certificate. Used to sign and encrypt
                                          messages send by the service provider to the identity provider. Required for most
                                          of the security options', PLUGIN_NAME),
@@ -145,7 +153,8 @@ class ConfigItem    //NOSONAR
                 self::VALUE     => $var,
                 self::FIELD     => __function__,
                 self::VALIDATOR => __method__,
-                self::VALIDATE  => self::parseX509Certificate($var)];
+                self::ERRORS    => ($e) ? $e : null,
+                self::VALIDATE  => $certificate];
     }
 
 
@@ -273,7 +282,7 @@ class ConfigItem    //NOSONAR
                 self::FIELD     => __function__,
                 self::VALIDATOR => __method__,
                 self::ERRORS    => ($e) ? $e : null,
-                self::VALIDATE  => self::parseX509Certificate($var)];
+                self::VALIDATE  => $certificate];
     }
 
 

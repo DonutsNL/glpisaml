@@ -51,33 +51,34 @@
 
 namespace GlpiPlugin\Glpisaml;
 
-use Htlm;               // Provides Html::redirectToLogin();
-use Cache;
 use Session;
 use Migration;
 use CommonDBTM;
 use DBConnection;
+use GlpiPlugin\Glpisaml\Exclude;
 
 class LoginState extends CommonDBTM
 {
     // CLASS CONSTANTS
     public const SESSION_GLPI_NAME_ACCESSOR = 'glpiname';       // NULL -> Populated with user->name in Session::class:128 after GLPI login->init;
     public const SESSION_VALID_ID_ACCESSOR  = 'valid_id';       // NULL -> Populated with session_id() in Session::class:107 after GLPI login;
-    public const USER_NAME                  = 'username';       // Glpi username
+    public const STATE_ID                   = 'id';             // State identifier
     public const USER_ID                    = 'userId';         // Glpi user_id
-    public const SESSION_ID                 = 'glpiSessionId';  // Glpi session_id
-    public const SESSION_ACTIVE             = 'sessionActive';
-    public const GLPI_LOGGED_IN             = 'glpi_logged_in';
-    public const SAML_LOGGED_IN             = 'saml_logged_in';
-    public const LOGIN_DATETIME             = 'loginTime';
-    public const LAST_ACTIVITY              = 'lastClickTime';
-    public const SAML_CONDITIONS_BEFORE     = 'notBefore';
-    public const SAML_CONDITIONS_AFTER      = 'notOnOrAfter';
-    public const ENFORCE_LOGOFF             = 'enforceLogoff';
-    public const IDP_ID                     = 'idpId';
-    public const USER_AGENT                 = 'userAgent';
-    public const REMOTE_IP                  = 'remoteIP';
-    public const STATE_VALID                = 'stateValid';
+    public const USER_NAME                  = 'userName';       // The username
+    public const SESSION_ID                 = 'sessionId';      // php session_id;
+    public const SESSION_NAME               = 'sessionName';    // Php session_name();
+    public const GLPI_AUTHED                = 'glpiAuthed';     // Session authed by GLPI
+    public const SAML_AUTHED                = 'samlAuthed';     // Session authed by SAML
+    public const LOGIN_DATETIME             = 'loginTime';      // When did we first see the session
+    public const LAST_ACTIVITY              = 'lastClickTime';  // When did we laste update the session
+    public const LOCATION                   = 'location';       // Request path
+    public const ENFORCE_LOGOFF             = 'enforceLogoff';  // Do we want to enforce a logoff (one time)
+    public const EXCLUDED_PATH              = 'excludedPath';   // If request was made using saml bypass.
+    public const IDP_ID                     = 'idpId';          // What IdP handled the Auth?
+    public const SERVER_PARAMS              = 'serverParams';   // Serialized $_SERVER object for SIEM analysis
+    public const REQUEST_PARAMS             = 'requestParams';  // Serialized $_REQUEST object for SIEM analysis
+    public const LOGGED_OFF                 = 'loggedOff';      // Was session logged off?
+    public const STATE_VALID                = 'stateValid';     // Was the state considered valid?
 
     private $state = [self::STATE_VALID => true];
 
@@ -92,7 +93,7 @@ class LoginState extends CommonDBTM
     public function __construct()
     {
         // Populate the stateObject.
-        $this->populateState();
+        return $this->populateState();
     }
 
 
@@ -109,51 +110,52 @@ class LoginState extends CommonDBTM
     }
 
     /**
-     * Validates session state and db state and updates the LoginState object accordingly;
+     * Decide what to do and execute methods to populate or update state.
      * @param   void
      * @return  void    - true on valid session
      * @since   1.0.0
      */
-    private function populateState(): void
+    private function populateState(): bool
     {
         global $DB;
-        $this->evaluateGlpiState();
-        // Verify session against registered states.
-        // If GLPI is authenticated we should always have a registered session in the LoginState;
+
+        // Evaluate if the call is excluded from saml auth
+        // populate state accordingly.
+        $this->isExcluded();
+
+        // See if we are a new or existing session.
         $result = $DB->request(['FROM' => self::getTable(), 'WHERE' => [self::SESSION_ID => session_id()]]);
         if (count($result) == 1){
-            // check if its a local or remotely provided auth
-            // do something meaningfull
-            var_dump($result);
-            exit;
-            
+            // Validate and update
+            return $this->updateState();
         }elseif(count($result) > 1){
             // This should never happen!
+            // Maybe there is a scenario we want to handle/invalidate here.
         }else{
             // no registration exists.
-            $this->registerState();
+            return $this->registerState();
         }
     }
 
-    private function evaluateGlpiState(): void
+    protected function isExcluded(): void
+    {
+        //https://github.com/derricksmith/phpsaml/issues/159
+        // Dont perform auth on CLI, asserter service and manually excluded files.  
+        if (PHP_SAPI == 'cli'                                    ||
+            Exclude::ProcessExcludes()                           ||
+            strpos($_SERVER['REQUEST_URI'], 'acs.php') !== false ){ 
+             $this->state[self::EXCLUDED_PATH] = $_SERVER['REQUEST_URI'];
+        }else{
+            $this->state[self::EXCLUDED_PATH] = '';
+        }
+    }
+
+    private function getGlpiState(): bool
     {
         // Verify if user is allready authenticated by GLPI.
         // Name_Accessor: Populated with user->name in Session::class:128 after GLPI login->init;
         // Id_Accessor: Populated with session_id() in Session::class:107 after GLPI login;
-        $this->state[self::GLPI_LOGGED_IN] = ((isset($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR])) &&
-                                              (isset($_SESSION[self::SESSION_VALID_ID_ACCESSOR] )) )? true : false;
-    }
-
-    /**
-     * Validate GLPI registered session or register it as new GLPI session
-     * for SIEM purposes.
-     * @param   void
-     * @return  void
-     * @since   1.0.0
-     */
-    private function handleGlpiSession(): void  //NOSONAR - WIP
-    {
-        // Do something
+        return (isset($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR]) && isset($_SESSION[self::SESSION_VALID_ID_ACCESSOR])) ? true : false;
     }
 
     /**
@@ -176,15 +178,34 @@ class LoginState extends CommonDBTM
      * @return  bool
      * @since   1.0.0
      */
-    public function registerState(): bool   //NOSONAR - WIP
+    private function registerState(): bool   //NOSONAR - WIP
     {
-        return true;
+        $serverParams[] = $_SERVER;
+        $requestParams[] = $_REQUEST;
+        $vars = [
+            self::USER_ID           => '0',
+            self::USER_NAME         => '',
+            self::SESSION_ID        => session_id(),
+            self::SESSION_NAME      => session_name(),
+            self::GLPI_AUTHED       => $this->getGlpiState(),
+            self::SAML_AUTHED       => false,
+            self::LOCATION          => '/',
+            self::ENFORCE_LOGOFF    => 0,
+            self::EXCLUDED_PATH     => $this->state[self::EXCLUDED_PATH],
+            self::IDP_ID            => null,
+            self::SERVER_PARAMS     => serialize($serverParams),
+            self::REQUEST_PARAMS    => serialize($requestParams),
+            self::LOGGED_OFF        => 0,
+            self::STATE_VALID       => $this->state[self::STATE_VALID],
+        ];
+        $this->state = $vars;
+        if(!$this->add($vars)){
+            Session::addMessageAfterRedirect(__('⭕ Unable to register session state in database, phpsaml wont function properly!', PLUGIN_NAME));
+            return false;
+        }else{
+            return true;
+        }
         // Do something
-    }
-
-    public function isAuthenticated(): bool
-    {
-        return $this->state[self::GLPI_LOGGED_IN];
     }
 
     /**
@@ -208,18 +229,21 @@ class LoginState extends CommonDBTM
             $query = <<<SQL
             CREATE TABLE IF NOT EXISTS `$table` (
                 `id`                        int {$default_key_sign} NOT NULL AUTO_INCREMENT,
-                `username`                  varchar(255) DEFAULT NULL,
                 `userId`                    int {$default_key_sign} NOT NULL,
-                `glpiSessionId`             varchar(255) DEFAULT NULL,
-                `sessionActive`             tinyint {$default_key_sign} NULL,
-                `loginTime`                 timestamp NOT NULL,
+                `userName`                  varchar(255) NULL,
+                `sessionId`                 varchar(255) NOT NULL,
+                `sessionName`               varchar(255) NOT NULL,
+                `glpiAuthed`                tinyint {$default_key_sign} NULL,
+                `samlAuthed`                tinyint {$default_key_sign} NULL,
+                `loginTime`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 `lastClickTime`             timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                `notBefore`                 timestamp NOT NULL,
-                `notOnOrAfter`              timestamp NOT NULL,
+                `location`                  text NOT NULL,
                 `enforceLogoff`             tinyint {$default_key_sign} NULL,
-                `idpId`                     int NOT NULL,
-                `userAgent`                 varchar(255) DEFAULT NULL,
-                `remoteIP`                  varchar(255) DEFAULT NULL,
+                `excludedPath`              text NULL,
+                `idpId`                     int NULL,
+                `serverParams`              text NULL,
+                `requestParams`             text NULL,
+                `loggedOff`                 tinyint {$default_key_sign} NULL,
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=COMPRESSED;
             SQL;

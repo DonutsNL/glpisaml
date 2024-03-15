@@ -59,7 +59,7 @@ use GlpiPlugin\Glpisaml\Exclude;
 use GlpiPlugin\Glpisaml\LoginState;
 use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 
-class LoginFlow 
+class LoginFlow
 {
     /**
      * Where to find the loginScreen template.
@@ -77,11 +77,9 @@ class LoginFlow
     public function doAuth()  : bool
     {
         global $CFG_GLPI;
-
-        // process SAML excluded paths
-        if ($this->isExcluded()) {
-            return true;
-        }
+        if(!$state = new Loginstate()){
+            return false;
+        };
         
         // Check if a SAML button was pressed and handle request!
         if (isset($_POST['phpsaml'])) {
@@ -98,12 +96,7 @@ class LoginFlow
 
         // Else validate the state possibly redirect back to login
         // resetting the state if there is an issue.
-        $state = new Loginstate();
-        if ($state->isAuthenticated()) {
-            return true;
-        }else{
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -157,16 +150,6 @@ class LoginFlow
             }
         }
         */
-    }
-
-    protected function isExcluded(): bool
-    {
-        //https://github.com/derricksmith/phpsaml/issues/159
-        // Dont perform auth on CLI, asserter service and manually excluded files.
-        // TODO: do some form of logging in the sessionState table so we know whats going on under the hood.
-        return (PHP_SAPI == 'cli'           ||
-                Exclude::ProcessExcludes()  ||
-                strpos($_SERVER['REQUEST_URI'], 'acs.php') !== false) ? true : false;
     }
 
     /**

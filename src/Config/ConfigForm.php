@@ -114,7 +114,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
             }
         }else{
-            Session::addMessageAfterRedirect(__('Configuration is not valid, update is prevented', PLUGIN_NAME));
+            Session::addMessageAfterRedirect(__('Configuration is not valid, update is prevented. First correct all ⭕ errors', PLUGIN_NAME));
             return $this->generateForm($configEntity);
         }
     }
