@@ -77,9 +77,9 @@ class LoginFlow
     public function doAuth()  : bool
     {
         global $CFG_GLPI;
-        if(!$state = new Loginstate()){
-            return false;
-        };
+        // Get current state
+        if(!$state = new Loginstate()){ return false; }
+        $state;
         
         // Check if a SAML button was pressed and handle request!
         if (isset($_POST['phpsaml'])) {
@@ -163,7 +163,7 @@ class LoginFlow
     public function showLoginScreen(): void
     {
         // Fetch the global DB object;
-        $tplvars = Config::getLoginButtons();
+        $tplvars = Config::getLoginButtons(12);
 
         // Define static translatable elements
         $tplvars['action']     = Plugin::getWebDir(PLUGIN_NAME, true);

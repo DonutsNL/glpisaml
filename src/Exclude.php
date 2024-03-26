@@ -247,6 +247,25 @@ class Exclude extends CommonDropdown
     }
 
     /**
+     * Combines database excludes with hardcoded excludes.
+     * @since   1.0.0
+     */
+    public static function isExcluded(): string|bool
+    {
+        //https://github.com/derricksmith/phpsaml/issues/159
+        // Dont perform auth on CLI, asserter service and manually excluded files.
+        if (PHP_SAPI == 'cli'                                            ||
+            strpos($_SERVER['REQUEST_URI'], 'acs.php') !== false         ||         // dont process acs
+            strpos($_SERVER['REQUEST_URI'], 'common.tabs.php') !== false ||         // dont process common.tabs
+            strpos($_SERVER['REQUEST_URI'], 'dashboard.php') !== false   ||         // dont process dashboard
+            Exclude::ProcessExcludes()                                   ){
+             return $_SERVER['REQUEST_URI'];
+        }else{
+             return false;
+        }
+    }
+
+    /**
      * install(Migration migration) : void -
      * Install table needed for Ticket Filter configuration dropdowns
      *

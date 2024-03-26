@@ -290,10 +290,18 @@ class ConfigEntity extends ConfigItem
         return $fields;
     }
 
-    public function getFieldsForDB(): array
+    /**
+     *Returns the fields in the Entity for database insertion.
+     * Will not add fields added to the ignoreFields param.
+     * @param  array $ignoreFields fields to skip
+     * @return array $fields with validated and corrected configuration
+     */
+    public function getFieldsForDB($ignoreFields = []): array
     {
         foreach($this->getFields() as $key => $value){
-            $return[$key] = $value[ConfigItem::VALUE];
+            if(is_array($ignoreFields) && !in_array($key, $ignoreFields)){
+                $return[$key] = $value[ConfigItem::VALUE];
+            }
         }
         return $return;
     }

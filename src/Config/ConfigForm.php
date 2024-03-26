@@ -73,9 +73,8 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
         $configEntity = new ConfigEntity(-1, ['template' => 'post', 'postData' => $postData]);
         if($configEntity->isValid()){
             // Remove ID from the postData
-            unset($postData[ConfigEntity::ID]);
             $config = new SamlConfig();
-            if($id = $config->add($configEntity->getFieldsForDB())) {
+            if($id = $config->add($configEntity->getFieldsForDB([ConfigEntity::ID, ConfigEntity::CREATE_DATE, ConfigEntity::MOD_DATE]))) {
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.form.php?id=$id");
             } else {
                 Session::addMessageAfterRedirect(__('Error: Unable to add new GlpiSaml configuration!', PLUGIN_NAME));

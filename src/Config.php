@@ -194,8 +194,9 @@ class Config extends CommonDBTM
      * @return  array
      * @see                             - src/Loginflow/showLoginScreen()
      */
-    public static function getLoginButtons(): array
+    public static function getLoginButtons(int $length): array
     {
+        $l = (is_numeric($length)) ? $length : 255;
         $tplvars = [];
         global $DB;
         foreach( $DB->request(['FROM' => self::getTable()]) as $value)
@@ -205,7 +206,7 @@ class Config extends CommonDBTM
             if($configEntity->isValid() && $configEntity->isActive()){
                 $tplvars['buttons'][] = ['id'      => $value[ConfigEntity::ID],
                                         'icon'    => $value[ConfigEntity::CONF_ICON],
-                                        'name'    => $value[ConfigEntity::NAME]];
+                                        'name'    => sprintf("%.".$l."s", $value[ConfigEntity::NAME]) ];
             }
         }
         return $tplvars;
@@ -270,17 +271,6 @@ class Config extends CommonDBTM
             $DB->query($query) or die($DB->error());
             Session::addMessageAfterRedirect("🆗 Installed: $table.");
         }
-
-        // Debug entries Delete when implemented.
-        $query = <<<SQL
-        INSERT INTO $table
-        VALUES('1', 'Example configuration', '@Donuts.nl', 'fa-brands fa-microsoft', '1', '1', '1', '1', '1', '-----BEGIN CERTIFICATE-----[YOUR BASE64 ENCODED SP CERT]-----END CERTIFICATE-----',
-               '-----BEGIN PRIVATE KEY-----[YOUR PRIVATE KEY]-----END PRIVATE KEY-----','urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress','https://sts.windows.net/[EntityID]/','https://login.microsoftonline.com/[APPID]/saml2',
-               'https://login.microsoftonline.com/[APPID]/saml2','-----BEGIN CERTIFICATE-----[YOUR BASE64 ENCODED IDP CERT]-----END CERTIFICATE-----',
-               'none','exact','1','1','1','1','1','1','1','1','1','Example configuration comment','1','0',
-               CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-        SQL;
-        $DB->query($query) or die($DB->error());
     }
 
     /**

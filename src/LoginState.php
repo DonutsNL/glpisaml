@@ -69,143 +69,147 @@ class LoginState extends CommonDBTM
     public const SESSION_NAME               = 'sessionName';    // Php session_name();
     public const GLPI_AUTHED                = 'glpiAuthed';     // Session authed by GLPI
     public const SAML_AUTHED                = 'samlAuthed';     // Session authed by SAML
+    public const LOCATION                   = 'location';       // Location requested;
+    public const IDP_ID                     = 'idpId';          // What IdP handled the Auth?
     public const LOGIN_DATETIME             = 'loginTime';      // When did we first see the session
     public const LAST_ACTIVITY              = 'lastClickTime';  // When did we laste update the session
-    public const LOCATION                   = 'location';       // Request path
     public const ENFORCE_LOGOFF             = 'enforceLogoff';  // Do we want to enforce a logoff (one time)
     public const EXCLUDED_PATH              = 'excludedPath';   // If request was made using saml bypass.
-    public const IDP_ID                     = 'idpId';          // What IdP handled the Auth?
-    public const SERVER_PARAMS              = 'serverParams';   // Serialized $_SERVER object for SIEM analysis
-    public const REQUEST_PARAMS             = 'requestParams';  // Serialized $_REQUEST object for SIEM analysis
-    public const LOGGED_OFF                 = 'loggedOff';      // Was session logged off?
-    public const STATE_VALID                = 'stateValid';     // Was the state considered valid?
+    public const PHASE                      = 'phase';          // Describes the current state GLPI, ACS, TIMEOUT, LOGGEDIN, LOGGEDOUT.  
+    public const PHASE_INITIAL              = 1;                // Initial visit
+    public const PHASE_SAML_ACS             = 2;                // Performed SAML IDP call expected back at ACS
+    public const PHASE_SAML_AUTH            = 3;                // Succesfully performed IDP auth
+    public const PHASE_GLPI_AUTH            = 4;                // Succesfully performed GLPI auth
+    public const PHASE_FILE_EXCL            = 5;                // Excluded file called
+    public const PHASE_FORCE_LOG            = 6;                // Session forced logged off
+    public const PHASE_TIMED_OUT            = 7;                // Session Timed out
+    public const PHASE_LOGOFF               = 8;                // Session was logged off
+    public const DATABASE                   = 'database';       // State from database?
 
-    private $state = [self::STATE_VALID => true];
+    private $state = [];
 
     /**
      * Restore object if version has been cached and trigger
      * validation to make sure the session isnt hijacked
-     *
-     * @param   void
-     * @return  void
      * @since   1.0.0
      */
     public function __construct()
     {
-        // Populate the stateObject.
-        return $this->populateState();
-    }
+        // Get database state (if any)
+        $this->getInitialState();
 
-
-    /**
-     * Validate user is correctly authenticated in both the external
-     * Idp aswell as GLPI.
-     * @param   void
-     * @return  void
-     * @since   1.0.0
-     */
-    public function getLoginState(): LoginState
-    {
-       return $this;
+        // EvaluateState
+        $this->evaluateState();
     }
 
     /**
-     * Decide what to do and execute methods to populate or update state.
-     * @param   void
-     * @return  void    - true on valid session
+     * Loads initial state into the $this->state property
      * @since   1.0.0
      */
-    private function populateState(): bool
+    private function getInitialState(): void
     {
-        global $DB;
-
         // Evaluate if the call is excluded from saml auth
         // populate state accordingly.
-        $this->isExcluded();
+        $this->state[self::EXCLUDED_PATH] = Exclude::isExcluded();
+        $this->getGlpiState();
+        $this->getGlpiUserName();
+        $this->getLastActivity();
+        
 
+        global $DB;
         // See if we are a new or existing session.
-        $result = $DB->request(['FROM' => self::getTable(), 'WHERE' => [self::SESSION_ID => session_id()]]);
-        if (count($result) == 1){
-            // Validate and update
-            return $this->updateState();
-        }elseif(count($result) > 1){
-            // This should never happen!
-            // Maybe there is a scenario we want to handle/invalidate here.
+        $sessionIterator = $DB->request(['FROM' => self::getTable(), 'WHERE' => [self::SESSION_ID => session_id()]]);
+        if($sessionIterator->numrows() == 1){
+            foreach($sessionIterator as $sessionState)
+            {
+                $this->state = array_merge($this->state,[
+                    self::STATE_ID          => $sessionState[self::STATE_ID],
+                    self::USER_ID           => $sessionState[self::USER_ID],
+                    self::SESSION_ID        => $sessionState[self::SESSION_ID],
+                    self::SESSION_NAME      => $sessionState[self::SESSION_NAME],
+                    self::SAML_AUTHED       => (bool) $sessionState[self::SAML_AUTHED],
+                    self::LOGIN_DATETIME    => $sessionState[self::LOGIN_DATETIME],
+                    self::ENFORCE_LOGOFF    => $sessionState[self::ENFORCE_LOGOFF],
+                    self::IDP_ID            => $sessionState[self::IDP_ID],
+                    self::DATABASE          => true,
+                ]);
+            }
         }else{
-            // no registration exists.
-            return $this->registerState();
+            // Populate session using actuals
+            $this->state = $this->state = array_merge($this->state,[
+                self::USER_ID           => '0',
+                self::SESSION_ID        => session_id(),
+                self::SESSION_NAME      => session_name(),
+                self::SAML_AUTHED       => false,
+                self::ENFORCE_LOGOFF    => 0,
+                self::EXCLUDED_PATH     => $this->state[self::EXCLUDED_PATH],
+                self::IDP_ID            => null,
+                self::DATABASE          => false,
+            ]);
         }
+        $this->WriteStateToDb();
     }
 
-    protected function isExcluded(): void
+    /**
+     * Write the state into the database
+     * for external (SIEM) evaluation and interaction
+     * @param   void
+     * @return  bool
+     * @since   1.0.0
+     */
+    private function writeStateToDb(): bool   //NOSONAR - WIP
     {
-        //https://github.com/derricksmith/phpsaml/issues/159
-        // Dont perform auth on CLI, asserter service and manually excluded files.  
-        if (PHP_SAPI == 'cli'                                    ||
-            Exclude::ProcessExcludes()                           ||
-            strpos($_SERVER['REQUEST_URI'], 'acs.php') !== false ){ 
-             $this->state[self::EXCLUDED_PATH] = $_SERVER['REQUEST_URI'];
-        }else{
-            $this->state[self::EXCLUDED_PATH] = '';
+        // Register state in database;
+        if(!$this->state[self::EXCLUDED_PATH]){
+            if(!$this->state[self::DATABASE]){
+                if(!$this->add($this->state)){
+                    return false;
+                }
+            }else{
+                if(!$this->update($this->state)){
+                    return false;
+                }
+            }
         }
+        return true;
     }
 
-    private function getGlpiState(): bool
+    private function getLastActivity(): void
+    {
+        $this->state[self::LOCATION] = $_SERVER['REQUEST_URI'];
+        $this->state[self::LAST_ACTIVITY] = date('Y-m-d H:i:s');
+    }
+
+    private function getGlpiState(): void
     {
         // Verify if user is allready authenticated by GLPI.
         // Name_Accessor: Populated with user->name in Session::class:128 after GLPI login->init;
         // Id_Accessor: Populated with session_id() in Session::class:107 after GLPI login;
-        return (isset($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR]) && isset($_SESSION[self::SESSION_VALID_ID_ACCESSOR])) ? true : false;
+        $this->state[self::GLPI_AUTHED] = (isset($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR]) &&
+                                           isset($_SESSION[self::SESSION_VALID_ID_ACCESSOR])  ) ? true : false;
+        if(!$this->state[self::GLPI_AUTHED] &&
+           !$this->state[self::SAML_AUTHED] ){
+            $this->state[self::PHASE] = self::PHASE_INITIAL;
+        }elseif($this->state[self::GLPI_AUTHED]) {
+            $this->state[self::PHASE] = self::PHASE_GLPI_AUTH;
+        }else{
+            $this->state[self::PHASE] = self::PHASE_INITIAL;
+        }
     }
 
-    /**
-     * Update session state in the session LoginState database
-     * for external (SIEM) evaluation and interaction
-     * @param   void
-     * @return  bool
-     * @since   1.0.0
-     */
-    private function updateState(): bool   //NOSONAR - WIP
+
+
+
+    private function getGlpiUserName(): void
+    {  
+        // Use remote ip as username if session is anonymous.
+        $remote = (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
+        $this->state[self::USER_NAME] = (!empty($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR])) ? $_SESSION[self::SESSION_GLPI_NAME_ACCESSOR] : $remote;
+    }
+
+    private function evaluateState(): bool
     {
         return true;
-        // Do something
-    }
-
-    /**
-     * Register new session state in the session LoginState database
-     * for external (SIEM) evaluation and interaction
-     * @param   void
-     * @return  bool
-     * @since   1.0.0
-     */
-    private function registerState(): bool   //NOSONAR - WIP
-    {
-        $serverParams[] = $_SERVER;
-        $requestParams[] = $_REQUEST;
-        $vars = [
-            self::USER_ID           => '0',
-            self::USER_NAME         => '',
-            self::SESSION_ID        => session_id(),
-            self::SESSION_NAME      => session_name(),
-            self::GLPI_AUTHED       => $this->getGlpiState(),
-            self::SAML_AUTHED       => false,
-            self::LOCATION          => '/',
-            self::ENFORCE_LOGOFF    => 0,
-            self::EXCLUDED_PATH     => $this->state[self::EXCLUDED_PATH],
-            self::IDP_ID            => null,
-            self::SERVER_PARAMS     => serialize($serverParams),
-            self::REQUEST_PARAMS    => serialize($requestParams),
-            self::LOGGED_OFF        => 0,
-            self::STATE_VALID       => $this->state[self::STATE_VALID],
-        ];
-        $this->state = $vars;
-        if(!$this->add($vars)){
-            Session::addMessageAfterRedirect(__('⭕ Unable to register session state in database, phpsaml wont function properly!', PLUGIN_NAME));
-            return false;
-        }else{
-            return true;
-        }
-        // Do something
     }
 
     /**
@@ -244,6 +248,7 @@ class LoginState extends CommonDBTM
                 `serverParams`              text NULL,
                 `requestParams`             text NULL,
                 `loggedOff`                 tinyint {$default_key_sign} NULL,
+                `phase`                     text NULL,
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=COMPRESSED;
             SQL;
