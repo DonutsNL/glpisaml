@@ -69,19 +69,27 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
      */
     public function addSamlConfig($postData) : string
     {
-        // Validate the configuration;
+        // Populate configEntity using post;
         $configEntity = new ConfigEntity(-1, ['template' => 'post', 'postData' => $postData]);
+        // Validate configEntity
         if($configEntity->isValid()){
-            // Remove ID from the postData
+            // Get the normalized database fields
+            $fields = $configEntity->getDBFields([ConfigEntity::ID, ConfigEntity::CREATE_DATE, ConfigEntity::MOD_DATE]);
+            // Get instance of SamlConfig for db update.
             $config = new SamlConfig();
-            if($id = $config->add($configEntity->getFieldsForDB([ConfigEntity::ID, ConfigEntity::CREATE_DATE, ConfigEntity::MOD_DATE]))) {
+            // Perform database insert using db fields.
+            if($id = $config->add($fields)) {
+                // Leave succes message for user and redirect
+                Session::addMessageAfterRedirect(__('Succesfully added new GlpiSaml configuration.', PLUGIN_NAME));
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.form.php?id=$id");
             } else {
-                Session::addMessageAfterRedirect(__('Error: Unable to add new GlpiSaml configuration!', PLUGIN_NAME));
-                Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.php");
+                // Leave error message for user and regenerate form with values
+                Session::addMessageAfterRedirect(__('Unable to add new GlpiSaml configuration, please review error logging', PLUGIN_NAME));
+                return $this->generateForm($configEntity);
             }
-
         }else{
+            // Leave error message for user and regenerate form with values
+            Session::addMessageAfterRedirect(__('Configuration invalid, please correct all ⭕ errors first', PLUGIN_NAME));
             return $this->generateForm($configEntity);
         }
     }
@@ -95,25 +103,30 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
      */
     public function updateSamlConfig($postData) : string
     {
-        // Validate the configuration;
+        // Populate configEntity using post;
         $configEntity = new ConfigEntity(-1, ['template' => 'post', 'postData' => $postData]);
+        // Validate configEntity
         if($configEntity->isValid()){
-            $post = $configEntity->getFieldsForDB();
-            $post['_glpi_csrf_token'] = $postData['_glpi_csrf_token'];  // Add csrf token
-            unset($post['date_creation']);                              // Dont update create date
-            unset($post['is_deleted']);                                 // Dont update deletion flag.
-
+            // Get the normalized database fields
+            $fields = $configEntity->getDBFields([ConfigEntity::CREATE_DATE, ConfigEntity::IS_DELETED]);
+            // Add the cross site request forgery token to the fields
+            $fields['_glpi_csrf_token'] = $postData['_glpi_csrf_token'];
+            // Get instance of SamlConfig for db update.
             $config = new SamlConfig();
+            // Perform database update using fields.
             if($config->canUpdate()       &&
-               $config->update($post) ){
+               $config->update($fields) ){
+                // Leave a success message for the user and redirect using ID.
                 Session::addMessageAfterRedirect(__('Configuration updated succesfully', PLUGIN_NAME));
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
             } else {
-                Session::addMessageAfterRedirect(__('You are not allowed or there is an SQL error updating SAML configuration!', PLUGIN_NAME));
+                // Leave a failed message
+                Session::addMessageAfterRedirect(__('Configuration update failed, check your update rights or error logging', PLUGIN_NAME));
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
             }
         }else{
-            Session::addMessageAfterRedirect(__('Configuration is not valid, update is prevented. First correct all ⭕ errors', PLUGIN_NAME));
+            // Leave an error message and reload the form with provided values and errors
+            Session::addMessageAfterRedirect(__('Configuration invalid please correct all ⭕ errors first', PLUGIN_NAME));
             return $this->generateForm($configEntity);
         }
     }
@@ -126,12 +139,16 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
      */
     public function deleteSamlConfig($postData) : void
     {
+        // Get SamlConfig object for deletion
         $config = new SamlConfig();
+        // Validate user has the rights to delete then delete
         if($config->canPurge()  &&
            $config->delete($postData)){
+            // Leave success message and redirect
             Session::addMessageAfterRedirect(__('Configuration deleted succesfully', PLUGIN_NAME));
             Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.php");
         } else {
+            // Leave fail message and redirect back to config.
             Session::addMessageAfterRedirect(__('Not allowed or error deleting SAML configuration!', PLUGIN_NAME));
             Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
         }
@@ -156,7 +173,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
     }
 
      /**
-     * Figures out if there are errors in one of the tabs and displays a
+     * Figure out if there are errors in one of the tabs and displays a
      * warning sign if an error is found
      *
      * @param array $fields     from ConfigEntity->getFields()

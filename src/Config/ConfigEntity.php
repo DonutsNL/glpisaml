@@ -291,19 +291,22 @@ class ConfigEntity extends ConfigItem
     }
 
     /**
-     *Returns the fields in the Entity for database insertion.
-     * Will not add fields added to the ignoreFields param.
+     * Returns the validated and normalized fields in the ConfigEntity
+     * for database insertion. It will not add fields added to the 
+     * ignoreFields param.
+     * 
      * @param  array $ignoreFields fields to skip
      * @return array $fields with validated and corrected configuration
      */
-    public function getFieldsForDB($ignoreFields = []): array
+    public function getDBFields($ignoreFields = []): array
     {
         foreach($this->getFields() as $key => $value){
+            // https://github.com/DonutsNL/glpisaml/issues/11
             if(is_array($ignoreFields) && !in_array($key, $ignoreFields)){
-                $return[$key] = $value[ConfigItem::VALUE];
+                $fields[$key] = $value[ConfigItem::VALUE];
             }
         }
-        return $return;
+        return $fields;
     }
 
     /**
