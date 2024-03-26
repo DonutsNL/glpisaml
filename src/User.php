@@ -48,5 +48,7 @@ use User as GlpiUser;
 
 class User extends GlpiUser
 {
+
+        
     
 }

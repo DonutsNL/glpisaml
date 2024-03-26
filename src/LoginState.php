@@ -57,6 +57,13 @@ use CommonDBTM;
 use DBConnection;
 use GlpiPlugin\Glpisaml\Exclude;
 
+
+/* 
+ * The goal of this object is to keep track of the login state in the database.
+ * this will allow us to 'influence' the login state of a specific session if
+ * we want to, for instance to forcefully log someone off or force reauthentication.
+ * we can also extend this session logging for (future) SIEM purposes.
+ */
 class LoginState extends CommonDBTM
 {
     // CLASS CONSTANTS
@@ -75,6 +82,8 @@ class LoginState extends CommonDBTM
     public const LAST_ACTIVITY              = 'lastClickTime';  // When did we laste update the session
     public const ENFORCE_LOGOFF             = 'enforceLogoff';  // Do we want to enforce a logoff (one time)
     public const EXCLUDED_PATH              = 'excludedPath';   // If request was made using saml bypass.
+    public const SERVER_PARAMS              = 'requestParams';  // Stores the Saml Response
+    public const REQUEST_PARAMS             = 'requestParams';  // Stores the SSO request
     public const PHASE                      = 'phase';          // Describes the current state GLPI, ACS, TIMEOUT, LOGGEDIN, LOGGEDOUT.  
     public const PHASE_INITIAL              = 1;                // Initial visit
     public const PHASE_SAML_ACS             = 2;                // Performed SAML IDP call expected back at ACS
@@ -97,9 +106,6 @@ class LoginState extends CommonDBTM
     {
         // Get database state (if any)
         $this->getInitialState();
-
-        // EvaluateState
-        $this->evaluateState();
     }
 
     /**
@@ -118,7 +124,7 @@ class LoginState extends CommonDBTM
 
         global $DB;
         // See if we are a new or existing session.
-        $sessionIterator = $DB->request(['FROM' => self::getTable(), 'WHERE' => [self::SESSION_ID => session_id()]]);
+        $sessionIterator = $DB->request(['FROM' => self::getTable(), 'WHERE' => [self::SESSION_NAME => session_name()]]);
         if($sessionIterator->numrows() == 1){
             foreach($sessionIterator as $sessionState)
             {
@@ -185,31 +191,73 @@ class LoginState extends CommonDBTM
         // Verify if user is allready authenticated by GLPI.
         // Name_Accessor: Populated with user->name in Session::class:128 after GLPI login->init;
         // Id_Accessor: Populated with session_id() in Session::class:107 after GLPI login;
-        $this->state[self::GLPI_AUTHED] = (isset($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR]) &&
-                                           isset($_SESSION[self::SESSION_VALID_ID_ACCESSOR])  ) ? true : false;
-        if(!$this->state[self::GLPI_AUTHED] &&
-           !$this->state[self::SAML_AUTHED] ){
-            $this->state[self::PHASE] = self::PHASE_INITIAL;
-        }elseif($this->state[self::GLPI_AUTHED]) {
+        if (isset($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR]) &&
+            isset($_SESSION[self::SESSION_VALID_ID_ACCESSOR])  ) 
+        {
+            $this->state[self::GLPI_AUTHED] = true;
             $this->state[self::PHASE] = self::PHASE_GLPI_AUTH;
-        }else{
+        } else {
+            $this->state[self::GLPI_AUTHED] = false;
             $this->state[self::PHASE] = self::PHASE_INITIAL;
         }
     }
 
+    // Update the phase of the loginstate.
+    public function setPhase(int $phase): bool
+    {
+        if($phase > 0 && $phase <= 8){
+            $this->state[self::PHASE] = $phase;
+            return ($this->update($this->state)) ? true : false;
+        }
+    }
 
+    // Get the phase of the loginstate.
+    public function getPhase(): int
+    {
+        return (!empty($this->state[self::PHASE])) ? $this->state[self::PHASE] : 0;
+    }
 
+    // Update the idpid in the loginstate.
+    public function setIdpId(int $idpId): bool
+    {
+        if($idpId > 0 && $idpId < 999){
+            $this->state[self::IDP_ID] = $idpId;
+            return ($this->update($this->state)) ? true : false;
+        }else{
+            return false;
+        }
+    }
 
+    // get the idpid from the loginstate.
+    public function getIdpId(): int
+    {
+        return (!empty($this->state[self::IDP_ID])) ? $this->state[self::IDP_ID] : 0;
+    }
+
+    // Set server params
+    public function setServerParams(string $samlResponse): bool
+    {
+        if($samlResponse > 0){
+            $this->state[self::SERVER_PARAMS] = filter_var($samlResponse, FILTER_SANITIZE_STRING);
+            return ($this->update($this->state)) ? true : false;
+        }
+    }
+
+    // Set request params
+    public function setRequestParams(string $samlRequest): bool
+    {
+        if($samlRequest > 0){
+            $this->state[self::REQUEST_PARAMS] = filter_var($samlRequest, FILTER_SANITIZE_STRING);
+            return ($this->update($this->state)) ? true : false;
+        }
+    }
+
+    // get the glpi Username and set it in the state.
     private function getGlpiUserName(): void
-    {  
+    {
         // Use remote ip as username if session is anonymous.
         $remote = (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
         $this->state[self::USER_NAME] = (!empty($_SESSION[self::SESSION_GLPI_NAME_ACCESSOR])) ? $_SESSION[self::SESSION_GLPI_NAME_ACCESSOR] : $remote;
-    }
-
-    private function evaluateState(): bool
-    {
-        return true;
     }
 
     /**

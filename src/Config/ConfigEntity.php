@@ -430,9 +430,8 @@ class ConfigEntity extends ConfigItem
                         ],
                         'x509cert'                          => $this->fields[ConfigEntity::SP_CERTIFICATE],
                         'privateKey'                        => $this->fields[ConfigEntity::SP_KEY],
-                        'NameIDFormat'                      => 'urn:oasis:names:tc:SAML:1.1:nameid-format:'.
-                                                                (isset($this->fields[ConfigEntity::SP_NAME_FORMAT]) ? $this->fields[ConfigEntity::SP_NAME_FORMAT]
-                                                                                                                    : 'unspecified'),
+                        'NameIDFormat'                      => (isset($this->fields[ConfigEntity::SP_NAME_FORMAT]) ? $this->fields[ConfigEntity::SP_NAME_FORMAT]
+                                                                                                                   : 'unspecified'),
                     ],
                     'idp'                                   => [
                         'entityId'                          => $this->fields[ConfigEntity::IDP_ENTITY_ID],
@@ -445,8 +444,8 @@ class ConfigEntity extends ConfigItem
                         'x509cert'                          => $this->fields[ConfigEntity::IDP_CERTIFICATE],
                     ],
                     'compress'                              => [
-                        'requests'                          => $this->fields[ConfigEntity::COMPRESS_REQ],
-                        'responses'                         => $this->fields[ConfigEntity::COMPRESS_RES],
+                        'requests'                          => (bool) $this->fields[ConfigEntity::COMPRESS_REQ],
+                        'responses'                         => (bool) $this->fields[ConfigEntity::COMPRESS_RES],
                     ],
                     'security'                              => [
                         'nameIdEncrypted'                   => $this->fields[ConfigEntity::ENCRYPT_NAMEID],

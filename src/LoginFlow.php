@@ -67,9 +67,19 @@ class LoginFlow
      */
     public const HTML_TEMPLATE_FILE = PLUGIN_GLPISAML_TPLDIR.'/loginScreen.html';
 
+    
+    // https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf
+    private const SCHEMA_NAME                 = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
+    private const SCHEMA_SURNAME              = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname';
+    private const SCHEMA_FIRSTNAME            = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/firstname';
+    private const SCHEMA_GIVENNAME            = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname';
+    private const SCHEMA_EMAILADDRESS         = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress';
+
     /**
      * Evaluates the session and determins if login/logout is required
-     * Called by post_init hook via function in hooks.php
+     * Called by post_init hook via function in hooks.php. It watches POST
+     * information passed from the loginForm.
+     *
      * @param void
      * @return boolean
      * @since 1.0.0
@@ -79,12 +89,6 @@ class LoginFlow
         global $CFG_GLPI;
         // Get current state
         if(!$state = new Loginstate()){ return false; }
-        $state;
-        
-        // Check if a SAML button was pressed and handle request!
-        if (isset($_POST['phpsaml'])) {
-            html::redirect($CFG_GLPI["root_doc"].'/#YESGOTLOGIN');
-        }
 
         // Check if the logout button was pressed and handle request!
         if (strpos($_SERVER['REQUEST_URI'], 'front/logout.php') !== false) {
@@ -94,9 +98,53 @@ class LoginFlow
             $this->performSamlLogOff();
         }
 
-        // Else validate the state possibly redirect back to login
-        // resetting the state if there is an issue.
+        // Check if a SAML button was pressed and handle the request!
+        if (isset($_POST['phpsaml'])        &&      // Must be set
+            is_numeric($_POST['phpsaml'])    &&      // Value must be numeric
+            strlen($_POST['phpsaml']) < 3  ){      // Should not exceed 999
+
+            // If we know the idp we register it in the login State
+            $state->setIdpId(filter_var($_POST['phpsaml'], FILTER_SANITIZE_NUMBER_INT));
+            
+            // update the phase in database.
+            $state->setPhase(LoginState::PHASE_SAML_ACS);
+
+            // Perform SSO.
+            $this->performSamlSSO($state);
+        }
+
+        // else
         return false;
+    }
+
+    protected function performSamlSSO(Loginstate $state): void
+    {
+        global $CFG_GLPI;
+        
+        // Fetch the correct configEntity
+        if($configEntity = new ConfigEntity($state->getIdpId())){
+            $samlConfig = $configEntity->getPhpSamlConfig();
+        }
+        //echo "<pre>";
+        //var_dump($samlConfig);
+        //exit;
+        // Instantiate OneLogin phpSaml2 Obj
+        $auth = new Auth($samlConfig);
+
+        // Try to perform authentication
+        // using provided configuration
+        try {
+            $auth->login($CFG_GLPI["url_base"]);
+        } catch (Exception $e) {
+            // using twig template.
+            $error = $e->getMessage();
+            Toolbox::logInFile("php-errors", $error . "\n", true);
+            Html::nullHeader("Login", $CFG_GLPI["url_base"] . '/index.php');
+            echo '<div class="center b">'.$error.'<br><br>';
+            // Logout with noAuto
+            echo '<a href="' . $CFG_GLPI["url_base"] .'/index.php">' .__('Log in again') . '</a></div>';
+            Html::nullFooter();
+        }
     }
 
     /**
@@ -168,7 +216,7 @@ class LoginFlow
         // Define static translatable elements
         $tplvars['action']     = Plugin::getWebDir(PLUGIN_NAME, true);
         $tplvars['header']     = __('Login with external provider', PLUGIN_NAME);
-        $tplvars['noconfig']   = __('No valid saml configuration found', PLUGIN_NAME);
+        $tplvars['noconfig']   = __('No valid or enabled saml configuration found', PLUGIN_NAME);
 
         // Render twig template
         $loader = new \Twig\Loader\FilesystemLoader(PLUGIN_GLPISAML_TPLDIR);
