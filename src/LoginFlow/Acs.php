@@ -44,117 +44,145 @@
 
 namespace GlpiPlugin\Glpisaml\LoginFlow;
 
-use Toolbox;
-use OneLogin\Saml2\Response;
+use Throwable;
+use OneLogin\Saml2\Utils;
 use OneLogin\Saml2\Settings;
+use OneLogin\Saml2\Response;
 use GlpiPlugin\Glpisaml\LoginFlow;
 use GlpiPlugin\Glpisaml\Loginstate;
-use GlpiPlugin\Glpisaml\ConfigEntity;
+use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 
 
+/**
+ * Responsible to handle the incomming samlResponse. This object should
+ * validate we are actually expecting an response and if we do validate it
+ * If the response is valid, perform a callback to the loginFlow to handle
+ * authentication, user creation and what not. Class is called by /front/acs.php
+ *
+ * This class is intended to be very unforgivable given its the vulnerable nature
+ * of the samlResponse assertion while providing enough logging for the administrator
+ * to figure out whats going on and how to resolve or prevent issues.
+ */
 class Acs extends LoginFlow
 {
-    private $state           = null;
-    private $samlResponse    = null;
 
+    // Define some error headers we use allot, not the best place but ok for now.
+    private const EXTENDED_HEADER = "================ BEGIN EXTENDED =================\n\n";
+    private const EXTENDED_FOOTER = "================= END EXTENDED ==================\n\n";
+    private const STATE_OBJ       = "###############    StateObj    ##################\n\n";
+    private const RESPONSE_OBJ    = "###############    Response    ##################\n\n";
+    private const ERRORS          = "###############     Errors     ##################\n\n";
+
+    /**
+     * Stores the loginState object.
+     * @since 1.0.0
+     */
+    private $state;
+
+
+    /**
+     * Constructor pre fetches loginState or fails.
+     *
+     * @since 1.0.0
+     */
     public function __construct()
     {
-        // Load the state to find our idpid
-        $this->state = new LoginState();
+        // get the loginState for this session from database
+        try{
+            $this->state = new LoginState();
+        } catch(Throwable $e) {
+            $this->printError(__('Could not fetch loginState from database.', PLUGIN_NAME), 'Acs');
+        }
     }
 
-    public function assertSaml($samlResponse) : void    //NOSONAR - Complexity by design.
+
+    /**
+     * This method asserts the provided samlResponse
+     * and perform a callback to the loginFlow to authorize
+     * the user if the samlResponse is valid.
+     *
+     * @since 1.0.0
+     */
+    public function assertSaml($samlResponse) : void                // NOSONAR method complexity by design.
     {
-        if(is_array($samlResponse)                          &&
-           array_key_exists('SAMLResponse', $samlResponse)  ){
-            // Insert the response into the database
+        // Validate we are expecting a samlResponse in the first place!
+        if($this->state->getPhase() != LoginState::PHASE_SAML_ACS){
+            // Generate error and log state and response into the errorlog.
+            $this->printError(__('GLPI did not expect an assertion from this Idp. Please login using the GLPI login interface', PLUGIN_NAME),
+                              __('samlResponse assertion'),
+                                 self::EXTENDED_HEADER.
+                                 "Unexpected assertion triggered by external source with address:{$_SERVER['REMOTE_ADDR']}\n".
+                                 self::STATE_OBJ.var_export($this->state, true)."\n\n".
+                                 self::RESPONSE_OBJ.var_export($samlResponse, true)."\n\n".
+                                 self::EXTENDED_FOOTER."\n");
+        }else{
+            // Update the state in loginState (this should also prevent replays of the received samlResponse)
+            $this->state->setPhase(LoginState::PHASE_SAML_AUTH);
+        }
+
+        // Validate the samlResponse actually holds the expected result
+        if( is_array($samlResponse) && array_key_exists('SAMLResponse', $samlResponse) ){
+            // Write the samlResponse to the LoginState database for future SIEM eval;
             $this->state->setServerParams(serialize($samlResponse));
-            
-            // First check if we are expecting an assertion in the first place;
-            if($this->state->getPhase() != LoginState::PHASE_SAML_ACS){
-                Toolbox::logInFile("saml-errors", "Unexpected assertion triggered by external source {$_SERVER['REMOTE_ADDRESS']}." . "\n", true);
-                $this->printError(__('GLPI did not expect an assertion from this Idp. Please login using the GLPI login interface', PLUGIN_NAME));
-            }else{
-                // Assertion was expected from this idp.
-                $this->state->setPhase(LoginState::PHASE_SAML_AUTH);
+
+            // Fetch the configEntity for this assertion or print error on failure.
+            if(!$configEntity = new ConfigEntity($this->state->getIdpId())){
+                $this->printError(__("Unable to fetch idp configuration with id:".$this->state->getIdpId()." from database",PLUGIN_NAME),
+                                  __('Assert saml', PLUGIN_NAME));
             }
 
-            // Fetch the configEntity using the registered IdpId.
-            if($configEntity = new ConfigEntity($this->state->getIdpId())){
-                // Populate saml settings;
-                try {
-                    $samlSettings = new OneLogin\Saml2\Settings($configEntity->getPhpSamlConfig());
-                } catch(Exception | Error $e){
-                    $this->printError($e->getMessage());
-                }
-                // Evaluate samlResponse;
-                try {
-                    $this->samlResponse = new OneLogin\Saml2\Response($samlSettings, $samlResponse['SAMLResponse']);
-                } catch(Exception $e) {
-                    $this->printError($e->getMessage());
-                }
-
-                // Validate SamlResponse
-                if (is_object($this->samlResponse) && 
-                    $this->samlResponse->isValid() ){
-                    // Valid response, check required properties
-                    
-                    if($this->validateFields()){
-                        echo "valid response!";
-                        exit;
-                    }
-                } else {
-                    // Exit with error
-                    $this->printError('samlResponse is not valid!');
-                }
-
-            }else{
-                $this->printError(__('Unable to load registered idp configuration, was it deleted?'));
-            }  
-        } else {
-            $this->printError('No valid phpSaml configuration received.');
-        }
-    }
-
-    private function validateFields(): bool
-    {
-        if(!$response['nameId'] = $this->samlResponse->getNameId()) {
-            $this->printError('Required nameId field is missing in response!');
-        } else {
-            // If the string #EXT# if found, a guest account is used thats not
-            // transformed properly. Write an error and exit!
-            // https://github.com/derricksmith/phpsaml/issues/135
-            if(strstr($response['nameId'], '#EXT#@')){
-                $this->printError('Detected an inproperly transformed guest claims, make sure nameid,
-                                   name are populated using user.mail instead of the uset.principalname.<br>
-                                   You can use the debug saml dumps to validate and compare the claims passed.<br>
-                                   They should contain the original email addresses.<br>
-                                   Also see: https://learn.microsoft.com/en-us/azure/active-directory/develop/saml-claims-customization');
+            // Does phpSaml needs to take proxy headers into account
+            // for assertion (url validation)
+            if($configEntity->getField(ConfigEntity::PROXIED)){
+                $samltoolkit = new Utils();
+                $samltoolkit::setProxyVars(true);
             }
-        }
 
-        if(!$response['userData'] = $this->samlResponse->getAttributes()) {
-            $this->printError('Required attribute userData missing');
-        }
+            // Get settings for the Response.
+            try { $samlSettings = new Settings($configEntity->getPhpSamlConfig()); } catch(Throwable $e){
+                $this->printError($e->getMessage(),
+                                  __('phpSaml::Settings->init'),
+                                     self::EXTENDED_HEADER.
+                                     self::ERRORS.var_export($samlSettings->getErrors(), true)."\n\n".
+                                     self::STATE_OBJ.var_export($this->state, true)."\n\n".
+                                     self::EXTENDED_FOOTER);
+            }
 
-        if(!$response['nameIdFormat'] = $this->phpsaml::$auth->getNameIdFormat()) {
-            $this->printError('No or invalid nameIdFormat');
-        }
-        
-        if($response['sessionIndex'] = $this->phpsaml::$auth->getSessionIndex()) {
-            $this->printError('No or invalid sessionIndex');
-        }
-    }
+            // process the samlResponse.
+            try { $response = new Response($samlSettings, $samlResponse['SAMLResponse']); } catch(Throwable $e) {
+                $this->printError($e->getMessage(),
+                                  __('Saml::Response->init'),
+                                     self::EXTENDED_HEADER.
+                                     self::ERRORS.var_export($response->getErrorException(), true)."\n\n".
+                                     self::STATE_OBJ.var_export($this->state, true)."\n\n".
+                                     self::RESPONSE_OBJ.var_export($response, true)."\n\n".
+                                     self::EXTENDED_FOOTER);
+            }
 
-    public function printError(string $msg) : void
-    {
-        global $CFG_GLPI;
-        Toolbox::logInFile("php-errors", $msg . "\n", true);
-        Html::nullHeader("Login",  $CFG_GLPI["root_doc"] . '/index.php');
-        echo '<div class="center b">'.$msg.'<br><br>';
-        // Logout with noAUto to manage auto_login with errors
-        echo '<a href="' .  $CFG_GLPI["root_doc"] .'/index.php">' .__('Log in again') . '</a></div>';
-        Html::nullFooter();
-        exit;
+            // Validate the response. Is it valid then peform samlLogin!
+            if (is_object($response) && $response->isValid() )
+            {
+                    $this->doSamlLogin($response);
+            } else {
+                $this->printError(__('Received samlResponse was not valid. Please review the errors in the logging and correct the problem', PLUGIN_NAME),
+                                     'Saml::Response->validate',
+                                     self::EXTENDED_HEADER.
+                                     self::ERRORS.var_export($response->getErrorException(), true)."\n\n".
+                                     self::STATE_OBJ.var_export($this->state, true)."\n\n".
+                                     self::RESPONSE_OBJ.var_export($response, true)."\n\n".
+                                     self::EXTENDED_FOOTER);
+            }
+        }else{
+            $this->printError(__('Acs was called without sending it a samlResponse to assert while we where expecting one. Make sure the samlResponse is
+                                  forwarded correctly. <u>Refreshing the request will not allow you to "replay" the samlResponse.</u> Please login again using
+                                  the correct button on the login screen.', PLUGIN_NAME),
+                                  __('Saml::Acs->init'),
+                                  self::EXTENDED_HEADER.
+                                  "Acs was called without sending it a samlResponse to assert. We where expecting an assertion.\n".
+                                  self::STATE_OBJ.var_export($this->state, true)."\n\n".
+                                  self::RESPONSE_OBJ.var_export($samlResponse, true)."\n\n".
+                                  self::EXTENDED_FOOTER);
+        }
     }
 }
+

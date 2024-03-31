@@ -52,8 +52,11 @@ namespace GlpiPlugin\Glpisaml;
 use Html;
 use Plugin;
 use Session;
+use Toolbox;
+use Throwable;
 use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\Settings;
+use OneLogin\Saml2\Response;
 use GlpiPlugin\Glpisaml\Config;
 use GlpiPlugin\Glpisaml\Exclude;
 use GlpiPlugin\Glpisaml\LoginState;
@@ -69,11 +72,13 @@ class LoginFlow
 
     
     // https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf
-    private const SCHEMA_NAME                 = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
-    private const SCHEMA_SURNAME              = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname';
-    private const SCHEMA_FIRSTNAME            = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/firstname';
-    private const SCHEMA_GIVENNAME            = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname';
-    private const SCHEMA_EMAILADDRESS         = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress';
+    public const SCHEMA_NAME                 = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
+    public const SCHEMA_SURNAME              = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname';
+    public const SCHEMA_FIRSTNAME            = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/firstname';
+    public const SCHEMA_GIVENNAME            = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname';
+    public const SCHEMA_EMAILADDRESS         = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress';
+
+    // LOGIN FLOW PRESSING A BUTTON.
 
     /**
      * Evaluates the session and determins if login/logout is required
@@ -92,13 +97,13 @@ class LoginFlow
 
         // Check if the logout button was pressed and handle request!
         if (strpos($_SERVER['REQUEST_URI'], 'front/logout.php') !== false) {
-            // Stops GLPI from processing cookiebased autologin.
+            // Stop GLPI from processing cookiebased autologin.
             $_SESSION['noAUTO'] = 1;
             $this->performGlpiLogOff();
             $this->performSamlLogOff();
         }
 
-        // Check if a SAML button was pressed and handle the request!
+        // Check if a SAML button was pressed and handle the corresponding logon request!
         if (isset($_POST['phpsaml'])        &&      // Must be set
             is_numeric($_POST['phpsaml'])    &&      // Value must be numeric
             strlen($_POST['phpsaml']) < 3  ){      // Should not exceed 999
@@ -106,10 +111,13 @@ class LoginFlow
             // If we know the idp we register it in the login State
             $state->setIdpId(filter_var($_POST['phpsaml'], FILTER_SANITIZE_NUMBER_INT));
             
-            // update the phase in database.
+            // Update the current phase in database. The state is verified by the Acs
+            // while handling the received SamlResponse. Any other state will force Acs
+            // into an error state. This is to prevent unexpected (possibly replayed)
+            // samlResponses from being processed. to prevent playback attacks.
             $state->setPhase(LoginState::PHASE_SAML_ACS);
 
-            // Perform SSO.
+            // Actually perform SSO
             $this->performSamlSSO($state);
         }
 
@@ -125,27 +133,66 @@ class LoginFlow
         if($configEntity = new ConfigEntity($state->getIdpId())){
             $samlConfig = $configEntity->getPhpSamlConfig();
         }
-        //echo "<pre>";
-        //var_dump($samlConfig);
-        //exit;
-        // Instantiate OneLogin phpSaml2 Obj
-        $auth = new Auth($samlConfig);
 
-        // Try to perform authentication
-        // using provided configuration
-        try {
-            $auth->login($CFG_GLPI["url_base"]);
-        } catch (Exception $e) {
-            // using twig template.
-            $error = $e->getMessage();
-            Toolbox::logInFile("php-errors", $error . "\n", true);
-            Html::nullHeader("Login", $CFG_GLPI["url_base"] . '/index.php');
-            echo '<div class="center b">'.$error.'<br><br>';
-            // Logout with noAuto
-            echo '<a href="' . $CFG_GLPI["url_base"] .'/index.php">' .__('Log in again') . '</a></div>';
-            Html::nullFooter();
+        // Initialize the OneLogin phpSaml auth object
+        // using the requested phpSaml configuration from
+        // the glpisaml config database. Catch all throwable errors
+        // and exceptions.
+        try { $auth = new Auth($samlConfig); } catch (Throwable $e) {
+            $this->printError($e->getMessage(), 'Saml::Auth->init', var_export($auth->getErrors(), true));
+        }
+        
+        // Perform a login request with the loaded glpiSaml
+        // configuration. Catch all throwable errors and exceptions
+        try { $auth->login($CFG_GLPI["url_base"]); } catch (Throwable $e) {
+            $this->printError($e->getMessage(), 'Saml::Auth->login', var_export($auth->getErrors(), true));
         }
     }
+
+    /**
+     * Called by the Acs class if the received response was valid
+     * to handle the samlLogin or invalidate the login if
+     * there are deeper issues with the response, for instance
+     * important claims are missing.
+     *
+     * @see https://github.com/DonutsNL/glpisaml/issues/7
+     * @param void
+     * @return string   html form for the login screen
+     * @since 1.0.0
+     */
+    protected function doSamlLogin(Response $response): void{
+        $response;
+        $this->printError('We succesfully loggedIn!');
+    }
+
+     /**
+     * Responsible to generate a login screen with Idp buttons
+     * using available idp configurations.
+     *
+     * @see https://github.com/DonutsNL/glpisaml/issues/7
+     * @param void
+     * @return string   html form for the login screen
+     * @since 1.0.0
+     */
+    public function showLoginScreen(): void
+    {
+        // Fetch the global DB object;
+        $tplvars = Config::getLoginButtons(12);
+
+        // Define static translatable elements
+        $tplvars['action']     = Plugin::getWebDir(PLUGIN_NAME, true);
+        $tplvars['header']     = __('Login with external provider', PLUGIN_NAME);
+        $tplvars['noconfig']   = __('No valid or enabled saml configuration found', PLUGIN_NAME);
+
+        // Render twig template
+        $loader = new \Twig\Loader\FilesystemLoader(PLUGIN_GLPISAML_TPLDIR);
+        $twig = new \Twig\Environment($loader);
+        $template = $twig->load('loginScreen.html.twig');
+        echo $template->render($tplvars);
+    }
+
+
+    // LOGOUT FLOW EITHER REQUESTED BY GLPI OR REQUESTED BY THE IDP (SLO) OR FORCED BY ADMIN
 
     /**
      * Makes sure user is logged out of GLPI
@@ -167,7 +214,6 @@ class LoginFlow
         }
     }
     
-
      /**
      * Makes sure user is logged out of responsible IDP provider
      * @return void
@@ -175,54 +221,54 @@ class LoginFlow
     protected function performSamlLogOff(): void
     {
         global $CFG_GLPI;
-        /*
-        $returnTo           = null;
-        $parameters         = [];
-        $nameId             = (isset(self::$nameid))        ? self::$nameid         : null;
-        $sessionIndex       = (isset(self::$sessionindex))  ? self::$sessionindex   : null;
-        $nameIdFormat       = (isset(self::$nameidformat))  ? self::$nameidformat   : null;
-
-        if (!empty(self::$phpsamlsettings['idp']['singleLogoutService'])){
-            try {
-                self::auth();
-                self::$auth->logout($returnTo, $parameters, $nameId, $sessionIndex, false, $nameIdFormat);
-            } catch (Exception $e) {
-                $error = $e->getMessage();
-                Toolbox::logInFile("php-errors", $error . "\n", true);
-                
-                Html::nullHeader("Login", $CFG_GLPI["url_base"] . '/index.php');
-                echo '<div class="center b">'.$error.'<br><br>';
-                // Logout whit noAUto to manage auto_login with errors
-                echo '<a href="' . $CFG_GLPI["url_base"] .'/index.php">' .__('Log in again') . '</a></div>';
-                Html::nullFooter();
-            }
-        }
-        */
     }
 
+
+    // ERROR HANDLING
+   
     /**
-     * Responsible to generate a login screen using available idp
-     * configurations.
+     * Prints a nice error message with 'back' button and
+     * logs the error passed in the GlpiSaml logfile.
+     *
      * @see https://github.com/DonutsNL/glpisaml/issues/7
-     * @param void
-     * @return string   html form for the login screen
+     * @param string errorMsg   string with raw error message to be printed
+     * @param string action     optionally add 'action' that was performed to error message
+     * @param string extended   optionally add 'extended' information about the error in the logfile.
+     * @return void             no return, PHP execution is terminated by this method.
      * @since 1.0.0
      */
-    public function showLoginScreen(): void
+    public function printError(string $errorMsg, string $action = '', string $extended = '') : void
     {
-        // Fetch the global DB object;
-        $tplvars = Config::getLoginButtons(12);
+        // Pull GLPI config into scope.
+        global $CFG_GLPI;
+
+        // Log in file
+        Toolbox::logInFile(PLUGIN_NAME."-errors", $errorMsg . "\n", true);
+        if($extended){
+            Toolbox::logInFile(PLUGIN_NAME."-errors", $extended . "\n", true);
+        }
 
         // Define static translatable elements
-        $tplvars['action']     = Plugin::getWebDir(PLUGIN_NAME, true);
-        $tplvars['header']     = __('Login with external provider', PLUGIN_NAME);
-        $tplvars['noconfig']   = __('No valid or enabled saml configuration found', PLUGIN_NAME);
+        $tplvars['header']      = __('⚠️ An error occured', PLUGIN_NAME);
+        $tplvars['leading']     = __("We are sorry, something went terribly wrong while we where processing your $action request!", PLUGIN_NAME);
+        $tplvars['error']       = $errorMsg;
+        $tplvars['returnPath']  = $CFG_GLPI["root_doc"] .'/index.php';
+        $tplvars['returnLabel'] = __('Return to GLPI', PLUGIN_NAME);
+
+        // print header
+        Html::nullHeader("Login",  $CFG_GLPI["root_doc"] . '/index.php');
 
         // Render twig template
         $loader = new \Twig\Loader\FilesystemLoader(PLUGIN_GLPISAML_TPLDIR);
         $twig = new \Twig\Environment($loader);
-        $template = $twig->load('loginScreen.html.twig');
+        $template = $twig->load('errorScreen.html.twig');
         echo $template->render($tplvars);
+
+        // print footer
+        Html::nullFooter();
+        
+        // stop execution.
+        exit;
     }
 
 }

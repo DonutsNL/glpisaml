@@ -43,6 +43,7 @@
  **/
 namespace GlpiPlugin\Glpisaml\Config;
 
+use Plugin;
 use Session;
 use ReflectionClass;
 use GlpiPlugin\Glpisaml\Config as SamlConfig;
@@ -423,10 +424,10 @@ class ConfigEntity extends ConfigItem
                     'sp' => [
                         'entityId'                          => $CFG_GLPI['url_base'].'/',
                         'assertionConsumerService'          => [
-                            'url'                           => $CFG_GLPI['url_base'].PLUGIN_GLPISAML_ACS_PATH,
+                            'url'                           => $CFG_GLPI['url_base'].'/'.PLUGIN_GLPISAML_WEBDIR.PLUGIN_GLPISAML_ACS_PATH,
                         ],
                         'singleLogoutService'               => [
-                            'url'                           => $CFG_GLPI['url_base'].PLUGIN_GLPISAML_SLO_PATH,
+                            'url'                           => $CFG_GLPI['url_base'].'/'.PLUGIN_GLPISAML_WEBDIR.PLUGIN_GLPISAML_SLO_PATH,
                         ],
                         'x509cert'                          => $this->fields[ConfigEntity::SP_CERTIFICATE],
                         'privateKey'                        => $this->fields[ConfigEntity::SP_KEY],

@@ -40,7 +40,6 @@
  **/
 use GlpiPlugin\Glpisaml\LoginFlow\Acs;
 
-
 // Capture the post before GLPI does.
 $post = $_POST;
 
@@ -53,7 +52,7 @@ include_once '../../../inc/includes.php';                       //NOSONAR - Cant
 
 // Peform assertion
 $acs = new Acs();
-if(array_key_exists('SAMLResponse', $post)){
+if(!empty($post) && array_key_exists('SAMLResponse', $post)){
     $acs->assertSaml($post);
 } else {
     $acs->printError('no SAMLResponse found in POST header');
