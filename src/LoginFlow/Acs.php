@@ -79,6 +79,12 @@ class Acs extends LoginFlow
      */
     private $state;
 
+    /**
+     * Stores the debug param.
+     * @since 1.0.0
+     */
+    private $debug = false;
+
 
     /**
      * Constructor pre fetches loginState or fails.
@@ -113,7 +119,6 @@ class Acs extends LoginFlow
                                  self::EXTENDED_HEADER.
                                  "Unexpected assertion triggered by external source with address:{$_SERVER['REMOTE_ADDR']}\n".
                                  self::STATE_OBJ.var_export($this->state, true)."\n\n".
-                                 self::RESPONSE_OBJ.var_export($samlResponse, true)."\n\n".
                                  self::EXTENDED_FOOTER."\n");
         }else{
             // Update the state in loginState (this should also prevent replays of the received samlResponse)
@@ -131,6 +136,11 @@ class Acs extends LoginFlow
                                   __('Assert saml', PLUGIN_NAME));
             }
 
+            // Debug enabled extended logging
+            if($configEntity->getField(ConfigEntity::DEBUG)){
+                $this->debug = true;
+            }
+
             // Does phpSaml needs to take proxy headers into account
             // for assertion (url validation)
             if($configEntity->getField(ConfigEntity::PROXIED)){
@@ -140,23 +150,29 @@ class Acs extends LoginFlow
 
             // Get settings for the Response.
             try { $samlSettings = new Settings($configEntity->getPhpSamlConfig()); } catch(Throwable $e){
+                $extended = ($this->debug) ? self::EXTENDED_HEADER.
+                             self::ERRORS.var_export($samlSettings->getErrors(), true)."\n\n".
+                             self::STATE_OBJ.var_export($this->state, true)."\n\n".
+                             self::EXTENDED_FOOTER : '';
+
                 $this->printError($e->getMessage(),
                                   __('phpSaml::Settings->init'),
-                                     self::EXTENDED_HEADER.
-                                     self::ERRORS.var_export($samlSettings->getErrors(), true)."\n\n".
-                                     self::STATE_OBJ.var_export($this->state, true)."\n\n".
-                                     self::EXTENDED_FOOTER);
+                                  $extended);
             }
 
             // process the samlResponse.
             try { $response = new Response($samlSettings, $samlResponse['SAMLResponse']); } catch(Throwable $e) {
+                if($this->debug){
+                    $extended = self::EXTENDED_HEADER.
+                                self::ERRORS.var_export($samlSettings->getErrors(), true)."\n\n".
+                                self::STATE_OBJ.var_export($this->state, true)."\n\n".
+                                self::EXTENDED_FOOTER;
+                } else {
+                    $extended = '';
+                }
                 $this->printError($e->getMessage(),
                                   __('Saml::Response->init'),
-                                     self::EXTENDED_HEADER.
-                                     self::ERRORS.var_export($response->getErrorException(), true)."\n\n".
-                                     self::STATE_OBJ.var_export($this->state, true)."\n\n".
-                                     self::RESPONSE_OBJ.var_export($response, true)."\n\n".
-                                     self::EXTENDED_FOOTER);
+                                  $extended);
             }
 
             // Validate the response. Is it valid then peform samlLogin!
@@ -164,24 +180,27 @@ class Acs extends LoginFlow
             {
                     $this->doSamlLogin($response);
             } else {
+                $extended = ($this->debug) ? self::EXTENDED_HEADER.
+                             self::ERRORS.var_export($samlSettings->getErrors(), true)."\n\n".
+                             self::STATE_OBJ.var_export($this->state, true)."\n\n".
+                             self::EXTENDED_FOOTER : '';
+
                 $this->printError(__('Received samlResponse was not valid. Please review the errors in the logging and correct the problem', PLUGIN_NAME),
                                      'Saml::Response->validate',
-                                     self::EXTENDED_HEADER.
-                                     self::ERRORS.var_export($response->getErrorException(), true)."\n\n".
-                                     self::STATE_OBJ.var_export($this->state, true)."\n\n".
-                                     self::RESPONSE_OBJ.var_export($response, true)."\n\n".
-                                     self::EXTENDED_FOOTER);
+                                     $extended);
             }
         }else{
+            $extended = ($this->debug) ? self::EXTENDED_HEADER.
+            "Acs was called without sending it a samlResponse to assert. We where expecting an assertion.\n".
+            self::STATE_OBJ.var_export($this->state, true)."\n\n".
+            self::RESPONSE_OBJ.var_export($samlResponse, true)."\n\n".
+            self::EXTENDED_FOOTER : '';
+
             $this->printError(__('Acs was called without sending it a samlResponse to assert while we where expecting one. Make sure the samlResponse is
                                   forwarded correctly. <u>Refreshing the request will not allow you to "replay" the samlResponse.</u> Please login again using
                                   the correct button on the login screen.', PLUGIN_NAME),
                                   __('Saml::Acs->init'),
-                                  self::EXTENDED_HEADER.
-                                  "Acs was called without sending it a samlResponse to assert. We where expecting an assertion.\n".
-                                  self::STATE_OBJ.var_export($this->state, true)."\n\n".
-                                  self::RESPONSE_OBJ.var_export($samlResponse, true)."\n\n".
-                                  self::EXTENDED_FOOTER);
+                                  $extended);
         }
     }
 }
