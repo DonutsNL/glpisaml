@@ -250,7 +250,7 @@ class LoginFlow
 
         // Define static translatable elements
         $tplvars['header']      = __('⚠️ An error occured', PLUGIN_NAME);
-        $tplvars['leading']     = __("We are sorry, something went terribly wrong while we where processing your $action request!", PLUGIN_NAME);
+        $tplvars['leading']     = __("We are sorry, something went terribly wrong while processing your $action request!", PLUGIN_NAME);
         $tplvars['error']       = $errorMsg;
         $tplvars['returnPath']  = $CFG_GLPI["root_doc"] .'/index.php';
         $tplvars['returnLabel'] = __('Return to GLPI', PLUGIN_NAME);

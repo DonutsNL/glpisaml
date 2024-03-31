@@ -136,10 +136,9 @@ class Acs extends LoginFlow
                                   __('Assert saml', PLUGIN_NAME));
             }
 
-            // Debug enabled extended logging
-            if($configEntity->getField(ConfigEntity::DEBUG)){
-                $this->debug = true;
-            }
+            // Only add extended logging with debug
+            // https://github.com/DonutsNL/glpisaml/issues/12
+            $this->debug = ($configEntity->getField(ConfigEntity::DEBUG)) ? true : false;
 
             // Does phpSaml needs to take proxy headers into account
             // for assertion (url validation)
