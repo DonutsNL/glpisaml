@@ -39,7 +39,7 @@
  * ------------------------------------------------------------------------
  **/
 
-use HTML;
+use Html;
 use Search;
 use Plugin;
 use GlpiPlugin\Glpisaml\Config as samlConfig;
