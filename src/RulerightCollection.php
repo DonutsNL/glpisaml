@@ -48,5 +48,28 @@ use RuleCollection;
 
 class RulerightCollection extends RuleCollection
 {
-    
+    /**
+     * @see Rule::getCriterias()
+     **/
+    public $stop_on_first_match = false;                    //NOSONAR - Default GLPI property name
+
+  /**
+     * @see Rule::getCriterias()
+     **/
+    static $rightname = "rule_ldap";
+
+
+  /**
+     * @see Rule::getCriterias()
+     **/
+    public $menu_option = "";                               //NOSONAR - Default GLPI property name
+
+  /**
+     * @see Rule::getCriterias()
+     **/
+    public function getTitle()
+    {
+        return __('Saml Import rules', PLUGIN_NAME);
+    }
+
 }

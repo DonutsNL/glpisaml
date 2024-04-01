@@ -47,14 +47,22 @@
 use Auth as glpiAuth;
 use GlpiPlugin\Glpisaml\LoginFlow\User;
 
+/**
+ * Extends the glpi Auth class for injection into Session::init();
+ * by the LoginFlow class. Loads the $this->user after succesfull
+ * authentication by phpSaml using the provided claim attributes.
+ */
 class Auth extends glpiAuth
 {
     public function loadUser(array $attributes)
     {
-        // Get user
+        // Get or Jit create user or exit on error.
         $this->user = (new User())->getOrCreateUser($attributes);
-        // Authorize user
+
+        // Setting this property actually authorizes the login for the user.
         $this->auth_succeded = (bool)$this->user->fields;
+
+        // Return this object for injection into the session.
         return $this;
     }
 }

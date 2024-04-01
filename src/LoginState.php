@@ -148,6 +148,7 @@ class LoginState extends CommonDBTM
         }else{
             // Populate session using actuals
             $this->state = $this->state = array_merge($this->state,[
+                self::USER_ID           => 0,
                 self::SESSION_ID        => session_id(),
                 self::SESSION_NAME      => session_name(),
                 self::SAML_AUTHED       => false,

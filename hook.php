@@ -75,6 +75,12 @@ function plugin_glpisaml_displaylogin() : void                                  
 }
 
 
+// Hooked by the rule_engine hook if a phpsaml rule has been succesfully matched
+function updateUser($params){                                                       //NOSONAR - WorkInProgress
+    // https://github.com/derricksmith/phpsaml/issues/149
+    //var_dump($params);
+}
+
 /**
  * Performs install of plugin classes in /src.
  *
@@ -137,6 +143,8 @@ function plugin_glpisaml_uninstall() : bool                                     
 
 /**
  * Fetches all classes from the plugin \src directory
+ * Used by installation.
+ *
  * @return array
  */
 function plugin_glpisaml_getSrcClasses() : array                                    //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName

@@ -1,39 +1,45 @@
 <?php
 /**
  *  ------------------------------------------------------------------------
- *  Derrick Smith - PHP SAML Plugin
- *  Copyright (C) 2014 by Derrick Smith
+ *  GlpiSAML
+ *  GlpiSAML is heavily influenced by the initial work of Derrick Smith's
+ *  GlpiSAML. This project's intend is to address some structural issues
+ *  caused by the gradual development of GLPI. It intends to use more of the
+ *  GLPI core objects and php8/composer namespaces.
+ *
+ *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------
  *
  * LICENSE
  *
- * This file is part of PHP SAML Plugin project.
- *
- * PHP SAML Plugin is free software: you can redistribute it and/or modify
+ * This file is part of GlpiSAML project.
+ * GlpiSAML plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * PHP SAML Plugin is distributed in the hope that it will be useful,
+ * GlpiSAML is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with PHP SAML Plugin. If not, see <http://www.gnu.org/licenses/>.
+ * along with GlpiSAML. If not, see <http://www.gnu.org/licenses/>.
  *
  * ------------------------------------------------------------------------
  *
- *  @package        PhpSaml - Excludes dropdown UI
- *  @version        1.3.0
- *  @author         Derrick Smith
- *  @author         Chris Gralike
- *  @copyright      Copyright (c) 2018 by Derrick Smith
- *  @license        GPLv2+
- *  @since          1.3.0
+ *  @package    glpiSaml
+ *  @version    1.0.0
+ *  @author     Chris Gralike
+ *  @copyright  Copyright (c) 2023 by Chris Gralike
+ *  @license    GPLv2+
+ *  @see        https://github.com/DonutsNL/GlpiSAML/readme.md
+ *  @link       https://github.com/DonutsNL/GlpiSAML
+ *  @since      1.0.0
  * ------------------------------------------------------------------------
  **/
-use HTML;
+
+use Html;
 use Plugin;
 use Search;
 use GlpiPlugin\Glpisaml\Exclude;

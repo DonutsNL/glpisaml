@@ -44,9 +44,116 @@
 
  namespace GlpiPlugin\Glpisaml;
 
-Use Rule;
+use Rule;
+use Group;
+use Entity;
+use Session;
+use Profile;
 
 class Ruleright extends Rule
 {
+    /**
+     * Define Rights
+     * defines the rights a user must posses to be able to access this menu option in the rules section
+     **/
+    static $rightname = 'rule_ldap'; #using same as src/rulerightCollection.class.php
     
+    /**
+     * Define order
+     * defines how to order the list
+     **/
+    public $orderby   = "name";
+
+    /**
+     * getTitle
+     * @return Title to use in Rules list
+     **/
+    public function getTitle()
+    {
+        return __('SAML rules', PLUGIN_NAME);
+    }
+
+     /**
+     * getIcon
+     * @return icon to use in rules list
+     **/
+    public static function getIcon()
+    {
+        return Profile::getIcon();
+    }
+
+    /**
+     * @see Rule::getCriterias()
+     * @return returns available criteria
+     **/
+    public function getCriterias()
+    {
+        static $criterias = [];
+
+        if (!count($criterias)) {
+            $criterias['common']             = __('Global criteria');
+            
+            $criterias['_useremails']['table']      = '';
+            $criterias['_useremails']['field']      = '';
+            $criterias['_useremails']['name']       = _n('Email', 'Emails', 1);
+            $criterias['_useremails']['linkfield']  = '';
+            $criterias['_useremails']['virtual']    = true;
+            $criterias['_useremails']['id']         = '_useremails';
+            
+        }
+        return $criterias;
+    }
+
+    /**
+     * @see Rule::getActions()
+     **/
+    public function getActions()
+    {
+
+        $actions                                                = parent::getActions();
+
+        $actions['entities_id']['name']                         = Entity::getTypeName(1);
+        $actions['entities_id']['type']                         = 'dropdown';
+        $actions['entities_id']['table']                        = 'glpi_entities';
+
+        $actions['profiles_id']['name']                         = _n('Profile', 'Profiles', Session::getPluralNumber());
+        $actions['profiles_id']['type']                         = 'dropdown';
+        $actions['profiles_id']['table']                        = 'glpi_profiles';
+
+        $actions['is_recursive']['name']                        = __('Recursive');
+        $actions['is_recursive']['type']                        = 'yesno';
+        $actions['is_recursive']['table']                       = '';
+
+        $actions['is_active']['name']                           = __('Active');
+        $actions['is_active']['type']                           = 'yesno';
+        $actions['is_active']['table']                          = '';
+
+        $actions['_entities_id_default']['table']                = 'glpi_entities';
+        $actions['_entities_id_default']['field']               = 'name';
+        $actions['_entities_id_default']['name']                = __('Default entity');
+        $actions['_entities_id_default']['linkfield']           = 'entities_id';
+        $actions['_entities_id_default']['type']                = 'dropdown';
+
+        $actions['specific_groups_id']['name']                  = Group::getTypeName(Session::getPluralNumber());
+        $actions['specific_groups_id']['type']                  = 'dropdown';
+        $actions['specific_groups_id']['table']                 = 'glpi_groups';
+
+        $actions['groups_id']['table']                        = 'glpi_groups';
+        $actions['groups_id']['field']                        = 'name';
+        $actions['groups_id']['name']                         = __('Default group');
+        $actions['groups_id']['linkfield']                    = 'groups_id';
+        $actions['groups_id']['type']                         = 'dropdown';
+        $actions['groups_id']['condition']                    = ['is_usergroup' => 1];
+
+        $actions['_profiles_id_default']['table']             = 'glpi_profiles';
+        $actions['_profiles_id_default']['field']             = 'name';
+        $actions['_profiles_id_default']['name']              = __('Default profile');
+        $actions['_profiles_id_default']['linkfield']         = 'profiles_id';
+        $actions['_profiles_id_default']['type']              = 'dropdown';
+
+        $actions['timezone']['name']                          = __('Timezone');
+        $actions['timezone']['type']                          = 'timezone';
+
+        return $actions;
+    }
 }

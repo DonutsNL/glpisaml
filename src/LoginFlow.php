@@ -53,7 +53,6 @@ use Html;
 use Plugin;
 use Session;
 use Toolbox;
-use Exception;
 use Throwable;
 use OneLogin\Saml2\Auth as samlAuth;
 use OneLogin\Saml2\Response;
@@ -62,6 +61,12 @@ use GlpiPlugin\Glpisaml\LoginState;
 use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 use GlpiPlugin\Glpisaml\LoginFlow\Auth as glpiAuth;
 
+
+/**
+ * This object brings it all together. It is responsible to handle the
+ * main logic concerned with the Saml login and logout flows.
+ * it will call upon various supporting objects to perform its tasks.
+ */
 class LoginFlow
 {
     /**
@@ -113,9 +118,9 @@ class LoginFlow
         }
 
         // Check if a SAML button was pressed and handle the corresponding logon request!
-        if (isset($_POST['phpsaml'])        &&      // Must be set
+        if (isset($_POST['phpsaml'])         &&      // Must be set
             is_numeric($_POST['phpsaml'])    &&      // Value must be numeric
-            strlen($_POST['phpsaml']) < 3  ){      // Should not exceed 999
+            strlen($_POST['phpsaml']) < 3    ){      // Should not exceed 999
 
             // If we know the idp we register it in the login State
             $state->setIdpId(filter_var($_POST['phpsaml'], FILTER_SANITIZE_NUMBER_INT));
@@ -129,6 +134,9 @@ class LoginFlow
             // Actually perform SSO
             $this->performSamlSSO($state);
         }
+
+        // Evaluate database state, do we need to force logoff a user?
+
 
         // else
         return false;
@@ -184,6 +192,7 @@ class LoginFlow
 
         // Validate samlResponse and returns attributes.
         // validation will print and exit on errors.
+        // replace with a object in the future for injection into GlpiAuth.
         $attributes = $this->validateSamlResponse($response);
 
         // Try to populate GLPI Auth using provided attributes;
@@ -193,12 +202,15 @@ class LoginFlow
             $this->printError($e->getMessage(), 'doSamlLogin');
         }
 
-        // Initialize Glpi session.
-        Session::init($auth);
-        // Redirect back to mainpage
-        Session::addMessageAfterRedirect(__("SAML login succesful"), true, INFO);
-        Html::redirect($CFG_GLPI['url_base'].'/');
+        // Update the current state
+        if(!$state = new Loginstate()){ $this->printError(__('Could not load loginState from database!', PLUGIN_NAME)); }
+        $state->setPhase(LoginState::PHASE_SAML_AUTH);
 
+        // Populate Glpi session with Auth.
+        Session::init($auth);
+
+        // Redirect back to mainpage
+        Html::redirect($CFG_GLPI['url_base'].'/');
     }
 
      /**
@@ -217,7 +229,7 @@ class LoginFlow
         } else {
             // NameId should be formatted as an email address.
             if(!filter_var($attributes['NameId'], FILTER_VALIDATE_EMAIL)){
-                $this->printError(__('nameId should be formatted as a valid emailaddress'), 
+                $this->printError(__('nameId should be formatted as a valid emailaddress'),
                                      'validateSamlResponse',
                                       var_export($attributes, true));
             }
@@ -243,7 +255,7 @@ class LoginFlow
             // Firstname / Givenname
             if(!array_key_exists(self::SCHEMA_FIRSTNAME, $attributes['userData']) &&
                !array_key_exists(self::SCHEMA_GIVENNAME, $attributes['userData']) ){
-                $this->printError(__('Make sure either firstname ['.self::SCHEMA_FIRSTNAME.'] or givenname ['.self::SCHEMA_GIVENNAME.'] claim is present in samlResponse.'),
+                $this->printError(__('Make sure either firstname ['.self::SCHEMA_FIRSTNAME.'] or givenname ['.self::SCHEMA_GIVENNAME.'] claim is present.'),
                 'validateSamlResponse',
                  var_export($attributes, true));
             }
@@ -260,7 +272,6 @@ class LoginFlow
                  var_export($attributes, true));
             }
         }
-
         return $attributes;
     }
 
@@ -304,10 +315,10 @@ class LoginFlow
         // Define static translatable elements
         $tplvars['header']      = __('⚠️ we are unable to log you in', PLUGIN_NAME);
         $tplvars['error']       = htmlentities($errorMsg);
-        $tplvars['returnPath']  = $CFG_GLPI["root_doc"] .'/index.php';
+        $tplvars['returnPath']  = $CFG_GLPI["root_doc"] .'/';
         $tplvars['returnLabel'] = __('Return to GLPI', PLUGIN_NAME);
         // print header
-        Html::nullHeader("Login",  $CFG_GLPI["root_doc"] . '/index.php');
+        Html::nullHeader("Login",  $CFG_GLPI["root_doc"] . '/');
         // Render twig template
         $loader = new \Twig\Loader\FilesystemLoader(PLUGIN_GLPISAML_TPLDIR);
         $twig = new \Twig\Environment($loader);
@@ -382,11 +393,11 @@ class LoginFlow
         $tplvars['header']      = __('⚠️ An error occured', PLUGIN_NAME);
         $tplvars['leading']     = __("We are sorry, something went terribly wrong while processing your $action request!", PLUGIN_NAME);
         $tplvars['error']       = $errorMsg;
-        $tplvars['returnPath']  = $CFG_GLPI["root_doc"] .'/index.php';
+        $tplvars['returnPath']  = $CFG_GLPI["root_doc"] .'/';
         $tplvars['returnLabel'] = __('Return to GLPI', PLUGIN_NAME);
 
         // print header
-        Html::nullHeader("Login",  $CFG_GLPI["root_doc"] . '/index.php');
+        Html::nullHeader("Login",  $CFG_GLPI["root_doc"] . '/');
 
         // Render twig template
         $loader = new \Twig\Loader\FilesystemLoader(PLUGIN_GLPISAML_TPLDIR);

@@ -48,6 +48,7 @@ use Glpi\Plugin\Hooks;
 use GlpiPlugin\Glpisaml\Config;
 use GlpiPlugin\Glpisaml\Exclude;
 use GlpiPlugin\Glpisaml\LoginFlow;
+use GlpiPlugin\Glpisaml\LoginFlow\User;
 use GlpiPlugin\Glpisaml\Ruleright;
 use GlpiPlugin\Glpisaml\RulerightCollection;
 

@@ -118,7 +118,7 @@ class Acs extends LoginFlow
             $this->printError(__('GLPI did not expect an assertion from this Idp. Please login using the GLPI login interface', PLUGIN_NAME),
                               __('samlResponse assertion'),
                                  self::EXTENDED_HEADER.
-                              __("Unexpected assertion triggered by external source with address:{$_SERVER['REMOTE_ADDR']}\n", PLUGIN_NAME).
+                              __("Unexpected assertion triggered by external source with address:{$_SERVER['REMOTE_ADDR']}\n").
                                  self::STATE_OBJ.var_export($this->state, true)."\n\n".
                                  self::EXTENDED_FOOTER."\n");
         }else{
@@ -175,14 +175,15 @@ class Acs extends LoginFlow
                                   $extended);
             }
 
-            // Validate the response. Is it valid then peform samlLogin!
-            if (is_object($response) && $response->isValid() )
-            {
+            // Validate the response. Valid? then peform LoginFlow->doSamlLogin()!
+            // isValid will print errors to the client still need to
+            // figure out how to capture these throws, throwable doesnt
+            // capture it properly.
+            if (is_object($response) && @$response->isValid()){
                     $this->doSamlLogin($response);
             } else {
                 $extended = ($this->debug) ? self::EXTENDED_HEADER.
-                             self::ERRORS.var_export($samlSettings->getErrors(), true)."\n\n".
-                             self::STATE_OBJ.var_export($this->state, true)."\n\n".
+                             self::ERRORS.var_export($response->getError(), true)."\n\n".
                              self::EXTENDED_FOOTER : '';
 
                 $this->printError(__('Received samlResponse was not valid. Please review the errors in the logging and correct the problem', PLUGIN_NAME),

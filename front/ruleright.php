@@ -39,9 +39,8 @@
  * ------------------------------------------------------------------------
  **/
 
-use Glpi\Plugin;
-use GlpiPlugin\Glpisaml\Exclude;
+include_once '../../../inc/includes.php';                                                   //NOSONAR - Cant be included with USE.
 
-include '../../../inc/includes.php';                            //NOSONAR - Cant be included with USE.
-$dropdown = new Exclude();
-include GLPI_ROOT . "/front/dropdown.common.form.php";          //NOSONAR - Cant be included with USE.
+$rulecollection = new PluginPhpsamlRuleRightCollection($_SESSION['glpiactive_entity']);
+
+include_once  GLPI_ROOT . "/front/rule.common.php";                                         //NOSONAR - Cant be included with USE.
