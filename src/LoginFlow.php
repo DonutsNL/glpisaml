@@ -180,6 +180,8 @@ class LoginFlow
      */
     protected function doSamlLogin(Response $response): void
     {
+        global $CFG_GLPI;
+
         // Validate samlResponse and returns attributes.
         // validation will print and exit on errors.
         $attributes = $this->validateSamlResponse($response);
@@ -192,9 +194,11 @@ class LoginFlow
         }
 
         // Initialize Glpi session.
-        session::init($auth);
+        Session::init($auth);
+        // Redirect back to mainpage
+        Session::addMessageAfterRedirect(__("SAML login succesful"), true, INFO);
+        Html::redirect($CFG_GLPI['url_base'].'/');
 
-        $this->printError('We succesfully loggedIn!');
     }
 
      /**

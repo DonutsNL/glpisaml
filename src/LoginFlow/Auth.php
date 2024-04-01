@@ -51,7 +51,10 @@ class Auth extends glpiAuth
 {
     public function loadUser(array $attributes)
     {
+        // Get user
         $this->user = (new User())->getOrCreateUser($attributes);
+        // Authorize user
+        $this->auth_succeded = (bool)$this->user->fields;
         return $this;
     }
 }
