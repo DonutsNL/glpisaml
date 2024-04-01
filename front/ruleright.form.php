@@ -35,6 +35,8 @@
  **/
 
 include_once '../../../inc/includes.php';                                               //NOSONAR - Cant be included with USE.
+// Check the rights
+Session::checkRight("config", UPDATE);
 
 $rulecollection = new PluginPhpsamlRuleRightCollection($_SESSION['glpiactive_entity']);
 

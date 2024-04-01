@@ -117,6 +117,13 @@ class LoginFlow
             $this->performSamlLogOff();
         }
 
+        // Capture the post of regular login and verify if the domain is SSO enabled.
+        foreach($_POST as $key => $value){
+            if(strstr($key, 'fielda')){
+                // TODO validate domain and perform SSO if matched.
+            }
+        }
+
         // Check if a SAML button was pressed and handle the corresponding logon request!
         if (isset($_POST['phpsaml'])         &&      // Must be set
             is_numeric($_POST['phpsaml'])    &&      // Value must be numeric

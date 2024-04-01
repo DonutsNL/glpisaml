@@ -47,7 +47,8 @@ $post  = $_POST;
 
 // Include GLPI;
 include_once '../../../inc/includes.php';                       //NOSONAR intentional include_once;
-
+// Check the rights
+Session::checkRight("config", UPDATE);
 
 // Show header with saml config breadcrums.
 Html::header(__('Identity providers'), $_SERVER['PHP_SELF'], "config", Config::class);

@@ -45,6 +45,8 @@ use Plugin;
 use GlpiPlugin\Glpisaml\Config as samlConfig;
 
 include_once '../../../inc/includes.php';               //NO SONAR - Cannot be included with USE keyword
+// Check the rights
+Session::checkRight("config", UPDATE);
 
 // Check if plugin is activated...
 $plugin = new Plugin();

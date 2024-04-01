@@ -311,6 +311,18 @@ class ConfigEntity extends ConfigItem
     }
 
     /**
+     * Searches the database for a given email domain and if found
+     * returns the Idp ID.
+     * 
+     * @param  array $ignoreFields fields to skip
+     * @return array $fields with validated and corrected configuration
+     */
+    public function getIdForDomain(string $email): int
+    {
+        // TODO
+    }
+
+    /**
      * Validate advanced configuration options and correct params if not supported by provided setup.
      *
      * @param  array $fields from getFields()

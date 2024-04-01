@@ -45,6 +45,8 @@ use Search;
 use GlpiPlugin\Glpisaml\Exclude;
 
 include "../../../inc/includes.php";                    //NOSONAR - Cant be included with USE.
+// Check the rights
+Session::checkRight("config", UPDATE);
 
 // Check if plugin is activated...
 $plugin = new Plugin();
