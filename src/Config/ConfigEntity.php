@@ -320,6 +320,7 @@ class ConfigEntity extends ConfigItem
     public function getIdForDomain(string $email): int
     {
         // TODO
+        return 1;
     }
 
     /**
