@@ -42,13 +42,16 @@
  * ------------------------------------------------------------------------
  **/
 
-namespace GlpiPlugin\Glpisaml;
+ namespace GlpiPlugin\Glpisaml\LoginFlow;
 
-use User as GlpiUser;
+use Auth as glpiAuth;
+use GlpiPlugin\Glpisaml\LoginFlow\User;
 
-class User extends GlpiUser
+class Auth extends glpiAuth
 {
-
-        
-    
+    public function loadUser(array $attributes)
+    {
+        $this->user = (new User())->getOrCreateUser($attributes);
+        return $this;
+    }
 }

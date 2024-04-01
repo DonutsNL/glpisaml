@@ -67,11 +67,12 @@ class Acs extends LoginFlow
 {
 
     // Define some error headers we use allot, not the best place but ok for now.
-    private const EXTENDED_HEADER = "================ BEGIN EXTENDED =================\n\n";
-    private const EXTENDED_FOOTER = "================= END EXTENDED ==================\n\n";
-    private const STATE_OBJ       = "###############    StateObj    ##################\n\n";
-    private const RESPONSE_OBJ    = "###############    Response    ##################\n\n";
-    private const ERRORS          = "###############     Errors     ##################\n\n";
+    public const EXTENDED_HEADER = "================ BEGIN EXTENDED =================\n\n";
+    public const EXTENDED_FOOTER = "================= END EXTENDED ==================\n\n";
+    public const SERVER_OBJ      = "###############  ServerGlobal  ##################\n\n";
+    public const STATE_OBJ       = "###############    StateObj    ##################\n\n";
+    public const RESPONSE_OBJ    = "###############    Response    ##################\n\n";
+    public const ERRORS          = "###############     Errors     ##################\n\n";
 
     /**
      * Stores the loginState object.
@@ -117,7 +118,7 @@ class Acs extends LoginFlow
             $this->printError(__('GLPI did not expect an assertion from this Idp. Please login using the GLPI login interface', PLUGIN_NAME),
                               __('samlResponse assertion'),
                                  self::EXTENDED_HEADER.
-                                 "Unexpected assertion triggered by external source with address:{$_SERVER['REMOTE_ADDR']}\n".
+                              __("Unexpected assertion triggered by external source with address:{$_SERVER['REMOTE_ADDR']}\n", PLUGIN_NAME).
                                  self::STATE_OBJ.var_export($this->state, true)."\n\n".
                                  self::EXTENDED_FOOTER."\n");
         }else{

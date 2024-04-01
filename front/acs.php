@@ -55,5 +55,9 @@ $acs = new Acs();
 if(!empty($post) && array_key_exists('SAMLResponse', $post)){
     $acs->assertSaml($post);
 } else {
-    $acs->printError('no SAMLResponse found in POST header');
+    $acs->printError('We did not receive a samlResponse in POST header',
+                     __('Acs assertion'),
+                     Acs::EXTENDED_HEADER.
+                     Acs::SERVER_OBJ.var_export($_SERVER, true)."\n\n".
+                     Acs::EXTENDED_FOOTER."\n");
 }
