@@ -5,7 +5,7 @@
     "keywords": ["saml", "glpi", "plugins"],
     "homepage": "https://github.com/DonutsNL/glpisaml",
     "readme": "https://github.com/DonutsNL/glpisaml?tab=readme-ov-file#readme",
-    "license": "GPL-3.0-or-later",
+    "license": ["GPL-3.0-or-later"],
     "authors": [
         {
             "name": "Chris Gralike",
