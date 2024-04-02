@@ -134,7 +134,6 @@ class ConfigEntity extends ConfigItem
             // positive identifier equals populate using on a database row
             $this->validateAndPopulateDBEntity($id);
         }
-        return $this;
     }
 
 
@@ -245,7 +244,6 @@ class ConfigEntity extends ConfigItem
      * validate the database fields names, numbers and so forth to detect
      * update caused DB issues.
      *
-     * @param  void
      * @return array            - defined ConfigEntity class constants.
      * @see https://www.php.net/manual/en/reflectionclass.getconstants.php
      */
@@ -273,7 +271,7 @@ class ConfigEntity extends ConfigItem
         $classConstants = self::getConstants();
         // Fetch database columns;
         $sql = 'SHOW COLUMNS FROM '.SamlConfig::getTable();
-        if ($result = $DB->query($sql)) {
+        if ($result = $DB->doQuery($sql)) {
             while ($data = $result->fetch_assoc()) {
                 $fields[$data['Field']] = [
                     ConfigItem::FIELD       => $data['Field'],
@@ -293,9 +291,9 @@ class ConfigEntity extends ConfigItem
 
     /**
      * Returns the validated and normalized fields in the ConfigEntity
-     * for database insertion. It will not add fields added to the 
+     * for database insertion. It will not add fields added to the
      * ignoreFields param.
-     * 
+     *
      * @param  array $ignoreFields fields to skip
      * @return array $fields with validated and corrected configuration
      */
@@ -313,13 +311,13 @@ class ConfigEntity extends ConfigItem
     /**
      * Searches the database for a given email domain and if found
      * returns the Idp ID.
-     * 
+     *
      * @param  array $ignoreFields fields to skip
      * @return array $fields with validated and corrected configuration
      */
     public function getIdForDomain(string $email): int
     {
-        // TODO
+        // TODO Allow username email to be used to find correct idp config.
         return 1;
     }
 
@@ -391,7 +389,6 @@ class ConfigEntity extends ConfigItem
 
     /**
      * Returns the validity state of the currently loaded ConfigEntity
-     * @param  void
      * @return bool
      */
     public function isValid(): bool
@@ -402,7 +399,6 @@ class ConfigEntity extends ConfigItem
 
     /**
      * Returns the validity state of the currently loaded ConfigEntity
-     * @param  void
      * @return bool
      */
     public function isActive(): bool
@@ -508,11 +504,11 @@ class ConfigEntity extends ConfigItem
     /**
      * Calculates correct AuthN required for SAML request
      *
-     * @return          array   $config
+     * @return          array|bool   $config
      * @since           1.0.0
      * @example         https://github.com/SAML-Toolkits/php-saml/blob/master/settings_example.php
      */
-    private static function getAuthn($value)
+    private static function getAuthn($value): array|bool
     {
         if (preg_match('/^none,.+/i', $value)) {
             $array  = explode(':', $value);

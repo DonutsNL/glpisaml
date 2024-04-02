@@ -84,7 +84,7 @@ class Exclude extends CommonDropdown
 
     /**
      * Overloads missing canCreate Setup right and returns canUpdate instead
-     * @param  void
+     *
      * @return bool     - Returns true if profile assgined Setup->Setup->Update right
      * @see             - https://github.com/pluginsGLPI/example/issues/50
      */
@@ -95,7 +95,7 @@ class Exclude extends CommonDropdown
 
     /**
      * Overloads missing canPurge Setup right and returns canUpdate instead
-     * @param  void
+     *
      * @return bool     - Returns true if profile assgined Setup->Setup->Update right
      * @see             - https://github.com/pluginsGLPI/example/issues/50
      */
@@ -137,13 +137,13 @@ class Exclude extends CommonDropdown
     }
 
     /**
-     * getAdditionalFields() : array -
+     * getAdditionalFields(): array
      * Fetch fields for Dropdown 'add' form. Array order is equal with
      * field order in the form
      *
-     * @return string   $icon
+     * @return array   additional fields for dropdown
      */
-    public function getAdditionalFields()
+    public function getAdditionalFields(): array
     {
         return [
             [
@@ -198,13 +198,13 @@ class Exclude extends CommonDropdown
 
 
     /**
-     * getExcludes() : array -
-     * Get configured excludes from dropdowns
+     * getExcludes(): array -
+     * Get configured excludes from Excludes dropdown
      *
-     * @return patterns              Array with all configured patterns
-     * @since                        1.1.0
+     * @return array    Array with all configured patterns
+     * @since           1.1.0
      */
-    public static function getExcludes() : array
+    public static function getExcludes(): array
     {
         global $DB;
         $excludes = [];
@@ -222,12 +222,12 @@ class Exclude extends CommonDropdown
     }
 
     /**
-     * Process all that need to be excluded from SAML auth.
+     * Process aexcluded from SAML auth return true if excluded.
      *
-     * @return patterns              Array with all configured patterns
-     * @since                        1.1.0
+     * @return bool     On success
+     * @since           1.1.0
      */
-    public static function ProcessExcludes() : bool                                                         //NOSONAR - Maybe fix complexity in future.
+    public static function ProcessExcludes(): bool                                                         //NOSONAR - Maybe fix complexity in future.
     {
         $excludes = self::getExcludes();
         // Process configured excluded URIs and agents.
@@ -297,42 +297,42 @@ class Exclude extends CommonDropdown
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=COMPRESSED;
             SQL;
-            $DB->query($query) or die($DB->error());
+            $DB->doQuery($query) or die($DB->error());
             Session::addMessageAfterRedirect("🆗 Installed: $table.");
             // insert default excludes;
             $query = <<<SQL
             INSERT INTO `$table`(name, comment, action, ClientAgent, ExcludePath)
             VALUES('Bypass Cron.php', 'backport configuration', '1', '', '/front/cron.php');
             SQL;
-            $DB->query($query) or die($DB->error());
+            $DB->doQuery($query) or die($DB->error());
 
             // insert default excludes;
             $query = <<<SQL
             INSERT INTO `$table`(name, comment, action, ClientAgent, ExcludePath)
             VALUES('Bypass Inventory.php', '', '1', '', 'front/inventory.php');
             SQL;
-            $DB->query($query) or die($DB->error());
+            $DB->doQuery($query) or die($DB->error());
 
             // insert default excludes;
             $query = <<<SQL
             INSERT INTO `$table`(name, comment, action, ClientAgent, ExcludePath)
             VALUES('Bypass ldap_mass_sync.php', '', '1', '', 'ldap_mass_sync.php');
             SQL;
-            $DB->query($query) or die($DB->error());
+            $DB->doQuery($query) or die($DB->error());
 
             // insert default excludes;
             $query = <<<SQL
             INSERT INTO `$table`(name, comment, action, ClientAgent, ExcludePath)
             VALUES('Bypass apirest.php', '', '1', '', 'apirest.php');
             SQL;
-            $DB->query($query) or die($DB->error());
+            $DB->doQuery($query) or die($DB->error());
 
             // insert default excludes;
             $query = <<<SQL
             INSERT INTO `$table`(name, comment, action, ClientAgent, ExcludePath)
             VALUES('Bypass all fusioninventory files', '', '1', '', '/fusioninventory/');
             SQL;
-            $DB->query($query) or die($DB->error());
+            $DB->doQuery($query) or die($DB->error());
             Session::addMessageAfterRedirect("🆗 Inserted exclude defaults.");
         }
     }

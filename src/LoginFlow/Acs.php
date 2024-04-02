@@ -129,7 +129,7 @@ class Acs extends LoginFlow
         // Validate the samlResponse actually holds the expected result
         if( is_array($samlResponse) && array_key_exists('SAMLResponse', $samlResponse) ){
             // Write the samlResponse to the LoginState database for future SIEM eval;
-            $this->state->setServerParams(serialize($samlResponse));
+            $this->state->setSamlResponseParams(json_encode($samlResponse));
 
             // Fetch the configEntity for this assertion or print error on failure.
             if(!$configEntity = new ConfigEntity($this->state->getIdpId())){

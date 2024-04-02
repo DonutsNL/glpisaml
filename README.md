@@ -5,30 +5,44 @@ This is a rewrite of the broadly used phpsaml plugin created by Derrick Smith. P
 
 Rewrite of phpSaml plugin by Derrick Smith with: PHP8 support, GLPI 10+ support, Using GLPI core objects where possible, PSR4 support, Concern based class structures, Focus on code readability, address SONAR LINTING issues, Improve community support, Composer support for updating 3rd party SAML and XML libraries, Introduce discord support channel, Support multiple IDPs, support rule based JIT usercreation.
 
-# Support
-Want to support the work and focus?
-Star my repo, and I just love coffee: https://www.buymeacoffee.com/donutsnl
+# Status
+BETA
 
+# Support
+Want to support my work?
+Star my repo and contribute to my stargazer achievement. 
+Want to do more, I just love coffee: https://www.buymeacoffee.com/donutsnl
+
+# Installation using composer
+This plugin is also a registered composer package. This means you are able to download and update the plugin on stand alone GLPI installations using composer. In the future you prob want to use composer archive that will create a zip with glpisaml instead of require that will perform a full deployment.
+On linux: run: 
+- `apt-get install composer`
+- `cd ~`
+- `mkdir composer | cd composer`
+- `composer require donutsnl/glpisaml v0.2.1-beta`
+- `mv ./vendor/donutsnl/glpisaml [path_to_glpi_marketplace]`
+- `rm -rf ./vendor`
+
+# Installation git
+[TODO]
+
+# Installation marketplace
+[TODO]
 
 # Contribute, ideas and help?
-Join our discord at: [https://discord.gg/35tkHxHg](https://discord.gg/yKZB7VQUk6)
+Join my (and hopefully our in the future) discord at: [https://discord.gg/35tkHxHg](https://discord.gg/yKZB7VQUk6)
+Have coding experience (or are learning to code) and want to add meaningfull changes and additions? First start from your own repository by forking this repository and then create pull requests. Deal with any feedback you receive and see your pullrequest being merged. If you have proven to be consistant, then request access to the repository as contributor and help me build a great tool for people to enjoy. Just want to share your idea, then please create an issue outlining the issue or your idea.
 
-Collaboration and diverse minds help create great tools. Want to contribute, you are more than welcome.**Got coding experience**: ask in our discord to be added to the project as collaborator, assign a issue, create a fork, add your code or improvements, create a pullrequest. **No coding experience**: ask in our discord to be added to the project as collaborator, download the latest (not yet functional) version and participate in testing and providing early feedback or help me write user manuals on our wiki collaborator role. **want to learn coding** Reach out on our discord. We will find you a 'good first story' to start working on and help you develop those skills.
-
-**If you want to code, test or write:**
-- Make sure you download the plugin into the 'GLPI_HOME\marketplace\glpisaml\' folder.
-- Make sure not to use a production environment for testing!
-- Please create issues if it concerns the code or functionality of the plugin.
-- Only code whats in the issue assigned to you.
-- [Follow PSR where possible](https://www.php-fig.org/psr/).
-- Uncertain as a coder? Dont worry, just code, follow the feedback, watch you PR being merged.
-- Please use discord for all other stuff.
-- Contributed, but not 'yet' mentioned in our hall of fame, leave a PM in discord.
-
-# Current focus
-- harden the configuration objects;
-- implement loginpage;
-- start building the ACS;
+**Coding:**
+- [Follow PSR where possible](https://www.php-fig.org/psr/)
+- Use a decent IDE and consider using plugins like:
+    -Code lenses (intelephense);
+    -PSR4 compliant namespace resolver;
+    -Composer integration;
+    -Xdebug profiler;
+    -SonarLint;
+    -Twig language support;
+    -tip: devsense PHP All-in-one.
 
 # Credits
 Special credits go to:

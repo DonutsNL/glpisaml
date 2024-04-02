@@ -6,7 +6,7 @@
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI and the broad ammount of
- *  wishes expressed by the community. 
+ *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------
@@ -14,7 +14,7 @@
  * LICENSE
  *
  * This file is part of GLPISaml project.
- * 
+ *
  * GLPISaml plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -58,21 +58,21 @@ class User
     /**
      * Gets or creates (if JIT is enabled for IDP) the GLPI user.
      *
-     * @param   Response    SamlResponse to be evaluated.
-     * @return  array       with user attributes
+     * @param   array       Containing user attributes found in Saml claim
+     * @return  glpiUser    GlpiUser object with populated fields.
      * @since               1.0.0
      */
-    public function getOrCreateUser(array $attributes): glpiUser
+    public function getOrCreateUser(array $attributes): glpiUser    //NOSONAR Complexity by design
     {
         // Load GLPI user object
-        $user = new \User();
+        $user = new glpiUser();
 
         // Verify if user exists in database.
         if(!$user->getFromDBbyName($attributes['userData'][LoginFlow::SCHEMA_NAME]['0'])          &&
            !$user->getFromDBbyEmail($attributes['userData'][LoginFlow::SCHEMA_EMAILADDRESS]['0']) ){
             
             // Get current state
-            if(!$state = new Loginstate()){ 
+            if(!$state = new Loginstate()){
                 throw new Exception(__('Could not load loginState from database!', PLUGIN_NAME)); //NOSONAR
             }
             // Fetch the correct configEntity
@@ -100,6 +100,7 @@ class User
                                                   we failed to create one dynamically using Just In Time usercreation. Please
                                                   request a GLPI administrator to review the logs and correct the problem or
                                                   request the administrator to create a GLPI user manually.", PLUGIN_NAME));
+                    // PHP0405-no return by design.
                 }
 
                 // Load the rulesEngine and process them
@@ -111,7 +112,7 @@ class User
                 $phpSamlRuleCollection->processAllRules($matchInput, [], []);
 
                 // Return freshly created user!
-                $user = new \User();
+                $user = new glpiUser();
                 if($user->getFromDB($id)){
                     Session::addMessageAfterRedirect('Dynamically created GLPI user for:'.$attributes['userData'][LoginFlow::SCHEMA_NAME][0]);
                     return $user;
@@ -122,6 +123,7 @@ class User
                 LoginFlow::showLoginError(__("Your SSO login was succesfull but there is no matching GLPI user account. In addition the Just-in-time user creation
                                               is disabled for: $idpName. Please contact your GLPI administrator and request an account to be created matching the
                                               provided email claim: $email or login using a local user account.", PLUGIN_NAME));
+                // PHP0405-no return by design.
             }
         }else{
             // Verify the user is not deleted (in trashbin)
@@ -130,11 +132,13 @@ class User
                                            this we cannot log you in as this would violate GLPI its security policies. Please contact the GLPI administrator
                                            to restore the user with provided ID or purge the user to allow the Just in Time (JIT) usercreation to create a
                                            new user with the idp provided claims.", PLUGIN_NAME));
+                // PHP0405-no return by design.
             }
             // Verify the user is not disabled by the admin;
             if($user->fields['is_active'] == 0){
                 LoginFlow::showLoginError(__("User with GlpiUserid: ".$user->fields['id']." is disabled. Please contact your GLPI administrator and request him to
                                             reactivate your account.", PLUGIN_NAME));
+                // PHP0405-no return by design.
             }
             // Return the user to the Loginflow object for session initialization!.
             return $user;

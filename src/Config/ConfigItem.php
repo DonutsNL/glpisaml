@@ -252,7 +252,7 @@ class ConfigItem    //NOSONAR
         }
 
         return [self::FORMEXPLAIN  => __('Single Logout service endpoint of the IdP. URL Location of the IdP where
-                                          SLO Request will be sent.OneLogin PHPSAML only supports 
+                                          SLO Request will be sent.OneLogin PHPSAML only supports
                                           the \'HTTP-redirect\' binding for this endpoint.', PLUGIN_NAME),
                 self::FORMTITLE => __('SLO URL', PLUGIN_NAME),
                 self::EVAL      => ($error) ? self::INVALID : self::VALID,
@@ -394,7 +394,7 @@ class ConfigItem    //NOSONAR
     protected function enforce_sso(mixed $var): array                   //NOSONAR 
     {
         return array_merge([self::FORMEXPLAIN   => __('If enabled PHPSAML will replace the default GLPI login screen with a version
-                                                       that does not have the default GLPI login options and only allows the user to 
+                                                       that does not have the default GLPI login options and only allows the user to
                                                        authenticate using the configured SAML2 idps. This setting can be bypassed using
                                                        a bypass URI parameter', PLUGIN_NAME),
                             self::FORMTITLE     => __('ENFORCED', PLUGIN_NAME),
@@ -448,7 +448,7 @@ class ConfigItem    //NOSONAR
 
     protected function security_nameidencrypted(mixed $var): array //NOSONAR
     {
-        return array_merge([self::FORMEXPLAIN     => __('If enabled the OneLogin PHPSAML toolkit will encrypt the <asmlp:logoutRequest> sent by 
+        return array_merge([self::FORMEXPLAIN     => __('If enabled the OneLogin PHPSAML toolkit will encrypt the <asmlp:logoutRequest> sent by
                                                          this SP using the provided SP certificate and private key. This option will be toggled
                                                          "off" automatically if no, or no valid SP certificate and key is provided.'),
                             self::FORMTITLE     => __('ENCRYPT NAMEID', PLUGIN_NAME),
@@ -459,7 +459,7 @@ class ConfigItem    //NOSONAR
 
     protected function security_authnrequestssigned(mixed $var): array //NOSONAR
     {
-        return array_merge([self::FORMEXPLAIN     => __('If enabled the OneLogin PHPSAML toolkit will sign the <samlp:AuthnRequest> messages 
+        return array_merge([self::FORMEXPLAIN     => __('If enabled the OneLogin PHPSAML toolkit will sign the <samlp:AuthnRequest> messages
                                                          send by this SP. The IDP should consult the metadata to get the information required
                                                          to validate the signatures.'),
                             self::FORMTITLE     => __('SIGN AUTHN REQUEST', PLUGIN_NAME),

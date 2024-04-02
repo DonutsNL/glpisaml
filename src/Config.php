@@ -80,7 +80,7 @@ class Config extends CommonDBTM
 
     /**
      * Overloads missing canCreate Setup right and returns canUpdate instead
-     * @param  void
+     *
      * @return bool     - Returns true if profile assgined Setup->Setup->Update right
      * @see             - https://github.com/pluginsGLPI/example/issues/50
      */
@@ -91,7 +91,7 @@ class Config extends CommonDBTM
 
     /**
      * Overloads missing canDelete Setup right and returns canUpdate instead
-     * @param  void
+     *
      * @return bool     - Returns true if profile assgined Setup->Setup->Update right
      * @see             - https://github.com/pluginsGLPI/example/issues/50
      */
@@ -102,7 +102,7 @@ class Config extends CommonDBTM
 
     /**
      * Overloads missing canPurge Setup right and returns canUpdate instead
-     * @param  void
+     *
      * @return bool     - Returns true if profile assgined Setup->Setup->Update right
      * @see             - https://github.com/pluginsGLPI/example/issues/50
      */
@@ -123,7 +123,7 @@ class Config extends CommonDBTM
 
     /**
      * Returns class icon to use in menus and tabs
-     * @param  void
+     *
      * @return string   - returns Font Awesom icon classname.
      * @see             - https://fontawesome.com/search
      */
@@ -135,7 +135,7 @@ class Config extends CommonDBTM
     /**
      * Provides search options for DBTM.
      * Do not rely on this, @see CommonDBTM::searchOptions instead.
-     * @param  void
+     *
      * @return array  $tab  - returns searchOptions
      * @see                 - https://glpi-developer-documentation.readthedocs.io/en/master/devapi/search.html
      */
@@ -143,7 +143,7 @@ class Config extends CommonDBTM
     {
         // Lets not be as verbose GLPI objects.
         $index = 1;
-        foreach((new ConfigEntity())->getFields(true) as $field)
+        foreach((new ConfigEntity())->getFields() as $field)
         {
             $field['list'] = false;
            // skip the following fields
@@ -268,7 +268,7 @@ class Config extends CommonDBTM
             PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=COMPRESSED;
             SQL;
-            $DB->query($query) or die($DB->error());
+            $DB->doQuery($query) or die($DB->error());
             Session::addMessageAfterRedirect("🆗 Installed: $table.");
         }
     }

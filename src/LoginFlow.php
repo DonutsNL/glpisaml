@@ -6,7 +6,7 @@
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI and the broad ammount of
- *  wishes expressed by the community. 
+ *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------
@@ -98,14 +98,13 @@ class LoginFlow
      * Called by post_init hook via function in hooks.php. It watches POST
      * information passed from the loginForm.
      *
-     * @param   void
      * @return  boolean
      * @since                   1.0.0
      */
-    public function doAuth()  : bool
+    public function doAuth(): bool
     {
         // Get current state
-        if(!$state = new Loginstate()){ 
+        if(!$state = new Loginstate()){
             $this->printError(__('Could not load loginState from database!', PLUGIN_NAME));
         }
 
@@ -248,7 +247,7 @@ class LoginFlow
                                    name are populated using user.mail instead of the uset.principalname.<br>
                                    You can use the debug saml dumps to validate and compare the claims passed.<br>
                                    They should contain the original email addresses.<br>
-                                   Also see: https://learn.microsoft.com/en-us/azure/active-directory/develop/saml-claims-customization', 'validateSamlResponse', var_export($attributes, true)));
+                                   Also see: https://learn.microsoft.com/en-us/azure/active-directory/develop/saml-claims-customization', PLUGIN_NAME), 'validateSamlResponse', var_export($attributes, true));
             }
         }
 
@@ -287,9 +286,8 @@ class LoginFlow
      * using available idp configurations.
      *
      * @see https://github.com/DonutsNL/glpisaml/issues/7
-     * @param void
-     * @return string   html form for the login screen
-     * @since 1.0.0
+     * @return  string  html form for the login screen
+     * @since           1.0.0
      */
     public function showLoginScreen(): void
     {
@@ -312,8 +310,7 @@ class LoginFlow
      * Shows a login error with human readable message
      *
      * @see https://github.com/DonutsNL/glpisaml/issues/7
-     * @param void
-     * @return string   html form for the login screen
+     * @param   string   error message to show
      * @since 1.0.0
      */
     public static function showLoginError($errorMsg): void
@@ -385,7 +382,7 @@ class LoginFlow
      * @return void             no return, PHP execution is terminated by this method.
      * @since 1.0.0
      */
-    public function printError(string $errorMsg, string $action = '', string $extended = '') : void
+    public function printError(string $errorMsg, string $action = '', string $extended = ''): void
     {
         // Pull GLPI config into scope.
         global $CFG_GLPI;

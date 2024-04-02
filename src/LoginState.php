@@ -83,8 +83,8 @@ class LoginState extends CommonDBTM
     public const LAST_ACTIVITY              = 'lastClickTime';  // When did we laste update the session
     public const ENFORCE_LOGOFF             = 'enforceLogoff';  // Do we want to enforce a logoff (one time)
     public const EXCLUDED_PATH              = 'excludedPath';   // If request was made using saml bypass.
-    public const SERVER_PARAMS              = 'requestParams';  // Stores the Saml Response
-    public const REQUEST_PARAMS             = 'requestParams';  // Stores the SSO request
+    public const SAML_RESPONSE              = 'serverParams';   // Stores the Saml Response
+    public const SAML_REQUEST               = 'requestParams';  // Stores the SSO request
     public const PHASE                      = 'phase';          // Describes the current state GLPI, ACS, TIMEOUT, LOGGEDIN, LOGGEDOUT.
     public const PHASE_INITIAL              = 1;                // Initial visit
     public const PHASE_SAML_ACS             = 2;                // Performed SAML IDP call expected back at ACS
@@ -166,7 +166,7 @@ class LoginState extends CommonDBTM
     /**
      * Write the state into the database
      * for external (SIEM) evaluation and interaction
-     * @param   void
+     *
      * @return  bool
      * @since   1.0.0
      */
@@ -187,12 +187,22 @@ class LoginState extends CommonDBTM
         return true;
     }
 
+    /**
+     * Get and set last activity in state array
+     * @since   1.0.0
+     */
     private function getLastActivity(): void
     {
         $this->state[self::LOCATION] = $_SERVER['REQUEST_URI'];
         $this->state[self::LAST_ACTIVITY] = date('Y-m-d H:i:s');
     }
 
+    /**
+     * Gets glpi state from the SESSION superglobal and
+     * updates the state array accordingly.
+     *
+     * @since   1.0.0
+     */
     private function getGlpiState(): void
     {
         // Verify if user is allready authenticated by GLPI.
@@ -209,22 +219,37 @@ class LoginState extends CommonDBTM
         }
     }
 
-    // Update the phase of the loginstate.
+    /**
+     * Update the loginPhase in the state database.
+     * @param int   $phase ID
+     * @since       1.0.0
+     * @see         LoginState::PHASE_## constants for valid values
+     */
     public function setPhase(int $phase): bool
     {
         if($phase > 0 && $phase <= 8){
             $this->state[self::PHASE] = $phase;
             return ($this->update($this->state)) ? true : false;
         }
+        return false;
     }
 
-    // Get the phase of the loginstate.
+    /**
+     * Gets the current login phase
+     * @return int  phase id
+     * @see         LoginState::PHASE_## constants for valid values
+     * @since       1.0.0
+     */
     public function getPhase(): int
     {
         return (!empty($this->state[self::PHASE])) ? $this->state[self::PHASE] : 0;
     }
 
-    // Update the idpid in the loginstate.
+    /**
+     * Sets the IdpId used in current session.
+     * @param int   ConfigItem::ID pointing to IdP provider.
+     * @since       1.0.0
+     */
     public function setIdpId(int $idpId): bool
     {
         if($idpId > 0 && $idpId < 999){
@@ -235,28 +260,44 @@ class LoginState extends CommonDBTM
         }
     }
 
-    // get the idpid from the loginstate.
+    /**
+     * Fetches current IdpId used in current session.
+     * @return int  ConfigItem::ID pointing to IdP provider.
+     * @since       1.0.0
+     */
     public function getIdpId(): int
     {
         return (!empty($this->state[self::IDP_ID])) ? $this->state[self::IDP_ID] : 0;
     }
 
-    // Set server params
-    public function setServerParams(string $samlResponse): bool
+    /**
+     * Adds SamlResponse to the state table
+     * @param  string   json_encoded samlResponse
+     * @return bool     true on success.
+     * @since           1.0.0
+     */
+    public function setSamlResponseParams(string $samlResponse): bool
     {
         if($samlResponse > 0){
-            $this->state[self::SERVER_PARAMS] = htmlspecialchars($samlResponse);
+            $this->state[self::SAML_RESPONSE] = $samlResponse;
             return ($this->update($this->state)) ? true : false;
         }
+        return false;
     }
 
-    // Set request params
+    /**
+     * Adds SamlRequest to the state table
+     * @param  string   json_encoded samlRequest
+     * @return bool     true on success.
+     * @since           1.0.0
+     */
     public function setRequestParams(string $samlRequest): bool
     {
         if($samlRequest > 0){
-            $this->state[self::REQUEST_PARAMS] = htmlspecialchars($samlRequest);
+            $this->state[self::SAML_REQUEST] = $samlRequest;
             return ($this->update($this->state)) ? true : false;
         }
+        return false;
     }
 
     // get the glpi Username and set it in the state.
@@ -308,7 +349,7 @@ class LoginState extends CommonDBTM
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=COMPRESSED;
             SQL;
-            $DB->query($query) or die($DB->error());
+            $DB->doQuery($query) or die($DB->error());
             Session::addMessageAfterRedirect("🆗 Installed: $table.");
         }
     }

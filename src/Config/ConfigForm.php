@@ -54,20 +54,15 @@ use OneLogin\Saml2\Constants as Saml2Const;
 /**
  * Class Handles the Configuration front/config.form.php Form
  */
-class ConfigForm        //NOSONAR - Ignore number of methods.
+class ConfigForm    //NOSONAR complexity by design.
 {
-    /**
-     * Where is the template file located for the configuration form
-     */
-    private const HTML_TEMPLATE_FILE = PLUGIN_GLPISAML_TPLDIR.'/configForm.html';
-
     /**
      * Add new phpSaml configuration
      *
-     * @param array $postData $_POST data from form
-     * @return void -
+     * @param array     $postData $_POST data from form
+     * @return string   String containing HTML form with values or redirect into added form.
      */
-    public function addSamlConfig($postData) : string
+    public function addSamlConfig(array $postData): string
     {
         // Populate configEntity using post;
         $configEntity = new ConfigEntity(-1, ['template' => 'post', 'postData' => $postData]);
@@ -82,6 +77,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
                 // Leave succes message for user and redirect
                 Session::addMessageAfterRedirect(__('Succesfully added new GlpiSaml configuration.', PLUGIN_NAME));
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.form.php?id=$id");
+                // PHP0405-no return by design.
             } else {
                 // Leave error message for user and regenerate form with values
                 Session::addMessageAfterRedirect(__('Unable to add new GlpiSaml configuration, please review error logging', PLUGIN_NAME));
@@ -101,7 +97,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
      * @param array $postData $_POST data from form
      * @return void -
      */
-    public function updateSamlConfig($postData) : string
+    public function updateSamlConfig(array $postData): string
     {
         // Populate configEntity using post;
         $configEntity = new ConfigEntity(-1, ['template' => 'post', 'postData' => $postData]);
@@ -119,10 +115,12 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
                 // Leave a success message for the user and redirect using ID.
                 Session::addMessageAfterRedirect(__('Configuration updated succesfully', PLUGIN_NAME));
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
+                // PHP0405-no return by design.
             } else {
                 // Leave a failed message
                 Session::addMessageAfterRedirect(__('Configuration update failed, check your update rights or error logging', PLUGIN_NAME));
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
+                // PHP0405-no return by design.
             }
         }else{
             // Leave an error message and reload the form with provided values and errors
@@ -135,9 +133,9 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
      * Add new phpSaml configuration
      *
      * @param array $postData $_POST data from form
-     * @return void -
+     * @return void
      */
-    public function deleteSamlConfig($postData) : void
+    public function deleteSamlConfig(array $postData): void
     {
         // Get SamlConfig object for deletion
         $config = new SamlConfig();
@@ -166,9 +164,11 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
             // Generate form using a template
             return $this->generateForm(new ConfigEntity($id, $options));
         }else{
-            // Invalid redirect back to origin
+            // Invalid id used redirect back to origin
             Session::addMessageAfterRedirect(__('Invalid request, redirecting back', PLUGIN_NAME));
             Html::back();
+            // Unreachable bogus return for linter.
+            return '';
         }
     }
 
@@ -235,7 +235,7 @@ class ConfigForm        //NOSONAR - Ignore number of methods.
         $tplVars = array_merge($tplVars, $this->getTabWarnings($fields));
        
         // Get AuthN context as array
-        $fields[ConfigEntity::AUTHN_CONTEXT][ConfigEntity::VALUE] = $configEntity->getRequestedAuthnContextArray();
+        $fields[ConfigEntity::AUTHN_CONTEXT][ConfigItem::VALUE] = $configEntity->getRequestedAuthnContextArray();
        
         // Define static field translations
         $tplVars = array_merge($tplVars, [

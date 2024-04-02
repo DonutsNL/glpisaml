@@ -6,7 +6,7 @@
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI and the broad ammount of
- *  wishes expressed by the community. 
+ *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------
@@ -66,7 +66,8 @@ class Ruleright extends Rule
 
     /**
      * getTitle
-     * @return Title to use in Rules list
+     *
+     * @return string Title to use in Rules list
      **/
     public function getTitle()
     {
@@ -75,7 +76,8 @@ class Ruleright extends Rule
 
      /**
      * getIcon
-     * @return icon to use in rules list
+     * @return string icon to use in rules list
+     * @see Free icon set of FontAwsome for valid Icons
      **/
     public static function getIcon()
     {
@@ -84,7 +86,7 @@ class Ruleright extends Rule
 
     /**
      * @see Rule::getCriterias()
-     * @return returns available criteria
+     * @return array    returns available criteria
      **/
     public function getCriterias()
     {
