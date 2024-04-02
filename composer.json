@@ -1,6 +1,6 @@
 {
     "name": "donutsnl/glpisaml",
-    "description": "Rewrite of Derrick Smiths phpSaml plugin. This plugin enables login with SAML SSO authentication",
+    "description": "Rewrite of Derrick Smith's phpSaml plugin to comply with PSR and utilize native GLPI objects. This plugin enables users to login to GLPI using SAML SSO authentication and administrators to include multiple IdPs.",
     "type": "glpi-plugin",
     "keywords": ["saml", "glpi", "plugins"],
     "homepage": "https://github.com/DonutsNL/glpisaml",
@@ -13,6 +13,7 @@
         }
     ],
     "require": {
+        "php": ">=8.0.0",
         "onelogin/php-saml": "^4.1"
     }
 }

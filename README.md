@@ -35,6 +35,7 @@ Special credits go to:
 - Derrick Smith (creating the initial version PHPSaml)
 - Raul, @gambware for their support to the OSS community (& buying me coffee), cheers!
 - @MikeDevresse for providing fixes to the codebase.
+- @SpyK-01 for licensing and sharing the logo via https://elements.envato.com/letter-shield-gradient-colorful-logo-XZ7LYCM.
 
 # Get an idea where im going with this:
 https://github.com/DonutsNL/phpsaml2/wiki/Plugin-Logic-and-Structure-Scratchboard
