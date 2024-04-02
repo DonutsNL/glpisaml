@@ -6,7 +6,7 @@
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
  *  caused by the gradual development of GLPI and the broad ammount of
- *  wishes expressed by the community. 
+ *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
  *  ------------------------------------------------------------------------
@@ -53,23 +53,55 @@ class RulerightCollection extends RuleCollection
      **/
     public $stop_on_first_match = false;                    //NOSONAR - Default GLPI property name
 
-  /**
+    /**
      * @see Rule::getCriterias()
      **/
-    static $rightname = "rule_ldap";
+    static $rightname = "config";
+
+    /**
+     * Overloads missing canCreate Setup right and returns canUpdate instead
+     *
+     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @see             - https://github.com/pluginsGLPI/example/issues/50
+     */
+    public static function canCreate(): bool
+    {
+        return static::canUpdate();
+    }
+
+    /**
+     * Overloads missing canDelete Setup right and returns canUpdate instead
+     *
+     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @see             - https://github.com/pluginsGLPI/example/issues/50
+     */
+    public static function canDelete(): bool
+    {
+        return static::canUpdate();
+    }
+
+    /**
+     * Overloads missing canPurge Setup right and returns canUpdate instead
+     *
+     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @see             - https://github.com/pluginsGLPI/example/issues/50
+     */
+    public static function canPurge(): bool
+    {
+        return static::canUpdate();
+    }
 
 
-  /**
+    /**
      * @see Rule::getCriterias()
      **/
     public $menu_option = "";                               //NOSONAR - Default GLPI property name
 
-  /**
+    /**
      * @see Rule::getCriterias()
      **/
     public function getTitle()
     {
         return __('Saml Import rules', PLUGIN_NAME);
     }
-
 }

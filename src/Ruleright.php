@@ -56,8 +56,41 @@ class Ruleright extends Rule
      * Define Rights
      * defines the rights a user must posses to be able to access this menu option in the rules section
      **/
-    static $rightname = 'rule_ldap'; #using same as src/rulerightCollection.class.php
+    static $rightname = 'config'; #using same as src/rulerightCollection.class.php
     
+    /**
+     * Overloads missing canCreate Setup right and returns canUpdate instead
+     *
+     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @see             - https://github.com/pluginsGLPI/example/issues/50
+     */
+    public static function canCreate(): bool
+    {
+        return static::canUpdate();
+    }
+
+    /**
+     * Overloads missing canDelete Setup right and returns canUpdate instead
+     *
+     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @see             - https://github.com/pluginsGLPI/example/issues/50
+     */
+    public static function canDelete(): bool
+    {
+        return static::canUpdate();
+    }
+
+    /**
+     * Overloads missing canPurge Setup right and returns canUpdate instead
+     *
+     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @see             - https://github.com/pluginsGLPI/example/issues/50
+     */
+    public static function canPurge(): bool
+    {
+        return static::canUpdate();
+    }
+
     /**
      * Define order
      * defines how to order the list
@@ -74,7 +107,7 @@ class Ruleright extends Rule
         return __('SAML rules', PLUGIN_NAME);
     }
 
-     /**
+    /**
      * getIcon
      * @return string icon to use in rules list
      * @see Free icon set of FontAwsome for valid Icons
