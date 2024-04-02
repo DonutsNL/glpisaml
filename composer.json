@@ -1,4 +1,17 @@
 {
+    "name": "donutsnl/glpisaml",
+    "description": "Rewrite of Derrick Smiths phpSaml plugin. This plugin enables login with SAML SSO authentication",
+    "type": "glpi-plugin",
+    "keywords": ["saml", "glpi", "plugins"],
+    "homepage": "https://github.com/DonutsNL/glpisaml",
+    "readme": "https://github.com/DonutsNL/glpisaml?tab=readme-ov-file#readme",
+    "license": "GPL-3.0-only / GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Chris Gralike",
+            "role": "Developer"
+        }
+    ],
     "require": {
         "onelogin/php-saml": "^4.1"
     }
