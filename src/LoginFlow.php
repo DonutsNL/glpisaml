@@ -90,6 +90,7 @@ class LoginFlow
     public const SCHEMA_DISPLAYNAME          = 'http://schemas.microsoft.com/identity/claims/displayname';              // Entra claim not used
     public const SCHEMA_IDP                  = 'http://schemas.microsoft.com/identity/claims/identityprovider';         // Entra claim not used
     public const SCHEMA_AUTHMETHODSREF       = 'http://schemas.microsoft.com/claims/authnmethodsreferences';            // Entra claim not used
+    public const USERDATA                    = 'userData';                                                              // userData array added by PHPSAML to response.
 
     // LOGIN FLOW AFTER PRESSING A IDP BUTTON.
 

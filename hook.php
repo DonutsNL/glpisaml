@@ -44,6 +44,20 @@
 
 use GlpiPlugin\Glpisaml\Exclude;
 use GlpiPlugin\Glpisaml\LoginFlow;
+use GlpiPlugin\Glpisaml\LoginFlow\User;
+
+/**
+ * Hooked by rule engine if an user import rule matches
+ * sadly we cannot call the User::updateUser() method directly
+ * from the hook itself :(
+ * @see setup.php
+ * @see src\LoginFlow\User.php
+ */
+function updateUser(array $params): void
+{
+    // Call the update User method
+    (new User)->updateUserRights($params);
+}
 
 /**
  * Add Excludes to setup dropdown menu.
@@ -72,13 +86,6 @@ function plugin_glpisaml_displaylogin() : void                                  
 {
     // Call the showLoginScreen method
     (new LoginFlow())->showLoginScreen();
-}
-
-
-// Hooked by the rule_engine hook if a phpsaml rule has been succesfully matched
-function updateUser($params){                                                       //NOSONAR - WorkInProgress
-    // https://github.com/derricksmith/phpsaml/issues/149
-    //var_dump($params);
 }
 
 /**

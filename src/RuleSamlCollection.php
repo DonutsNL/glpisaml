@@ -46,62 +46,29 @@ namespace GlpiPlugin\Glpisaml;
 
 use RuleCollection;
 
-class RulerightCollection extends RuleCollection
+class RuleSamlCollection extends RuleCollection
 {
+
     /**
-     * @see Rule::getCriterias()
+     *
      **/
     public $stop_on_first_match = false;                    //NOSONAR - Default GLPI property name
 
     /**
-     * @see Rule::getCriterias()
+     *
      **/
-    static $rightname = "config";
-
-    /**
-     * Overloads missing canCreate Setup right and returns canUpdate instead
-     *
-     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
-     * @see             - https://github.com/pluginsGLPI/example/issues/50
-     */
-    public static function canCreate(): bool
-    {
-        return static::canUpdate();
-    }
-
-    /**
-     * Overloads missing canDelete Setup right and returns canUpdate instead
-     *
-     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
-     * @see             - https://github.com/pluginsGLPI/example/issues/50
-     */
-    public static function canDelete(): bool
-    {
-        return static::canUpdate();
-    }
-
-    /**
-     * Overloads missing canPurge Setup right and returns canUpdate instead
-     *
-     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
-     * @see             - https://github.com/pluginsGLPI/example/issues/50
-     */
-    public static function canPurge(): bool
-    {
-        return static::canUpdate();
-    }
-
+    static $rightname = "rule_import";
 
     /**
      * @see Rule::getCriterias()
      **/
-    public $menu_option = "";                               //NOSONAR - Default GLPI property name
+    public $menu_option = "Saml";                               //NOSONAR - Default GLPI property name
 
     /**
      * @see Rule::getCriterias()
      **/
     public function getTitle()
     {
-        return __('Saml Import rules', PLUGIN_NAME);
+        return __('Saml import rules', PLUGIN_NAME);
     }
 }

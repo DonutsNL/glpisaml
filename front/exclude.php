@@ -53,7 +53,7 @@ $plugin = new Plugin();
 if($plugin->isInstalled(PLUGIN_NAME) ||
    $plugin->isActivated(PLUGIN_NAME) ){
     if (Exclude::canCreate()) {
-        Html::header(__('SAML Excludes'), $_SERVER['PHP_SELF'], "config", Exclude::class);
+        Html::header(__('SAML Excludes'), $_SERVER['PHP_SELF'], "plugins", Exclude::class);
         Search::show(Exclude::class);
         Html::footer();
     }else{
@@ -63,9 +63,3 @@ if($plugin->isInstalled(PLUGIN_NAME) ||
 }else{
     Html::displayNotFoundError();
 }
-
-/*
-$dropdown = new Exclude();
-include GLPI_ROOT . '/front/dropdown.common.php';       //NOSONAR - Cant be included with USE.
-*/
-

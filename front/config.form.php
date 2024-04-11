@@ -51,7 +51,7 @@ include_once '../../../inc/includes.php';                       //NOSONAR intent
 Session::checkRight("config", UPDATE);
 
 // Show header with saml config breadcrums.
-Html::header(__('Identity providers'), $_SERVER['PHP_SELF'], "config", Config::class);
+Html::header(__('Identity providers'), $_SERVER['PHP_SELF'], "plugins", Config::class);
 
 // Validate plugin is active and registered properly
 if(!(new Plugin())->isInstalled(PLUGIN_NAME) ||

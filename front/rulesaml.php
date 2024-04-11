@@ -39,11 +39,13 @@
  * ------------------------------------------------------------------------
  **/
 
+use GlpiPlugin\Glpisaml\RuleSamlCollection;
+
 include_once '../../../inc/includes.php';                                                   //NOSONAR - Cant be included with USE.
 
 // Check the rights
 Session::checkRight("config", UPDATE);
 
-$rulecollection = new PluginPhpsamlRuleRightCollection($_SESSION['glpiactive_entity']);
+$rulecollection = new RuleSamlCollection();
 
 include_once  GLPI_ROOT . "/front/rule.common.php";                                         //NOSONAR - Cant be included with USE.

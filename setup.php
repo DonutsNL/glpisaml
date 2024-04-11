@@ -48,9 +48,7 @@ use Glpi\Plugin\Hooks;
 use GlpiPlugin\Glpisaml\Config;
 use GlpiPlugin\Glpisaml\Exclude;
 use GlpiPlugin\Glpisaml\LoginFlow;
-use GlpiPlugin\Glpisaml\LoginFlow\User;
-use GlpiPlugin\Glpisaml\Ruleright;
-use GlpiPlugin\Glpisaml\RulerightCollection;
+use GlpiPlugin\Glpisaml\RuleSamlCollection;
 
 // Setup constants
 define('PLUGIN_GLPISAML_VERSION', '1.0.0');                                                     // GLPI SAML version
@@ -96,20 +94,19 @@ function plugin_init_glpisaml() : void                                          
         if (Session::haveRight('config', UPDATE)) {
             $PLUGIN_HOOKS['config_page'][PLUGIN_NAME]       = PLUGIN_GLPISAML_CONF_PATH;      //NOSONAR
         }
-        $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME]['config']  = [Config::class, Exclude::class];
+        $PLUGIN_HOOKS['menu_toadd'][PLUGIN_NAME]['plugins'] = [Config::class, Exclude::class];
         $PLUGIN_HOOKS[Hooks::ADD_CSS][PLUGIN_NAME][]        = PLUGIN_GLPISAML_CONFCSS_PATH;
 
         // Register and hook the saml rules
-        Plugin::registerClass(Ruleright::class);
-        Plugin::registerClass(Rulerightcollection::class);
-        $PLUGIN_HOOKS[Hooks::RULE_MATCHED][PLUGIN_NAME]     = [User::class => 'updateUser'];
+        Plugin::registerClass(RuleSamlCollection::class, ['rulecollections_types' => true]);
+        $PLUGIN_HOOKS[Hooks::RULE_MATCHED][PLUGIN_NAME]     = 'updateUser';
 
         // Register and hook the loginflow directly after GLPI init.
         Plugin::registerClass(LoginFlow::class);
         $PLUGIN_HOOKS[Hooks::POST_INIT][PLUGIN_NAME]        = 'plugin_glpisaml_evalAuth';       //NOSONAR
 
         // Hook the login buttons
-        $PLUGIN_HOOKS[Hooks::DISPLAY_LOGIN][PLUGIN_NAME]     = 'plugin_glpisaml_displaylogin';
+        $PLUGIN_HOOKS[Hooks::DISPLAY_LOGIN][PLUGIN_NAME]    = 'plugin_glpisaml_displaylogin';
     }
 }
 

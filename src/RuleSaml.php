@@ -50,46 +50,18 @@ use Entity;
 use Session;
 use Profile;
 
-class Ruleright extends Rule
+class RuleSaml extends Rule
 {
     /**
      * Define Rights
      * defines the rights a user must posses to be able to access this menu option in the rules section
      **/
-    static $rightname = 'config'; #using same as src/rulerightCollection.class.php
-    
-    /**
-     * Overloads missing canCreate Setup right and returns canUpdate instead
-     *
-     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
-     * @see             - https://github.com/pluginsGLPI/example/issues/50
-     */
-    public static function canCreate(): bool
-    {
-        return static::canUpdate();
-    }
+    static $rightname = 'rule_import';
 
     /**
-     * Overloads missing canDelete Setup right and returns canUpdate instead
      *
-     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
-     * @see             - https://github.com/pluginsGLPI/example/issues/50
-     */
-    public static function canDelete(): bool
-    {
-        return static::canUpdate();
-    }
-
-    /**
-     * Overloads missing canPurge Setup right and returns canUpdate instead
-     *
-     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
-     * @see             - https://github.com/pluginsGLPI/example/issues/50
-     */
-    public static function canPurge(): bool
-    {
-        return static::canUpdate();
-    }
+     **/
+    public $can_sort = true;            //NOSONAR
 
     /**
      * Define order
@@ -104,7 +76,7 @@ class Ruleright extends Rule
      **/
     public function getTitle()
     {
-        return __('SAML rules', PLUGIN_NAME);
+        return __('Saml import rules', PLUGIN_NAME);
     }
 
     /**
