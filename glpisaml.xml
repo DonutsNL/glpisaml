@@ -1,7 +1,7 @@
 <root>
 <name>GLPISAML</name>
 <key>sso</key>
-<state>prerelease</state>
+<state>unstable</state>
 <logo>https://github.com/DonutsNL/glpisaml/blob/main/tpl/GLPI_SAML_by_SpyK_shield_4040.png</logo>
 <description>
     <short>
