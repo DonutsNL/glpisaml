@@ -1,7 +1,7 @@
 <root>
 <name>GLPISAML</name>
-<key>glpisaml</key>
-<state>testrelease</state>
+<key>sso</key>
+<state>prerelease</state>
 <logo>https://github.com/DonutsNL/glpisaml/blob/main/tpl/GLPI_SAML_by_SpyK_shield_4040.png</logo>
 <description>
     <short>
@@ -12,6 +12,7 @@
             The plugin uses GLPI core objects where possible. It follows the PSR best practices, composer, 
             twig, PHPSAML and much more. Glpisaml allows you to configure multiple external SAML identity providers 
             using the GLPI interface for SSO. It allows you to configure bypasses and rights rules on user creation.
+            find our documentation in the wiki at: https://github.com/DonutsNL/glpisaml/wiki
 
             Want to help build a helpfull GLPI community, join at our discord and offer support and insight at: 
             https://discord.gg/35tkHxHg
@@ -27,6 +28,11 @@
 </authors>
 <versions>
     <version>
+        <num>1.1.0</num>
+        <compatibility>~10.0.0</compatibility>
+        <download_url>https://github.com/DonutsNL/glpisaml/releases/download/v1.1.0-pre/glpisaml-1.1.0.zip</download_url>
+    </version>
+    <version>
         <num>1.0.0</num>
         <compatibility>~10.0.0</compatibility>
         <download_url>https://github.com/DonutsNL/glpisaml/archive/refs/tags/v0.1.0-beta.zip</download_url>
@@ -35,7 +41,7 @@
 <langs>
     <lang>en_GB</lang>
 </langs>
-<license>GPLv2+</license>
+<license>GPLv3+</license>
 <tags>
      <fr>
          <tag>Management</tag>
@@ -44,8 +50,4 @@
          <tag>Management</tag>
       </en>
 </tags>
-<screenshots>
-      <screenshot>https://raw.githubusercontent.com/DonutsNL/ticketfilter/main/TicketFilter_scr1.png</screenshot>
-      <screenshot>https://raw.githubusercontent.com/DonutsNL/ticketfilter/main/TicketFilter_scr2.png</screenshot>
-   </screenshots>
 </root>
