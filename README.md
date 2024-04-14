@@ -9,9 +9,9 @@ Rewrite of phpSaml plugin by Derrick Smith with: PHP8 support, GLPI 10+ support,
 PRERELEASE
 
 # Current Focus
-Multiple IDP login
-JIT user creation WITH RULES
-Hardening the plugin
+* Multiple IDP login
+* JIT user creation WITH RULES
+* Hardening the plugin
 
 # Support
 Want to support my work?
