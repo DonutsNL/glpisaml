@@ -1,3 +1,6 @@
+[![PHP Composer](https://github.com/DonutsNL/glpisaml/actions/workflows/composer.yml/badge.svg)](https://github.com/DonutsNL/glpisaml/actions/workflows/composer.yml)
+[![PHP Linter](https://github.com/DonutsNL/glpisaml/actions/workflows/linter.yml/badge.svg)](https://github.com/DonutsNL/glpisaml/actions/workflows/linter.yml)
+
 ![GLPI_SAML_by_SpyK60](https://github.com/DonutsNL/glpisaml/assets/97617761/8beb0ec4-ec57-4ec6-8cd6-bc441bef34f4)
 
 # glpi saml
