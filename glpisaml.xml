@@ -1,18 +1,20 @@
 <root>
-<name>GLPI SAML2</name>
+<name>GLPISAML</name>
 <key>glpisaml</key>
-<state>prerelease</state>
+<state>testrelease</state>
 <logo>https://github.com/DonutsNL/glpisaml/blob/main/tpl/GLPI_SAML_by_SpyK_shield_4040.png</logo>
 <description>
     <short>
         <en>Allow SSO agains multiple external identity providers using SAML2.</en>
     </short>
     <long>
-        <en>This plugin is a 'rewrite' of Derrick Smiths phpsaml plugin using the latest GLPI10+ best practices like Marketplace, PSR, composer, twig and much more. 
-            Glpisaml allows you to configure multiple external SAML identity providers for SSO. If the external identity provider also implements MFA (like azure) 
-            this plugin can also be used to implement (external) MFA as well.
+        <en>This plugin is a 'rewrite' of Derrick Smiths phpsaml plugin. It is written for GLPI10 and later. 
+            The plugin uses GLPI core objects where possible. It follows the PSR best practices, composer, 
+            twig, PHPSAML and much more. Glpisaml allows you to configure multiple external SAML identity providers 
+            using the GLPI interface for SSO. It allows you to configure bypasses and rights rules on user creation.
 
-            Help build a helpfull GLPI community at our discord at: https://discord.gg/35tkHxHg
+            Want to help build a helpfull GLPI community, join at our discord and offer support and insight at: 
+            https://discord.gg/35tkHxHg
         </en>
     </long>
 </description>

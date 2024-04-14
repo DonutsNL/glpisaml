@@ -1,6 +1,6 @@
 {
     "name": "donutsnl/glpisaml",
-    "description": "Rewrite of Derrick Smith's phpSaml plugin to comply with PSR and utilize native GLPI objects. This plugin enables users to login to GLPI using SAML SSO authentication and administrators to include multiple IdPs.",
+    "description": "Rewrite of Derrick Smith's phpSaml plugin to comply with PSR and utilize native GLPI objects.",
     "type": "glpi-plugin",
     "keywords": ["saml", "glpi", "plugins"],
     "homepage": "https://github.com/DonutsNL/glpisaml",
