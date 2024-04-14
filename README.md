@@ -6,7 +6,12 @@ This is a rewrite of the broadly used phpsaml plugin created by Derrick Smith. P
 Rewrite of phpSaml plugin by Derrick Smith with: PHP8 support, GLPI 10+ support, Using GLPI core objects where possible, PSR4 support, Concern based class structures, Focus on code readability, address SONAR LINTING issues, Improve community support, Composer support for updating 3rd party SAML and XML libraries, Introduce discord support channel, Support multiple IDPs, support rule based JIT usercreation.
 
 # Status
-BETA
+PRERELEASE
+
+# Current Focus
+Multiple IDP login
+JIT user creation WITH RULES
+Hardening the plugin
 
 # Support
 Want to support my work?
