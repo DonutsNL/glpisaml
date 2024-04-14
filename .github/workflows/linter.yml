@@ -11,9 +11,8 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - name: PHP Syntax Checker (Lint)      
       uses: StephaneBour/actions-php-lint@8.2
+#Run linter
