@@ -8,11 +8,14 @@
         <en>Allow SSO agains multiple external identity providers using SAML2.</en>
     </short>
     <long>
-        <en>This plugin is a 'rewrite' of Derrick Smiths phpsaml plugin. It is written for GLPI10 and later. 
-            The plugin uses GLPI core objects where possible. It follows the PSR best practices, composer, 
-            twig, PHPSAML and much more. Glpisaml allows you to configure multiple external SAML identity providers 
-            using the GLPI interface for SSO. It allows you to configure bypasses and rights rules on user creation.
-            find our documentation in the wiki at: https://github.com/DonutsNL/glpisaml/wiki
+        <en>This plugin is a rewrite of Derrick Smith's initial SAML plugin for GLPI. This plugin 
+            is redesigned and rewritten to be compatible with GLPI10+, Support multiple saml idp's, 
+            implement user right rules and more. It allows you to configure everything from the 
+            GLPI UI and dont require coding skills. It uses GLPI core components where possible 
+            for maximum compatibility and maintainability. It implements composer for quick 3rd party 
+            library updates if security issue's requires it. It follows the PSR best-practices where 
+            possible. It allows you to configure bypasses and rights rules on user creation.
+            Find the documentation documentation in our wiki at: https://github.com/DonutsNL/glpisaml/wiki
 
             Want to help build a helpfull GLPI community, join at our discord and offer support and insight at: 
             https://discord.gg/35tkHxHg
