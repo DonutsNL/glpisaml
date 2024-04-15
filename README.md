@@ -1,8 +1,6 @@
 [![PHP Composer](https://github.com/DonutsNL/glpisaml/actions/workflows/composer.yml/badge.svg)](https://github.com/DonutsNL/glpisaml/actions/workflows/composer.yml)
 [![PHP Linter](https://github.com/DonutsNL/glpisaml/actions/workflows/linter.yml/badge.svg)](https://github.com/DonutsNL/glpisaml/actions/workflows/linter.yml)
 
-![GLPI_SAML_by_SpyK60](https://github.com/DonutsNL/glpisaml/assets/97617761/8beb0ec4-ec57-4ec6-8cd6-bc441bef34f4)
-
 # glpi saml
 This plugin is a rewrite of Derrick Smith's initial SAML plugin for GLPI. This plugin is redesigned and rewritten to be compatible with GLPI10+, Support multiple saml idp's, implement user right rules and more. It allows you to configure everything from the GLPI UI and dont require coding skills. It uses GLPI core components where possible for maximum compatibility and maintainability. It implements composer for quick 3rd party library updates if security issue's requires it. It follows the PSR best-practices where possible.
 
