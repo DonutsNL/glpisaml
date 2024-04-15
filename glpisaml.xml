@@ -1,8 +1,8 @@
 <root>
 <name>GLPISAML</name>
 <key>sso</key>
-<state>unstable</state>
-<logo>https://github.com/DonutsNL/glpisaml/blob/main/tpl/GLPI_SAML_by_SpyK_shield_4040.png</logo>
+<state>Unstable</state>
+<logo></logo>
 <description>
     <short>
         <en>Allow SSO agains multiple external identity providers using SAML2.</en>
@@ -35,11 +35,6 @@
         <compatibility>~10.0.0</compatibility>
         <download_url>https://github.com/DonutsNL/glpisaml/releases/download/v1.1.0-pre/glpisaml-1.1.0.zip</download_url>
     </version>
-    <version>
-        <num>1.0.0</num>
-        <compatibility>~10.0.0</compatibility>
-        <download_url>https://github.com/DonutsNL/glpisaml/archive/refs/tags/v0.1.0-beta.zip</download_url>
-    </version>
 </versions>
 <langs>
     <lang>en_GB</lang>
@@ -48,9 +43,13 @@
 <tags>
      <fr>
          <tag>Management</tag>
+         <tag>Setup</tag>
+         <tag>Authentication</tag>
       </fr>
       <en>
          <tag>Management</tag>
+         <tag>Setup</tag>
+         <tag>Authentication</tag>
       </en>
 </tags>
 </root>
