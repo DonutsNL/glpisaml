@@ -5,7 +5,7 @@
  *
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
- *  caused by the gradual development of GLPI and the broad ammount of
+ *  caused by the gradual development of GLPI and the broad amount of
  *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
@@ -32,7 +32,7 @@
  * ------------------------------------------------------------------------
  *
  *  @package    GLPISaml
- *  @version    1.1.0
+ *  @version    1.1.6
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2024 by Chris Gralike
  *  @license    GPLv3+
@@ -52,7 +52,7 @@ use GlpiPlugin\Glpisaml\Config\ConfigItem;
 
 /*
  * Class ConfigEntity's job is to populate, evaluate, test, normalize and
- * make sure we always return a consistant, valid, and usable instance of
+ * make sure we always return a consistent, valid, and usable instance of
  * a samlConfiguration thats either based on a template or based on an
  * existing database row
  */
@@ -78,7 +78,7 @@ class ConfigEntity extends ConfigItem
     public const IDP_ENTITY_ID   = 'idp_entity_id';                          // Identity provider Entity ID
     public const IDP_SSO_URL     = 'idp_single_sign_on_service';             // Identity provider Single Sign On Url
     public const IDP_SLO_URL     = 'idp_single_logout_service';              // Identity provider Logout Url
-    public const IDP_CERTIFICATE = 'idp_certificate';                       // Identity provider certificate
+    public const IDP_CERTIFICATE = 'idp_certificate';                        // Identity provider certificate
     public const AUTHN_CONTEXT   = 'requested_authn_context';                // Requested authn context (to be provided by Idp)
     public const AUTHN_COMPARE   = 'requested_authn_context_comparison';     // Requested authn context comparison (to be evaluated by Idp)
     public const ENCRYPT_NAMEID  = 'security_nameidencrypted';               // Encrypt nameId field using service provider certificate
@@ -88,7 +88,7 @@ class ConfigEntity extends ConfigItem
     public const COMPRESS_REQ    = 'compress_requests';                      // Compress all requests
     public const COMPRESS_RES    = 'compress_responses';                     // Compress all responses
     public const XML_VALIDATION  = 'validate_xml';                           // Validate XML messages
-    public const DEST_VALIDATION = 'validate_destination';                  // relax destination validation
+    public const DEST_VALIDATION = 'validate_destination';                   // relax destination validation
     public const LOWERCASE_URL   = 'lowercase_url_encoding';                 // lowercaseUrlEncoding
     public const COMMENT         = 'comment';                                // Field for comments on configuration page
     public const IS_ACTIVE       = 'is_active';                              // Toggle SAML config active or disabled
@@ -202,7 +202,7 @@ class ConfigEntity extends ConfigItem
             // by checking the absence of the 'id' field in the returned ConfigEntity.
             $this->validateAndPopulateTemplateEntity(['template' => 'default']);
         }
-        // Do some final consistancy check here.
+        // Do some final consistency check here.
     }
 
 
@@ -213,7 +213,7 @@ class ConfigEntity extends ConfigItem
      * too (boolean) true in the returned array for type safety purposes.
      *
      * @param  string   $field  - name of the field to validate
-     * @param  mixed    $val    - value beloging to the field.
+     * @param  mixed    $val    - value belonging to the field.
      * @return array            - result of the validation including normalized values.
      * @see https://www.mysqltutorial.org/mysql-basics/mysql-boolean/
      */
@@ -239,7 +239,7 @@ class ConfigEntity extends ConfigItem
 
 
     /**
-     * This static function will return the configration constants
+     * This static function will return the configuration constants
      * defined in this class. Idea is to use this reflection to
      * validate the database fields names, numbers and so forth to detect
      * update caused DB issues.
@@ -268,7 +268,7 @@ class ConfigEntity extends ConfigItem
     {
         global $DB;
         // Fetch config item constants;
-        $classConstants = self::getConstants();
+        $classConstants = ConfigEntity::getConstants();
         // Fetch database columns;
         $sql = 'SHOW COLUMNS FROM '.SamlConfig::getTable();
         if ($result = $DB->doQuery($sql)) {
@@ -309,16 +309,19 @@ class ConfigEntity extends ConfigItem
     }
 
     /**
-     * Searches the database for a given email domain and if found
-     * returns the Idp ID.
+     * Fetches the config domain from the populated config entity
+     * if the entity is anything else than the default 'youruserdomain.tld' or empty
+     * it returns that value or an empty string.
      *
      * @param  array $ignoreFields fields to skip
      * @return array $fields with validated and corrected configuration
+     * @since 1.1.3
      */
-    public function getIdForDomain(string $email): int
+    public function getConfigDomain(): string
     {
-        // TODO Allow username email to be used to find correct idp config.
-        return 1;
+        return (key_exists(ConfigEntity::CONF_DOMAIN, $this->fields) &&
+                !empty($this->fields[ConfigEntity::CONF_DOMAIN])     &&
+                $this->fields[ConfigEntity::CONF_DOMAIN] != 'youruserdomain.tld') ? $this->fields[ConfigEntity::CONF_DOMAIN] : '';
     }
 
     /**
@@ -367,7 +370,7 @@ class ConfigEntity extends ConfigItem
     }
 
     /**
-     * This function will return specific configfield if it exists
+     * This function will return specific config field if it exists
      *
      * @param  bool     $fieldName  - Name of the configuration item we are looking for, use class constants.
      * @return string               - Value of the configuration or (bool) false if not found.
@@ -396,7 +399,6 @@ class ConfigEntity extends ConfigItem
         return $this->isValid;
     }
 
-
     /**
      * Returns the validity state of the currently loaded ConfigEntity
      * @return bool
@@ -416,7 +418,7 @@ class ConfigEntity extends ConfigItem
     }
 
     /**
-     * Pupulates and returns the configuration array for the PHP-saml library.
+     * Populates and returns the configuration array for the PHP-saml library.
      *
      * @return          array   $config
      * @since           1.0.0
@@ -433,10 +435,10 @@ class ConfigEntity extends ConfigItem
                     'sp' => [
                         'entityId'                          => $CFG_GLPI['url_base'].'/',
                         'assertionConsumerService'          => [
-                            'url'                           => $CFG_GLPI['url_base'].'/'.PLUGIN_GLPISAML_WEBDIR.PLUGIN_GLPISAML_ACS_PATH,
+                            'url'                           => $CFG_GLPI['url_base'].'/'.PLUGIN_GLPISAML_WEBDIR.'/front/acs.php?idpId='.$this->fields[ConfigEntity::ID],
                         ],
                         'singleLogoutService'               => [
-                            'url'                           => $CFG_GLPI['url_base'].'/'.PLUGIN_GLPISAML_WEBDIR.PLUGIN_GLPISAML_SLO_PATH,
+                            'url'                           => $CFG_GLPI['url_base'].'/'.PLUGIN_GLPISAML_WEBDIR.'/front/slo.php',
                         ],
                         'x509cert'                          => $this->fields[ConfigEntity::SP_CERTIFICATE],
                         'privateKey'                        => $this->fields[ConfigEntity::SP_KEY],

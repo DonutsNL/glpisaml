@@ -5,7 +5,7 @@
  *
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
- *  caused by the gradual development of GLPI and the broad ammount of
+ *  caused by the gradual development of GLPI and the broad amount of
  *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
@@ -32,7 +32,7 @@
  * ------------------------------------------------------------------------
  *
  *  @package    GLPISaml
- *  @version    1.1.0
+ *  @version    1.1.6
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2024 by Chris Gralike
  *  @license    GPLv3+
@@ -76,13 +76,13 @@ class RuleSaml extends Rule
      **/
     public function getTitle()
     {
-        return __('Saml import rules', PLUGIN_NAME);
+        return __('JIT import rules', PLUGIN_NAME);
     }
 
     /**
      * getIcon
      * @return string icon to use in rules list
-     * @see Free icon set of FontAwsome for valid Icons
+     * @see Free icon set of FontAwesome for valid Icons
      **/
     public static function getIcon()
     {
@@ -98,8 +98,7 @@ class RuleSaml extends Rule
         static $criterias = [];
 
         if (!count($criterias)) {
-            $criterias['common']             = __('Global criteria');
-            
+            $criterias['common']                    = __('Global criteria');
             $criterias['_useremails']['table']      = '';
             $criterias['_useremails']['field']      = '';
             $criterias['_useremails']['name']       = _n('Email', 'Emails', 1);

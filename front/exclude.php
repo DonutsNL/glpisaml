@@ -29,7 +29,7 @@
  * ------------------------------------------------------------------------
  *
  *  @package    glpiSaml
- *  @version    1.1.0
+ *  @version    1.1.4
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2023 by Chris Gralike
  *  @license    GPLv2+
@@ -53,7 +53,7 @@ $plugin = new Plugin();
 if($plugin->isInstalled(PLUGIN_NAME) ||
    $plugin->isActivated(PLUGIN_NAME) ){
     if (Exclude::canCreate()) {
-        Html::header(__('SAML Excludes'), $_SERVER['PHP_SELF'], "plugins", Exclude::class);
+        Html::header(__('SAML Excludes'), $_SERVER['PHP_SELF'], "config", "commondropdown", Exclude::class);
         Search::show(Exclude::class);
         Html::footer();
     }else{

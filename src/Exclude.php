@@ -5,7 +5,7 @@
  *
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
- *  caused by the gradual development of GLPI and the broad ammount of
+ *  caused by the gradual development of GLPI and the broad amount of
  *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
@@ -32,7 +32,7 @@
  * ------------------------------------------------------------------------
  *
  *  @package    GLPISaml
- *  @version    1.1.0
+ *  @version    1.1.6
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2024 by Chris Gralike
  *  @license    GPLv3+
@@ -50,7 +50,7 @@ use DBConnection;
 use CommonDropdown;
 
 /**
- * Be carefull with PSR4 Namespaces when extending common GLPI objects.
+ * Be careful with PSR4 Namespaces when extending common GLPI objects.
  * Only Characters are allowed in namespaces extending glpi Objects.
  * @see https://github.com/pluginsGLPI/example/issues/51
  */
@@ -79,13 +79,13 @@ class Exclude extends CommonDropdown
      */
     public static function getTypeName($nb = 0) : string
     {
-        return __('SAML Excludes', PLUGIN_NAME);
+        return __('Excluded paths', PLUGIN_NAME);
     }
 
     /**
      * Overloads missing canCreate Setup right and returns canUpdate instead
      *
-     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @return bool     - Returns true if profile assigned Setup->Setup->Update right
      * @see             - https://github.com/pluginsGLPI/example/issues/50
      */
     public static function canCreate(): bool
@@ -96,33 +96,12 @@ class Exclude extends CommonDropdown
     /**
      * Overloads missing canPurge Setup right and returns canUpdate instead
      *
-     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @return bool     - Returns true if profile assigned Setup->Setup->Update right
      * @see             - https://github.com/pluginsGLPI/example/issues/50
      */
     public static function canPurge(): bool
     {
         return static::canUpdate();
-    }
-
-    /**
-     * getMenuContent() : array | bool -
-     * Method called by pre_item_add hook validates the object and passes
-     * it to the RegEx Matching then decides what to do.
-     *
-     * @return mixed             boolean|array
-     */
-    public static function getMenuContent()
-    {
-        $menu = [];
-        if (Config::canUpdate()) {
-            $menu['title'] = self::getMenuName();
-            $menu['page']  = '/' . PLUGIN_GLPISAML_WEBDIR . '/front/exclude.php';
-            $menu['icon']  = self::getIcon();
-        }
-        if (count($menu)) {
-          return $menu;
-        }
-        return false;
     }
 
     /**
@@ -134,6 +113,17 @@ class Exclude extends CommonDropdown
     public static function getIcon() : string
     {
         return 'fa-regular fa-eye-slash';
+    }
+
+    /**
+     * @see CommonGLPI::getAdditionalMenuLinks()
+     * CommonDropdown does not seem to implement this,
+     * just keep it for the future. Hopefully it will be
+     * added in the future?
+     **/
+    public static function getAdditionalMenuLinks() {
+        $links[__('SAML providers', PLUGIN_NAME)] = PLUGIN_GLPISAML_WEBDIR.'/front/config.php';
+        return $links;
     }
 
     /**
@@ -211,25 +201,25 @@ class Exclude extends CommonDropdown
         $dropdown = new Exclude();
         $table = $dropdown::getTable();
         foreach($DB->request($table) as $id => $row){                           //NOSONAR - For readability
-            $excludes[] = [self::NAME                => $row[self::NAME],
-                           self::ACTION              => $row[self::ACTION],
-                           self::DATE_CREATION       => $row[self::DATE_CREATION],
-                           self::DATE_MOD            => $row[self::DATE_MOD],
-                           self::CLIENTAGENT         => $row[self::CLIENTAGENT],
-                           self::EXCLUDEPATH         => $row[self::EXCLUDEPATH]];
+            $excludes[] = [Exclude::NAME                => $row[Exclude::NAME],
+                           Exclude::ACTION              => $row[Exclude::ACTION],
+                           Exclude::DATE_CREATION       => $row[Exclude::DATE_CREATION],
+                           Exclude::DATE_MOD            => $row[Exclude::DATE_MOD],
+                           Exclude::CLIENTAGENT         => $row[Exclude::CLIENTAGENT],
+                           Exclude::EXCLUDEPATH         => $row[Exclude::EXCLUDEPATH]];
         }
         return $excludes;
     }
 
     /**
-     * Process aexcluded from SAML auth return true if excluded.
+     * Process excluded from SAML auth return true if excluded.
      *
      * @return bool     On success
      * @since           1.1.0
      */
     public static function ProcessExcludes(): bool                                                         //NOSONAR - Maybe fix complexity in future.
     {
-        $excludes = self::getExcludes();
+        $excludes = Exclude::getExcludes();
         // Process configured excluded URIs and agents.
         foreach($excludes as $exclude){
             if (strpos($_SERVER['REQUEST_URI'], $exclude[Exclude::EXCLUDEPATH]) !== false) {
@@ -247,21 +237,59 @@ class Exclude extends CommonDropdown
     }
 
     /**
+     * Validate object $excluded is excluded and get the configured action
+     * @param string $excluded String describing the object to be validated
+     * @param string $agent    Optional, the userAgent to be validated
+     * @return bool  Configured action, or false
+     * @since        1.1.4
+     */
+    public static function GetExcludeAction(string $excluded, $agent = false): bool    //NOSONAR - complexity by design
+    {
+        // Get all the excluded objects from the database
+        $excludes = Exclude::getExcludes();
+        // Process configured excluded URIs and agents.
+        foreach($excludes as $exclude){
+            if (strpos($excluded, $exclude[Exclude::EXCLUDEPATH]) !== false) {
+                // Do we need to validate client agent?
+                if( $agent  && strpos($agent, $exclude[Exclude::CLIENTAGENT]) !== false ){ //NOSONAR - additional 'if branch' by design
+                    return ($exclude[Exclude::ACTION]) ? true : false;
+                }else{
+                    // return configured action true for bypass, false for auth.
+                    return ($exclude[Exclude::ACTION]) ? true : false;
+                }
+            } // Else Continue
+        }
+        return false;
+    }
+
+    /**
      * Combines database excludes with hardcoded excludes.
      * @since   1.0.0
      */
     public static function isExcluded(): string|bool
     {
         //https://github.com/derricksmith/phpsaml/issues/159
-        // Dont perform auth on CLI, asserter service and manually excluded files.
-        if (PHP_SAPI == 'cli'                                            ||
-            strpos($_SERVER['REQUEST_URI'], 'acs.php') !== false         ||         // dont process acs
-            strpos($_SERVER['REQUEST_URI'], 'common.tabs.php') !== false ||         // dont process common.tabs
-            strpos($_SERVER['REQUEST_URI'], 'dashboard.php') !== false   ||         // dont process dashboard
-            Exclude::ProcessExcludes()                                   ){
-             return $_SERVER['REQUEST_URI'];
+        // Do not perform auth on CLI, asserter service and manually excluded files.
+        if (PHP_SAPI != 'cli'){
+            // https://codeberg.org/QuinQuies/glpisaml/issues/18#issuecomment-1785444
+            // $_SERVER['REQUEST_URI'] obviously isn't populated in 'CLI' mode.
+            if( isset($_SERVER['REQUEST_URI'])                               &&         // Make sure REQ URI is available
+              ( strpos($_SERVER['REQUEST_URI'], 'acs.php') !== false         ||         // do not process acs
+                strpos($_SERVER['REQUEST_URI'], 'common.tabs.php') !== false ||         // do not process common.tabs
+                strpos($_SERVER['REQUEST_URI'], 'dashboard.php') !== false   ||         // do not process dashboard
+                Exclude::ProcessExcludes()                                   ))
+            {
+                return $_SERVER['REQUEST_URI'];
+            } else {
+                return false;
+            }
         }else{
-             return false;
+            global $argv;
+            $command = '';
+            foreach ($argv as $value){
+                $command .= $value .' ';
+            }
+            return 'Saml auth skipped, CLI executed command: '.$command;
         }
     }
 
@@ -279,10 +307,10 @@ class Exclude extends CommonDropdown
         $default_collation = DBConnection::getDefaultCollation();
         $default_key_sign = DBConnection::getDefaultPrimaryKeySignOption();
 
-        $table = self::getTable();
+        $table = Exclude::getTable();
 
         // Create the base table if it does not yet exist;
-        // Dont update this table for later versions, use the migration class;
+        // Do not update this table for later versions, use the migration class;
         if (!$DB->tableExists($table)) {
             $query = <<<SQL
             CREATE TABLE IF NOT EXISTS `$table` (
@@ -334,6 +362,14 @@ class Exclude extends CommonDropdown
             SQL;
             $DB->doQuery($query) or die($DB->error());
             Session::addMessageAfterRedirect("🆗 Inserted exclude defaults.");
+
+            // insert default excludes;
+            // https://codeberg.org/QuinQuies/glpisaml/issues/36
+            $query = <<<SQL
+            INSERT INTO `$table`(name, comment, action, ClientAgent, ExcludePath)
+            VALUES('Bypass dashboard.php', '', '1', '', 'dashboard.php');
+            SQL;
+            $DB->doQuery($query) or die($DB->error());
         }
     }
 
@@ -346,7 +382,7 @@ class Exclude extends CommonDropdown
      */
     public static function uninstall(Migration $migration) : void
     {
-        $table = self::getTable();
+        $table = Exclude::getTable();
         Session::addMessageAfterRedirect("🆗 Removed: $table");
         $migration->dropTable($table);
     }

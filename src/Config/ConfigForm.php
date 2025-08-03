@@ -5,7 +5,7 @@
  *
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
- *  caused by the gradual development of GLPI and the broad ammount of
+ *  caused by the gradual development of GLPI and the broad amount of
  *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
@@ -32,7 +32,7 @@
  * ------------------------------------------------------------------------
  *
  *  @package    GLPISaml
- *  @version    1.1.0
+ *  @version    1.1.6
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2024 by Chris Gralike
  *  @license    GPLv3+
@@ -47,6 +47,9 @@ namespace GlpiPlugin\Glpisaml\Config;
 use Html;
 use Plugin;
 use Session;
+use Throwable;
+use GlpiPlugin\Glpisaml\LoginState;
+use Glpi\Application\View\TemplateRenderer;
 use GlpiPlugin\Glpisaml\Config as SamlConfig;
 use OneLogin\Saml2\Constants as Saml2Const;
 
@@ -75,7 +78,7 @@ class ConfigForm    //NOSONAR complexity by design.
             // Perform database insert using db fields.
             if($id = $config->add($fields)) {
                 // Leave succes message for user and redirect
-                Session::addMessageAfterRedirect(__('Succesfully added new GlpiSaml configuration.', PLUGIN_NAME));
+                Session::addMessageAfterRedirect(__('Successfully added new GlpiSaml configuration.', PLUGIN_NAME));
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.form.php?id=$id");
                 // PHP0405-no return by design.
             } else {
@@ -113,7 +116,7 @@ class ConfigForm    //NOSONAR complexity by design.
             if($config->canUpdate()       &&
                $config->update($fields) ){
                 // Leave a success message for the user and redirect using ID.
-                Session::addMessageAfterRedirect(__('Configuration updated succesfully', PLUGIN_NAME));
+                Session::addMessageAfterRedirect(__('Configuration updated successfully', PLUGIN_NAME));
                 Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true).PLUGIN_GLPISAML_CONF_FORM.'?id='.$postData['id']);
                 // PHP0405-no return by design.
             } else {
@@ -143,7 +146,7 @@ class ConfigForm    //NOSONAR complexity by design.
         if($config->canPurge()  &&
            $config->delete($postData)){
             // Leave success message and redirect
-            Session::addMessageAfterRedirect(__('Configuration deleted succesfully', PLUGIN_NAME));
+            Session::addMessageAfterRedirect(__('Configuration deleted successfully', PLUGIN_NAME));
             Html::redirect(Plugin::getWebDir(PLUGIN_NAME, true)."/front/config.php");
         } else {
             // Leave fail message and redirect back to config.
@@ -227,8 +230,39 @@ class ConfigForm    //NOSONAR complexity by design.
         return (is_array($warnings)) ? $warnings : [];
     }
 
+    /**
+     * Validates the provided Phpsaml version against the git repository
+     * if $return is true method will return collected information in an array.
+     *
+     * @param string $compare       Version to compare
+     * @param bool $return          Return the outcomes
+     * @return array|void $outcomes Optional return
+     * @see                         https://codeberg.org/QuinQuies/glpisaml/issues/59#issuecomment-2012549
+     * @since                       1.2.1
+     */
+    private function version(): array
+    {
+         // No need or use anymore with marketplace version check this needs.
+         // to be cleaned in the future.
+         $r = ['gitVersion'        => `Version check no longer implemented`,
+               'currentVersion'    => PLUGIN_GLPISAML_VERSION,
+               'gitUrl'            => '',
+               'latest'            => true];
+        return $r;
+    }
+
+    /**
+     * Generates the HTML for the config form using the GLPI
+     * template renderer.
+     *
+     * @param ConfigEntity $configEntity    Field values to populate in form
+     * @return string ConfigForm            HTML
+     * @since                               1.0.0
+     * @see https://codeberg.org/QuinQuies/glpisaml/issues/17
+     */
     private function generateForm(ConfigEntity $configEntity)
     {
+        global $CFG_GLPI;
         $fields = $configEntity->getFields();
         // Get warnings tabs
         $tplVars  = [];
@@ -236,23 +270,28 @@ class ConfigForm    //NOSONAR complexity by design.
        
         // Get AuthN context as array
         $fields[ConfigEntity::AUTHN_CONTEXT][ConfigItem::VALUE] = $configEntity->getRequestedAuthnContextArray();
+
+        // get the logging entries, but only if the object already exists
+        // https://codeberg.org/QuinQuies/glpisaml/issues/15#issuecomment-1785284
+        if(is_numeric($fields[ConfigEntity::ID]['value'])){
+            $logging = LoginState::getLoggingEntries($fields[ConfigEntity::ID]['value']);
+        }else{
+            $logging = [];
+        }
        
         // Define static field translations
         $tplVars = array_merge($tplVars, [
-            'submit'                    =>  __('Save', PLUGIN_NAME),
-            'delete'                    =>  __('Delete', PLUGIN_NAME),
+            'plugin'                    =>  PLUGIN_NAME,
             'close_form'                =>  Html::closeForm(false),
             'glpi_rootdoc'              =>  Plugin::getWebDir(PLUGIN_NAME, true).'/front/config.form.php',
-            'title'                     =>  __('IDP configuration', PLUGIN_NAME),
-            'header_general'            =>  __('General', PLUGIN_NAME),
-            'header_security'           =>  __('Security', PLUGIN_NAME),
-            'header_provider'           =>  __('Service provider', PLUGIN_NAME),
-            'header_idp'                =>  __('Identity provider', PLUGIN_NAME),
-            'header_logging'            =>  __('Logging', PLUGIN_NAME),
-            'header_transit'            =>  __('Transit', PLUGIN_NAME),
-            'available'                 =>  __('Available', 'phpsaml'),
-            'selected'                  =>  __('Selected', 'phpsaml'),
+            'glpi_tpl_macro'            =>  '/components/form/fields_macros.html.twig',
             'inputfields'               =>  $fields,
+            'buttonsHiddenWarn'         =>  ($configEntity->getConfigDomain()) ? true : false,
+            'loggingfields'             =>  $logging,
+            'entityID'                  =>  $CFG_GLPI['url_base'].'/',
+            'acsUrl'                    =>  Plugin::getWebDir(PLUGIN_NAME, true, true).'/front/acs.php',
+            'metaUrl'                   =>  Plugin::getWebDir(PLUGIN_NAME, true, true).'/front/meta.php?id='.$fields[ConfigEntity::ID][ConfigItem::VALUE],
+            'LatestVersion'             =>  $this->version(),
             'inputOptionsBool'          =>  [ 1                                 => __('Yes', PLUGIN_NAME),
                                               0                                 => __('No', PLUGIN_NAME)],
             'inputOptionsNameFormat'    =>  [Saml2Const::NAMEID_UNSPECIFIED     => __('Unspecified', PLUGIN_NAME),
@@ -268,11 +307,8 @@ class ConfigForm    //NOSONAR complexity by design.
                                              'maximum'                      => __('Maximum', PLUGIN_NAME),
                                              'better'                       => __('Better', PLUGIN_NAME)],
         ]);
-        
-        // Render twig template
-        $loader = new \Twig\Loader\FilesystemLoader(PLUGIN_GLPISAML_TPLDIR);
-        $twig = new \Twig\Environment($loader);
-        $template = $twig->load('configForm.html.twig');
-        return $template->render($tplVars);
+
+        // https://codeberg.org/QuinQuies/glpisaml/issues/12
+        return TemplateRenderer::getInstance()->render('@glpisaml/configForm.html.twig',  $tplVars);
     }
 }

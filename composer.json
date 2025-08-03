@@ -1,19 +1,28 @@
 {
     "name": "donutsnl/glpisaml",
-    "description": "Rewrite of Derrick Smith's phpSaml plugin to comply with PSR and utilize native GLPI objects.",
+    "description": "Full refactor of the initial phpSaml plugin for GLPI to comply with PSR and utilize native GLPI objects.",
     "type": "glpi-plugin",
-    "keywords": ["saml", "glpi", "plugins"],
-    "homepage": "https://github.com/DonutsNL/glpisaml",
-    "readme": "https://github.com/DonutsNL/glpisaml?tab=readme-ov-file#readme",
+    "keywords": ["GLPI", "plugins", "Authentication"],
+    "homepage": "https://codeberg.org/QuinQuies/glpisaml",
+    "readme": "https://codeberg.org/QuinQuies/glpisaml/src/branch/main/README.md",
     "license": ["GPL-3.0-or-later"],
     "authors": [
         {
-            "name": "Chris Gralike",
+            "name": "Donutsnl",
             "role": "Developer"
         }
     ],
     "require": {
         "php": ">=8.0.0",
-        "onelogin/php-saml": "^4.1"
+        "onelogin/php-saml": "^4.2"
+    },
+    "extra": {
+        "glpi": {
+            "providers": [
+                "marketplace\\glpisaml\\"
+            ],
+            "aliases": {
+            }
+        }
     }
 }

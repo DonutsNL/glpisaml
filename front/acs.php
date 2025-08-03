@@ -29,7 +29,7 @@
  * ------------------------------------------------------------------------
  *
  *  @package    GlpiSAML
- *  @version    1.1.0
+ *  @version    1.1.4
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2023 by Chris Gralike
  *  @license    GPLv2+
@@ -39,25 +39,24 @@
  * ------------------------------------------------------------------------
  **/
 use GlpiPlugin\Glpisaml\LoginFlow\Acs;
+use GlpiPlugin\Glpisaml\LoginState;
 
-// Capture the post before GLPI does.
-$post = $_POST;
+// Capture the post and get before GLPI does.
+$post = $_POST;     // Contains the samlResponse;
+
+// https://codeberg.org/QuinQuies/glpisaml/issues/45
+// Added idpId because we need to be able to unpack the samlResponse,
+// get het RequestId inside and match that with our database and work
+// from there as a way to get arround the cookie requirements.
+$get = $_GET;       // Contains at least the idpId field;
 
 // Use a countable datatype to empty the global
 // https://github.com/derricksmith/phpsaml/issues/153
 $_POST = [];
+$_GET = [];
 
 // Load GLPI includes
 include_once '../../../inc/includes.php';                       //NOSONAR - Cant be included with USE.
 
-// Peform assertion
-$acs = new Acs();
-if(!empty($post) && array_key_exists('SAMLResponse', $post)){
-    $acs->assertSaml($post);
-} else {
-    $acs->printError('We did not receive a samlResponse in POST header',
-                     __('Acs assertion'),
-                     Acs::EXTENDED_HEADER.
-                     Acs::SERVER_OBJ.var_export($_SERVER, true)."\n\n".
-                     Acs::EXTENDED_FOOTER."\n");
-}
+// Load ACS
+$acs = new Acs($get, $post);

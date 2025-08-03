@@ -25,7 +25,7 @@
  * ------------------------------------------------------------------------
  *
  *  @package        glpiSaml - User add Rule Engine Form UI
- *  @version        1.1.0
+ *  @version        1.1.4
  *  @author         Derrick Smith
  *  @author         Chris Gralike
  *  @copyright      Copyright (c) 2018 by Derrick Smith

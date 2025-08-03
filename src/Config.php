@@ -6,7 +6,7 @@
  *
  *  GLPISaml was inspired by the initial work of Derrick Smith's
  *  PhpSaml. This project's intend is to address some structural issues
- *  caused by the gradual development of GLPI and the broad ammount of
+ *  caused by the gradual development of GLPI and the broad amount of
  *  wishes expressed by the community.
  *
  *  Copyright (C) 2024 by Chris Gralike
@@ -33,7 +33,7 @@
  * ------------------------------------------------------------------------
  *
  *  @package    GLPISaml
- *  @version    1.1.0
+ *  @version    1.1.6
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2024 by Chris Gralike
  *  @license    GPLv3+
@@ -44,7 +44,7 @@
  **/
 
  /**
- * Be carefull with PSR4 Namespaces when extending common GLPI objects.
+ * Be careful with PSR4 Namespaces when extending common GLPI objects.
  * Only Characters are allowed in namespaces extending glpi Objects.
  * @see https://github.com/pluginsGLPI/example/issues/51
  * @see https://github.com/DonutsNL/phpsaml2/issues/6
@@ -60,7 +60,7 @@ use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 
 /**
  * Class Handles the installation and listing of configuration front/config.php
- * is is also the baseclass that extends the CommonDBTM GLPI object. All other
+ * is is also the baseClass that extends the CommonDBTM GLPI object. All other
  * glpisaml config classes reference this class for CRUD operations on the config
  * database.
  */
@@ -81,7 +81,7 @@ class Config extends CommonDBTM
     /**
      * Overloads missing canCreate Setup right and returns canUpdate instead
      *
-     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @return bool     - Returns true if profile assigned Setup->Setup->Update right
      * @see             - https://github.com/pluginsGLPI/example/issues/50
      */
     public static function canCreate(): bool
@@ -92,7 +92,7 @@ class Config extends CommonDBTM
     /**
      * Overloads missing canDelete Setup right and returns canUpdate instead
      *
-     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @return bool     - Returns true if profile assigned Setup->Setup->Update right
      * @see             - https://github.com/pluginsGLPI/example/issues/50
      */
     public static function canDelete(): bool
@@ -103,7 +103,7 @@ class Config extends CommonDBTM
     /**
      * Overloads missing canPurge Setup right and returns canUpdate instead
      *
-     * @return bool     - Returns true if profile assgined Setup->Setup->Update right
+     * @return bool     - Returns true if profile assigned Setup->Setup->Update right
      * @see             - https://github.com/pluginsGLPI/example/issues/50
      */
     public static function canPurge(): bool
@@ -118,18 +118,29 @@ class Config extends CommonDBTM
      */
     public static function getTypeName($nb = 0): string
     {
-        return __('SAML ID Providers', PLUGIN_NAME);
+        return __('Saml SSO applications', PLUGIN_NAME);
     }
 
     /**
      * Returns class icon to use in menus and tabs
      *
-     * @return string   - returns Font Awesom icon classname.
+     * @return string   - returns Font Awesome icon className.
      * @see             - https://fontawesome.com/search
      */
     public static function getIcon(): string
     {
-        return 'fa-regular fa-address-card';
+        return 'fa-fw fas fa-sign-in-alt';
+    }
+
+    /**
+     * Added links for user convenience
+     * @see CommonGLPI::getAdditionalMenuLinks()
+     * @see https://codeberg.org/QuinQuies/glpisaml/issues/8
+     **/
+    public static function getAdditionalMenuLinks() {
+        $links[__('Excluded paths', PLUGIN_NAME)] = PLUGIN_GLPISAML_WEBDIR.'/front/exclude.php';
+        $links[__('JIT import rules', PLUGIN_NAME)] = PLUGIN_GLPISAML_WEBDIR.'/front/rulesaml.php';
+        return $links;
     }
 
     /**
@@ -138,29 +149,58 @@ class Config extends CommonDBTM
      *
      * @return array  $tab  - returns searchOptions
      * @see                 - https://glpi-developer-documentation.readthedocs.io/en/master/devapi/search.html
+     * @see                 - https://codeberg.org/QuinQuies/glpisaml/issues/9
+     * @see                 - https://codeberg.org/QuinQuies/glpisaml/issues/11
      */
     function rawSearchOptions(): array                          //NOSONAR - phpcs:ignore PSR1.Function.CamelCapsMethodName
     {
-        // Lets not be as verbose GLPI objects.
-        $index = 1;
+        $tab[] = [
+            'id'                 => '1',                        // By GLPI convention Name field should have ID 1.
+            'table'              => $this->getTable(),
+            'field'              => ConfigEntity::NAME,
+            'name'               => __('Name'),
+            'massiveaction'      => false,
+            'datatype'           => 'itemlink'
+        ];
+        $tab[] = [
+            'id'                 => '2',                        // By GLPI convention ID field should have ID 2.
+            'table'              => $this->getTable(),
+            'field'              => ConfigEntity::ID,
+            'name'               => __('ID'),
+            'massiveaction'      => false, // implicit field is id
+            'datatype'           => 'itemlink'
+        ];
+        $tab[] = [
+            'id'                 => '3',                        // If this was the glpi entities_id the id should by convention be ID `86`
+            'table'              => $this->getTable(),
+            'field'              => ConfigEntity::IDP_ENTITY_ID,
+            'name'               => __('Idp entity ID'),
+            'massiveaction'      => false,
+            'datatype'           => 'text'
+        ];
+        $tab[] = [
+            'id'                 => '4',
+            'table'              => $this->getTable(),
+            'field'              => ConfigEntity::IS_ACTIVE,
+            'name'               => __('Is active'),
+            'massiveaction'      => false,
+            'datatype'           => 'bool'
+        ];
+
+        // Lets not be as verbose as default GLPI objects when we do not need to.
+        // continue tabId index where we left off.
+        $index = 5;
         foreach((new ConfigEntity())->getFields() as $field)
         {
             $field['list'] = false;
            // skip the following fields
-            if($field[ConfigItem::FIELD] != 'id'             &&
-               $field[ConfigItem::FIELD] != 'is_deleted'     &&
-               $field[ConfigItem::FIELD] != 'date_creation'  &&
-               $field[ConfigItem::FIELD] != 'date_mod'       &&
-               $field[ConfigItem::FIELD] != 'is_active'      &&
-               $field[ConfigItem::FIELD] != 'comment'        ){
-
-                // Remap DB fields to Search datatypes
-                if($field[ConfigItem::FIELD] == 'name' ){
-                    // Make sure the default field is 'name'
-                    $field[ConfigItem::TYPE] = 'itemlink';
-                    $field['list']  = true;
-                    $first = 0;
-                }elseif(strstr($field[ConfigItem::TYPE], 'varchar') ){
+            if($field[ConfigItem::FIELD] != ConfigEntity::ID            &&
+               $field[ConfigItem::FIELD] != ConfigEntity::NAME          &&
+               $field[ConfigItem::FIELD] != ConfigEntity::IDP_ENTITY_ID &&
+               $field[ConfigItem::FIELD] != ConfigEntity::IS_ACTIVE     &&
+               $field[ConfigItem::FIELD] != ConfigEntity::IS_DELETED    ){
+                // Remap DB fields to Search dataTypes
+                if(strstr($field[ConfigItem::TYPE], 'varchar') ){
                     $field[ConfigItem::TYPE] = 'string';
                 }elseif($field[ConfigItem::TYPE] == 'tinyint' ){
                     $field[ConfigItem::TYPE] = 'bool';
@@ -171,18 +211,18 @@ class Config extends CommonDBTM
                 }elseif(strstr($field[ConfigItem::TYPE], 'int') ){
                     $field[ConfigItem::TYPE] = 'number';
                 }
-
                 // Build tab array
                 $tab[] = [
-                    'id'                 => ($first) ? $first : $index,
-                    'table'              => self::getTable(),
+                    'id'                 => $index,
+                    'table'              => Config::getTable(),
                     'field'              => $field[ConfigItem::FIELD],
                     'name'               => __(str_replace('_', ' ', ucfirst($field[ConfigItem::FIELD]))),
                     'datatype'           => $field[ConfigItem::TYPE],
                     'list'               => $field['list'],
                 ];
+                // Only increase index if we processed an item.
+                $index++;
             }
-            $index++;
         }
         return $tab;
     }
@@ -192,26 +232,96 @@ class Config extends CommonDBTM
      * Get all valid configurations and return config buttons only if config is valid
      * and active.
      * @return  array
-     * @see                             - src/Loginflow/showLoginScreen()
+     * @see                             - src/LoginFlow/showLoginScreen()
+     * @since 1.0.0
      */
     public static function getLoginButtons(int $length): array
     {
-        $l = (is_numeric($length)) ? $length : 255;
-        $tplvars = [];
-        global $DB;
-        foreach( $DB->request(['FROM' => self::getTable()]) as $value)
+        
+        global $DB;         // Get global DB object to query the configTable.
+        $tplvars = [];      // Define the array used to store the buttons (if any)
+
+        // $length is used to strip the length of the button name to fit the button.
+        $length = (is_numeric($length)) ? $length : 255;
+
+        // Iterate through the IDP config rows and generate the buttons for twig template.
+        foreach( $DB->request(['FROM' => Config::getTable(), 'WHERE' => ['is_deleted'  => 0]]) as $value)
         {
             // Only populate buttons that are considered valid by ConfigEntity;
             $configEntity = new ConfigEntity($value[ConfigEntity::ID]);
-            if($configEntity->isValid() && $configEntity->isActive()){
+            if($configEntity->isValid() && $configEntity->isActive() && !$configEntity->getConfigDomain()){
                 $tplvars['buttons'][] = ['id'      => $value[ConfigEntity::ID],
                                         'icon'    => $value[ConfigEntity::CONF_ICON],
-                                        'name'    => sprintf("%.".$l."s", $value[ConfigEntity::NAME]) ];
+                                        'name'    => sprintf("%.".$length."s", $value[ConfigEntity::NAME]) ];
             }
         }
+        // Return the buttons (if any) else empty array.
         return $tplvars;
     }
 
+     /**
+     * Returns true if any of the configured IdPs is set to enforced.
+     * this will hide the password and database fields from the login
+     * page.
+     * @todo make the function filter out deleted rows.
+     * @return  bool
+     * @see                             - src/LoginFlow/showLoginScreen()
+     * @since 1.0.0
+     */
+    public static function getIsEnforced(): bool
+    {
+        global $DB;
+        return (count($DB->request(['FROM' => Config::getTable(), 'WHERE' => [ConfigEntity::ENFORCE_SSO  => 1]])) > 0) ? true : false;
+    }
+
+    /**
+     * Returns the configId if there is only 1 configuration present.
+     * @return  bool
+     * @see                             - src/LoginFlow/doAuth()
+     * @see                             - https://codeberg.org/QuinQuies/glpisaml/issues/61
+     * @since 1.1.5
+     */
+    public static function getIsOnlyOneConfig(): int
+    {
+        global $DB;
+        $res = $DB->request(['FROM' => Config::getTable(), 'WHERE' => [ConfigEntity::IS_DELETED  => 0, ConfigEntity::IS_ACTIVE => 1]]);
+        if (count($res) == 1       &&   // If we only get one row, return the ID
+            $row = $res->current() ){   // Assign the result to a var
+            $r = (is_numeric($row[ConfigEntity::ID])) ? $row[ConfigEntity::ID] : 0;
+        }else{
+            $r = 0;                     // If we get no, or multiple, return 0;
+        }
+        return $r;
+    }
+
+    /**
+     * Search saml configurations based on provided username@[domain.ext]
+     * and return the configuration ID of the matching saml configuration.
+     * @return  int     ConfigId
+     * @see             https://codeberg.org/QuinQuies/glpisaml/issues/3
+     * @since 1.1.3
+     */
+    public static function getConfigIdByEmailDomain(string $fielda): int
+    {
+        global $DB;
+        // Make sure we are dealing with a valid emailaddress.
+        if($upn = filter_var($fielda, FILTER_VALIDATE_EMAIL)){
+            // Domain portion of address is at index [1];
+            $domain = explode('@', $upn);
+            // Query the database for the given domain;
+            $req = $DB->request(['SELECT'   =>  ConfigEntity::ID,
+                                 'FROM'     =>  Config::getTable(),
+                                 'WHERE'    =>  [ConfigEntity::CONF_DOMAIN => $domain[1]]]);
+            // If we got a result, cast it to int and return it
+            if($req->numrows() == 1){
+                foreach($req as $row){
+                    $id = (int) $row['id'];
+                }
+                return $id; // Return the correct idp id
+            }          // We found nothing, return 0
+        }              // Username is not an email, return 0
+        return 0;
+    }
 
     /**
      * Install table needed for Ticket Filter configuration dropdowns
@@ -225,10 +335,10 @@ class Config extends CommonDBTM
         $default_charset    = DBConnection::getDefaultCharset();
         $default_collation  = DBConnection::getDefaultCollation();
         $default_key_sign   = DBConnection::getDefaultPrimaryKeySignOption();
-        $table              = self::getTable();
+        $table              = Config::getTable();
 
         // Create the base table if it does not yet exist;
-        // Dont update this table for later versions, use the migration class;
+        // Do not update this table for later versions, use the migration class;
         if (!$DB->tableExists($table)) {
             $migration->displayMessage("Installing $table");
             $query = <<<SQL
@@ -271,6 +381,19 @@ class Config extends CommonDBTM
             $DB->doQuery($query) or die($DB->error());
             Session::addMessageAfterRedirect("🆗 Installed: $table.");
         }
+
+        // Alter column width for conf_domain
+        // https://codeberg.org/QuinQuies/glpisaml/issues/30
+        if($DB->tableExists($table)){
+            $migration->displayMessage("Updating table layout for $table");
+            $query = <<<SQL
+                ALTER TABLE $table
+                MODIFY COLUMN `conf_domain` varchar(255) null;
+            SQL;
+            $DB->doQuery($query) or die($DB->error());
+
+            Session::addMessageAfterRedirect("🆗 Updated: $table layout.");
+        }
     }
 
     /**
@@ -281,7 +404,12 @@ class Config extends CommonDBTM
      */
     public static function uninstall(Migration $migration): void
     {
-        $table = self::getTable();
+        $table = Config::getTable();
+        // Make this smarter in the future. Never create a backup
+        // when the source table is empty and an existing table is
+        // populated! Allow user to restore from backup table. Current
+        // implementation will 'overwrite' the backup with an empty
+        // table if uninstall->reinstall->uninstall is performed.
         $migration->backupTables([$table]);
         Session::addMessageAfterRedirect("🆗 backup: $table.");
         $migration->dropTable($table);

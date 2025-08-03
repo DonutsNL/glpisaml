@@ -29,7 +29,7 @@
  * ------------------------------------------------------------------------
  *
  *  @package    PhpSaml
- *  @version    1.1.0
+ *  @version    1.1.4
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2023 by Chris Gralike
  *  @license    GPLv2+
@@ -39,9 +39,10 @@
  * ------------------------------------------------------------------------
  **/
 
-use Html;
-use Search;
-use Plugin;
+// https://codeberg.org/QuinQuies/glpisaml/issues/73
+// use Html;
+// use Search;
+// use Plugin;
 use GlpiPlugin\Glpisaml\Config as samlConfig;
 
 include_once '../../../inc/includes.php';               //NOSONAR - Cannot be included with USE keyword
@@ -53,13 +54,12 @@ $plugin = new Plugin();
 if($plugin->isInstalled(PLUGIN_NAME) ||
    $plugin->isActivated(PLUGIN_NAME) ){
     if (samlConfig::canCreate()) {
-        Html::header(__('Identity providers'), $_SERVER['PHP_SELF'], "plugins", samlConfig::class);
+        Html::header(__('Identity providers'), $_SERVER['PHP_SELF'], "config", samlConfig::class);
         Search::show(samlConfig::class);
         Html::footer();
     }else{
         Html::displayRightError();
     }
-    
 }else{
     Html::displayNotFoundError();
 }
