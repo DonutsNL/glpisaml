@@ -346,7 +346,7 @@ class LoginState extends CommonDBTM
      */
     private function getLastActivity(): void
     {
-        $this->state[LoginState::LOCATION] = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : 'CLI';
+        $this->state[LoginState::LOCATION] = (isset($_SERVER['REQUEST_URI'])) ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : 'CLI';
         $this->state[LoginState::LAST_ACTIVITY] = date('Y-m-d H:i:s');
     }
 

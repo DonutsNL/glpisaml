@@ -1,3 +1,8 @@
+**v1.1.12**
+- Make plugin compatible with version 1.1.12.
+- Move repository back to Github.
+- Update plugin details and marketplace links.
+
 **v1.1.10**
 - In preparation for 1.2.0
 - https://codeberg.org/QuinQuies/glpisaml/issues/61

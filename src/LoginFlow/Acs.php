@@ -79,7 +79,7 @@ class Acs extends LoginFlow
      * Stores the loginState object.
      * @since 1.0.0
      */
-    private $state          = false;
+    private $state          = null;
 
     /**
      * Stores the debug param.
@@ -91,19 +91,19 @@ class Acs extends LoginFlow
      * Stores the idpId.
      * @since 1.2.0
      */
-    private $idpId          = false;
+    private $idpId          = null;
 
     /**
      * Stores the samlResponse.
      * @since 1.2.0
      */
-    private $samlResponse   = false;
+    private $samlResponse   = null;
 
     /**
      * Stores the idp configuration.
      * @since 1.2.0
      */
-    private $configEntity   = false;
+    private $configEntity   = null;
 
 
     /**
@@ -183,7 +183,12 @@ class Acs extends LoginFlow
                 // GLPI we should find an existing LoginState in the LoginState database
                 // and the LoginState should be prepopulated with the 'database' marker set
                 // to true.
-                $InResponseTo = $this->samlResponse->getXMLDocument()->documentElement->getAttribute('InResponseTo');
+                try{ $InResponseTo = $this->samlResponse->getXMLDocument()->documentElement->getAttribute('InResponseTo'); } catch(Throwable $e) {
+                    $this->printError($e->getMessage(),
+                                      __("Saml::Response->InResponseTo")
+                                     );
+                }
+
                 try{
                     $this->state = new LoginState($InResponseTo);
                 } catch(Throwable $e) {

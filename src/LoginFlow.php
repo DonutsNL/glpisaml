@@ -106,7 +106,8 @@ class LoginFlow
     {
         global $CFG_GLPI;
 
-        // Get current state
+        // Get current state this can either be an initial state (new session) or
+        // an existing one. The state properties tell which one we are dealing with.
         if(!$state = new Loginstate()){
             $this->printError(__('Could not load loginState', PLUGIN_NAME));
         }
@@ -114,9 +115,12 @@ class LoginFlow
         // FILE EXCLUDED
         // Do we need to skip because of exclusion?
         if($state->isExcluded()){
-            //return $state->getExcludeAction();
-            // Return false seems to break GLPI in all kind of ways.
-            $state->addLoginFlowTrace(['isExcluded' => 'Path:'.$state->isExcluded()]);
+            if(!empty($state->isExcluded())){
+                $outcome = 'true : '.parse_url($state->isExcluded(), PHP_URL_PATH);
+            }else{
+                $outcome = 'false';
+            }
+            $state->addLoginFlowTrace(['isExcluded' => $outcome]);
             return;
         }
 
@@ -138,22 +142,6 @@ class LoginFlow
             $this->performLogOff();                                 // Perform logoff
             $this->doMetaRefresh($CFG_GLPI['url_base'].'/');        // Redirect user to the login page
         }
-
-
-        // SAML ENFORCED BY COOKIE?
-        // https://codeberg.org/QuinQuies/glpisaml/issues/35
-        // Do enforced login if we found a previous cookie
-        // And the phase is initial, and the escape string
-        // was not found.
-        /* NOSONAR
-        if(($state->getPhase() == LoginState::PHASE_INITIAL ||                      // Login should not be enforced after initial login phase
-            $state->getPhase() == LoginState::PHASE_LOGOFF) &&
-            Config::getIsEnforced()                         &&                      // Login should not be enforced before logout phase
-            $idpId = ConfigEntity::getEnforced()            ){                      // Fetch the idpId from the enforced cookie
-            $state->addLoginFlowTrace(['loginEnforcedByCookie' => 'idpId:'.$idpId]);   // Register the login was enforced by cookie
-            $_POST[LoginFlow::POSTFIELD] = $idpId;                                  // Set the id to trigger an SSO using the set IdP.
-        }
-        */
 
         // CAPTURE LOGIN FIELD
         // https://codeberg.org/QuinQuies/glpisaml/issues/3
