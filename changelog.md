@@ -1,7 +1,9 @@
 **v1.1.12**
-- Make plugin compatible with version 1.1.12.
+- Make plugin compatible with latest GLPI version.
 - Move repository back to Github.
 - Update plugin details and marketplace links.
+- Simplify loginstate logging to improve performance
+- Wrap all phpsaml functions in try catch to catch all potential issues
 
 **v1.1.10**
 - In preparation for 1.2.0
