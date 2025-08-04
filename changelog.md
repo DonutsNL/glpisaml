@@ -4,6 +4,11 @@
 - Update plugin details and marketplace links.
 - Simplify loginstate logging to improve performance
 - Wrap all phpsaml functions in try catch to catch all potential issues
+- https://github.com/DonutsNL/glpisaml/issues/22
+- Added redirect field to state database
+- Added redirect retrieval in state object
+- Added redirect capture in initial state
+- Added redirect restore in meta refresh in loginflow object.
 
 **v1.1.10**
 - In preparation for 1.2.0

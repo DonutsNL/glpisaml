@@ -58,7 +58,7 @@ use Exception;
 use CommonDBTM;
 use DBConnection;
 use GlpiPlugin\Glpisaml\Exclude;
-
+use RecursiveDirectoryIterator;
 
 /*
  * The goal of this object is to keep track of the login state in the database.
@@ -78,7 +78,8 @@ class LoginState extends CommonDBTM
     public const SESSION_NAME               = 'sessionName';    // Php session_name();
     public const GLPI_AUTHED                = 'glpiAuthed';     // Session authed by GLPI
     public const SAML_AUTHED                = 'samlAuthed';     // Session authed by SAML
-    public const LOCATION                   = 'location';       // Location requested;
+    public const LOCATION                   = 'location';       // Location URL
+    public const REDIRECT                   = 'redirect';       // Requested redirect location
     public const IDP_ID                     = 'idpId';          // What IdP handled the Auth?
     public const LOGIN_DATETIME             = 'loginTime';      // When did we first see the session
     public const LAST_ACTIVITY              = 'lastClickTime';  // When did we last update the session
@@ -346,7 +347,17 @@ class LoginState extends CommonDBTM
      */
     private function getLastActivity(): void
     {
+        // Capture redirect parameter.
+        // https://github.com/DonutsNL/glpisaml/issues/22
+        if(isset($_GET[loginstate::REDIRECT])){
+            // Use GLPI's native function to safely get and sanitize the parameter
+            $redirect_url = filter_input(INPUT_GET, loginstate::REDIRECT, FILTER_DEFAULT);
+            $this->state[LoginState::REDIRECT] = $redirect_url;
+        }
+        // Capture the requested location via main url.
+        // In GLPI11 this should always be via the /public/ folder and we might want to validate that.
         $this->state[LoginState::LOCATION] = (isset($_SERVER['REQUEST_URI'])) ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : 'CLI';
+        // Update the timestamp so we can clean the table accordingly.
         $this->state[LoginState::LAST_ACTIVITY] = date('Y-m-d H:i:s');
     }
 
@@ -640,6 +651,22 @@ class LoginState extends CommonDBTM
     }
 
     /**
+     * Returns the stored redirect location if any.
+     * https://github.com/DonutsNL/glpisaml/issues/22
+     *
+     * @return  string (empty if none)
+     * @since   1.2.0
+     */
+    public function getRedirect(): string
+    {
+        if(isset($this->state[LoginState::REDIRECT])){
+            return $this->state[LoginState::REDIRECT];
+        }else{
+            return '';
+        }
+    }
+
+    /**
      * Install the LoginState DB table
      * @param   Migration $obj
      * @return  void
@@ -684,7 +711,7 @@ class LoginState extends CommonDBTM
             Session::addMessageAfterRedirect("🆗 Installed: $table.");
         }
 
-        // Add new requestId field for version 1.2.
+        // Add new requestId field for version 1.1.2.
         // https://codeberg.org/QuinQuies/glpisaml/issues/45
         if ( $DB->tableExists($table)                                                                                                                  &&   // Table should exist
             !$DB->fieldExists($table, LoginState::SAML_REQUEST_ID, false)                                                                              &&   // Field should not exist
@@ -695,19 +722,26 @@ class LoginState extends CommonDBTM
         if ( $DB->tableExists($table)                                                                                                                      &&   // Table should exist
             !$DB->fieldExists($table, LoginState::SAML_UNSOLICITED, false)                                                                                 &&   // Field should not exist
             $migration->addField($table, LoginState::SAML_UNSOLICITED, 'str', ['null' => true, 'after' => LoginState::SAML_REQUEST_ID, 'update' => true])  ){   // @see Migration::fieldFormat()
-                Session::addMessageAfterRedirect("🆗 Added field LoginState::SAML_UNSOLLICITED for v1.2.0");
+                Session::addMessageAfterRedirect("🆗 Added field LoginState::SAML_UNSOLLICITED for v1.1.2");
         } // We silently ignore errors. Most common cause for an error is if the field already exists.
 
         if ( $DB->tableExists($table)                                                                                                                       &&   // Table should exist
             !$DB->fieldExists($table, LoginState::SAML_RESPONSE_ID, false)                                                                                  &&   // Field should not exist
-            $migration->addField($table, LoginState::SAML_RESPONSE_ID, 'str', ['null' => true, 'after' => LoginState::SAML_UNSOLICITED, 'update' => true]) ){   // @see Migration::fieldFormat()
-                Session::addMessageAfterRedirect("🆗 Added field LoginState::SAML_RESPONSE_ID for v1.2.0");
+            $migration->addField($table, LoginState::SAML_RESPONSE_ID, 'str', ['null' => true, 'after' => LoginState::SAML_UNSOLICITED, 'update' => true])  ){   // @see Migration::fieldFormat()
+                Session::addMessageAfterRedirect("🆗 Added field LoginState::SAML_RESPONSE_ID for v1.1.2");
         } // We silently ignore errors. Most common cause for an error is if the field already exists.
 
         if ( $DB->tableExists($table)                                                                                                                       &&   // Table should exist
             !$DB->fieldExists($table, LoginState::LOGIN_FLOW_TRACE, false)                                                                                  &&   // Field should not exist
-            $migration->addField($table, LoginState::LOGIN_FLOW_TRACE, 'str', ['null' => true, 'after' => LoginState::SAML_RESPONSE_ID, 'update' => true]) ){   // @see Migration::fieldFormat()
-                Session::addMessageAfterRedirect("🆗 Added field LoginState::LOGIN_FLOW_TRACE for v1.2.0");
+            $migration->addField($table, LoginState::LOGIN_FLOW_TRACE, 'str', ['null' => true, 'after' => LoginState::SAML_RESPONSE_ID, 'update' => true])  ){   // @see Migration::fieldFormat()
+                Session::addMessageAfterRedirect("🆗 Added field LoginState::LOGIN_FLOW_TRACE for v1.1.2");
+        } // We silently ignore errors. Most common cause for an error is if the field already exists.
+
+        // @see https://github.com/DonutsNL/glpisaml/issues/22
+        if ( $DB->tableExists($table)                                                                                                                       &&   // Table should exist
+            !$DB->fieldExists($table, LoginState::REDIRECT, false)                                                                                          &&   // Field should not exist
+            $migration->addField($table, LoginState::REDIRECT, 'str', ['null' => true, 'after' => LoginState::LOCATION, 'update' => true])                  ){   // @see Migration::fieldFormat()
+                Session::addMessageAfterRedirect("🆗 Added field LoginState::REDIRECT for v1.1.12");
         } // We silently ignore errors. Most common cause for an error is if the field already exists.
 
         // Clean old cookies

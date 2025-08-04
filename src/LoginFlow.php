@@ -286,11 +286,19 @@ class LoginFlow
         // end up in a login loop. Very anoying!
         $state->setSessionId();
 
+        // Restore the saved redirect location
+        // https://github.com/DonutsNL/glpisaml/issues/22
+        if(!empty($state->getRedirect())){
+            $redirect = '?redirect=' . $state->getRedirect();
+        }else{
+            $redirect = '';
+        }
+
         // Redirect back to main page
         // We should fix added .'/' to prevent (string|int) type issue.
         // Html::redirect($CFG_GLPI['url_base']);
         // https://codeberg.org/QuinQuies/glpisaml/issues/42
-        $this->doMetaRefresh($CFG_GLPI['url_base'].'/');
+        $this->doMetaRefresh($CFG_GLPI['url_base'].'/'.$redirect);
     }
 
     /**
