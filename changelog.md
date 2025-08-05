@@ -9,6 +9,12 @@
 - Added redirect retrieval in state object
 - Added redirect capture in initial state
 - Added redirect restore in meta refresh in loginflow object.
+- Redirect not tested yet! any feedback is welcome.
+- https://codeberg.org/QuinQuies/glpisaml/issues/159
+- Fixed the issue where impersonation would trigger an auth by saml when enforced was enabled
+- Removed excessive logging caused by excluded files not being handled correctly
+- Removed all logging regarding excluded files.
+- Applied URL parsing to prevent URIs from being logged in the database causing field te small errors.
 
 **v1.1.10**
 - In preparation for 1.2.0

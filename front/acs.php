@@ -59,4 +59,8 @@ $_GET = [];
 include_once '../../../inc/includes.php';                       //NOSONAR - Cant be included with USE.
 
 // Load ACS
-$acs = new Acs($get, $post);
+try{
+    $acs = new Acs($get, $post);
+} catch(Throwable $e) {
+    print "An error occurred:".$e;
+}

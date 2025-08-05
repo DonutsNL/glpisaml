@@ -867,8 +867,8 @@
                     <div class="row g-2">      
                         <!-- enforce SSO -->
                         <div class="col-md p-2">
-                            <h2>Work in progress, logging is by no means complete but still usable. All feedback more than welcome!</h2>
-                            <div>Phases: 1 = initial, 2=send_saml_SSO_request, 3=performed_saml_auth, 4=performed_glpi_auth, 5=file_exclude, 6=forced_logoff, 7=timed_out, 8=manual_glpi_logout
+                            <h2>Work in progress</h2>
+                            <div>Session phases: 1 = initial, 2 = Performed IDP redirect, 3 = SAML Response accepted, 4 = Succesfully authenticated, 5=file_exclude, 6=forced_logoff, 7=timed_out, 8=manual_glpi_logout
                             </div>
                             <table class="table table-striped table-sm">
                                 <thead>
@@ -876,9 +876,9 @@
                                     <th>Id</th>
                                     <th>IdpId</th>
                                     <th>username</th>
-                                    <th>glpiAuthed</th>
-                                    <th>samlAuthed</th>
-                                    <th>Phase</th>
+                                    <th>Authed by GLPI</th>
+                                    <th>Authed by SAML</th>
+                                    <th>Session phase</th>
                                     <th>loginTime</th>
                                     <th>lastClickTime</th>
                                     <th>Locations</th>

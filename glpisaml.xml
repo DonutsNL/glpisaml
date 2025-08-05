@@ -5,15 +5,15 @@
 <logo>https://codeberg.org/QuinQuies/glpisaml/raw/branch/main/donut.png</logo>
 <description>
     <short>
-        <en>Enables you to configure SAML with an external IdP to authenticate and authorize users using the GLPI UI.</en>
+        <en>Extends GLPI with SSO support using SAMLv2.</en>
     </short>
     <long>
-        <en>Glpisaml provides SAML Single Sign On (SSO) capabilties for GLPI. Glpisaml is written with GLPI10+ 
-            support in mind. It uses GLPI core components and best-practices for maximum compatibility and 
-            maintainability. The plugin enables you to configure multiple SAML providers allowing your customers
-            SSO access as well. The plugin will create new GLPI users on the fly and apply jit rules to assign 
-            entities, groups and profiles. For questions join our discord at: https://discord.gg/KyMdkqJcGz. 
-            Find an issue, register it at my codeberg site. Written with passion for OSS, Enjoy!
+        <en>Glpisaml provides SSO (MFA) support using SAML. Glpisaml is written specifically for GLPI10 and is not
+            and will not be compatible with GLPI9 or GLPI11. The plugin allows you to configure multiple IDPs
+            idealy for IT companies that want to support SSO integration with multiple environments. SAML 
+            Configuration is done via the GLPI UI. Plugin supports Just-in-time user creation and simple rules to
+            provision newly created users. For questions join our discord at: https://discord.gg/KyMdkqJcGz. 
+            If you find an issue, please register it at our Github repo.
         </en>
     </long>
 </description>
@@ -37,6 +37,8 @@
 <license>GPLv3+</license>
 <tags>
     <en>
+        <tag>SSO</tag>
+        <tag>SAML</tag>
         <tag>Management</tag>
         <tag>Setup</tag>
         <tag>Authentication</tag>

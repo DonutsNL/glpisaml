@@ -32,7 +32,7 @@
  * ------------------------------------------------------------------------
  *
  *  @package    GLPISaml
- *  @version    1.1.6
+ *  @version    1.1.12
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2024 by Chris Gralike
  *  @license    GPLv3+
@@ -106,25 +106,29 @@ class LoginFlow
     {
         global $CFG_GLPI;
 
+        // If we hit an excluded file, we return and do nothing, not even log the
+        // event. Possibly we want to enable the user to perform SIEM calls by 
+        // implementing this functionality prior to this validation.
+        if(Exclude::isExcluded()){
+            return;
+        }
+
+        // Do nothing if glpi is trying to impersonate someone
+        // Let GLPI handle auth in this scenario
+        // https://codeberg.org/QuinQuies/glpisaml/issues/159
+        if(isset($_POST['impersonate']) && 
+           $_POST['impersonate'] == '1' &&
+           !empty($_POST['id'])         ){
+                return;
+        }
+
         // Get current state this can either be an initial state (new session) or
         // an existing one. The state properties tell which one we are dealing with.
         if(!$state = new Loginstate()){
             $this->printError(__('Could not load loginState', PLUGIN_NAME));
         }
 
-        // FILE EXCLUDED
-        // Do we need to skip because of exclusion?
-        if($state->isExcluded()){
-            if(!empty($state->isExcluded())){
-                $outcome = 'true : '.parse_url($state->isExcluded(), PHP_URL_PATH);
-            }else{
-                $outcome = 'false';
-            }
-            $state->addLoginFlowTrace(['isExcluded' => $outcome]);
-            return;
-        }
-
-        // LOGOUT PRESSED?
+         // LOGOUT PRESSED?
         // https://codeberg.org/QuinQuies/glpisaml/issues/18
         if ( isset($_SERVER['REQUEST_URI']) && ( strpos($_SERVER['REQUEST_URI'], 'front/logout.php') !== false) ){
             // Stop GLPI from processing cookie based auto login.
@@ -134,6 +138,7 @@ class LoginFlow
         }
 
         // BYPASS SAML ENFORCE OPTION
+        // TODO: DonutsNL: Validate logic, this does not seem correct.. 5-08-2025.
         // https://codeberg.org/QuinQuies/glpisaml/issues/35
         if(isset($_GET[LoginFlow::SAMLBYPASS])                  &&  // Is ?bypass=1 set in our uri
            strpos($_SERVER['REQUEST_URI'], '/front/') !== false &&  // We are not on the login page
@@ -173,8 +178,9 @@ class LoginFlow
             $state->getPhase() == LoginState::PHASE_LOGOFF) &&      // Make sure we only do this if state is logoff
             Config::getIsOnlyOneConfig()                    &&      // Only perform this login type with only one samlConfig entry
             Config::getIsEnforced()                         ){      // Only perform this login type if samlLogin is enforced.
-             $state->addLoginFlowTrace(['OnlyOneIdpEnforced' => 'idpId:'.Config::getIsOnlyOneConfig()]);
-             $_POST[LoginFlow::POSTFIELD] = Config::getIsOnlyOneConfig();
+            
+            $state->addLoginFlowTrace(['OnlyOneIdpEnforced' => 'idpId:'.Config::getIsOnlyOneConfig()]);
+            $_POST[LoginFlow::POSTFIELD] = Config::getIsOnlyOneConfig();
         }
 
 
@@ -228,7 +234,11 @@ class LoginFlow
             // Capture and register requestId in database
             // before performing the redirect so we don't need Cookies
             // https://codeberg.org/QuinQuies/glpisaml/issues/45
-            $ssoBuiltUrl = $auth->login($CFG_GLPI["url_base"], array(), false, false, true);
+            try{
+                $ssoBuiltUrl = $auth->login($CFG_GLPI["url_base"], array(), false, false, true);
+            } catch (Throwable $e) {
+                $this->printError($e->getMessage(), 'Saml::Auth->init', var_export($auth->getErrors(), true));
+            }
             
             // Register the requestId in the database and $_SESSION var;
             $state->setRequestId($auth->getLastRequestID());
@@ -276,15 +286,17 @@ class LoginFlow
 
         // Update the current state
         if(!$state = new Loginstate()){ $this->printError(__('Could not load loginState from database!', PLUGIN_NAME)); }
-        $state->setPhase(LoginState::PHASE_GLPI_AUTH);
-
-        // Populate Glpi session with Auth.
-        Session::init($auth);
+        // Indicate we accepted the SAMLResponse for auth.
+        $state->setSamlAuthTrue();
 
         // Update the sessionID (thats reset by Session::init)
         // So we can find it after the redirect! Else we will
         // end up in a login loop. Very anoying!
         $state->setSessionId();
+
+        // Populate Glpi session with the Auth object
+        // so GLPI knows we logged in succesfully
+        Session::init($auth);
 
         // Restore the saved redirect location
         // https://github.com/DonutsNL/glpisaml/issues/22

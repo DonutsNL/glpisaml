@@ -32,7 +32,7 @@
  * ------------------------------------------------------------------------
  *
  *  @package    GLPISaml
- *  @version    1.1.6
+ *  @version    1.1.12
  *  @author     Chris Gralike
  *  @copyright  Copyright (c) 2024 by Chris Gralike
  *  @license    GPLv3+
@@ -50,7 +50,7 @@ use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\Settings;
 use OneLogin\Saml2\Response;
 use GlpiPlugin\Glpisaml\LoginFlow;
-use GlpiPlugin\Glpisaml\Loginstate;
+use GlpiPlugin\Glpisaml\LoginState;
 use GlpiPlugin\Glpisaml\Config\ConfigEntity;
 
 
@@ -133,7 +133,7 @@ class Acs extends LoginFlow
                 try{
                     $this->configEntity = new ConfigEntity($this->idpId);
                 }catch (Throwable $e){
-                    $this->printError(__("Unable to fetch idp configuration with id:".$this->state->getIdpId()." from database",PLUGIN_NAME),
+                    $this->printError(__("Unable to fetch idp configuration with id:".$this->idpId." from database",PLUGIN_NAME),
                                       __('Assert saml', PLUGIN_NAME));
                 }
 
@@ -195,6 +195,7 @@ class Acs extends LoginFlow
                     $this->printError(__("Could not fetch loginState from database with error: <br><br>$e<br><br>See: https://codeberg.org/QuinQuies/glpisaml/wiki/LoginState.php for more information.", PLUGIN_NAME), 
                                       __('LoginState'));
                 }
+
 
                 // Everything is prepared for assertion!
                 // Perform assertion on the samlResponse
