@@ -1,4 +1,5 @@
 **v1.1.12**
+- Update plugin glpisaml.xml
 - Make plugin compatible with latest GLPI version.
 - Move repository back to Github.
 - Update plugin details and marketplace links.
@@ -17,7 +18,6 @@
 - Applied URL parsing to prevent URIs from being logged in the database causing field te small errors.
 
 **v1.1.10**
-- In preparation for 1.2.0
 - https://codeberg.org/QuinQuies/glpisaml/issues/61
 - https://codeberg.org/QuinQuies/glpisaml/issues/46
 -  Added logic to automatically enforce saml configuration if there is only one configured with enforce enabled.
