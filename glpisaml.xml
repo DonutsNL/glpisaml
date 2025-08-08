@@ -1,6 +1,6 @@
 <root>
 <name>glpisaml</name>
-<key>SAMLsso</key>
+<key>glpisaml</key>
 <state>Stable</state>
 <logo>https://raw.githubusercontent.com/DonutsNL/glpisaml/refs/heads/main/donut.png</logo>
 <description>
