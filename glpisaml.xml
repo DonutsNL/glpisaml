@@ -1,6 +1,6 @@
 <root>
 <name>glpisaml</name>
-<key>glpisaml</key>
+<key>SAMLsso</key>
 <state>Stable</state>
 <logo>https://raw.githubusercontent.com/DonutsNL/glpisaml/refs/heads/main/donut.png</logo>
 <description>
@@ -15,6 +15,23 @@
             provision newly created users. For questions join our discord at: https://discord.gg/KyMdkqJcGz. 
             If you find an issue, please register it at our Github repo.
         </en>
+        <fr>Glpisaml offre une prise en charge SSO (MFA) en utilisant SAML. Glpisaml est écrit spécifiquement pour
+             GLPI10 et n'est pas et ne sera pas compatible avec GLPI9 ou GLPI11. Le plugin permet de configurer 
+             plusieurs IdP, ce qui est idéal pour les entreprises informatiques qui souhaitent prendre en charge 
+             l'intégration SSO avec de multiples environnements. La configuration SAML s'effectue via l'interface 
+             utilisateur de GLPI. Le plugin prend en charge la création d'utilisateurs "Just-in-time" et des règles 
+             simples pour provisionner les utilisateurs nouvellement créés. Pour toute question, rejoignez notre 
+             Discord à l'adresse : https://discord.gg/KyMdkqJcGz. Si vous rencontrez un problème, 
+             veuillez le signaler sur notre dépôt Github.
+        </fr>
+        <es>Glpisaml ofrece soporte para SSO (MFA) utilizando SAML. Glpisaml está escrito específicamente para GLPI10
+             y no es ni será compatible con GLPI9 o GLPI11. El plugin permite configurar múltiples IdP, lo que es ideal
+             para empresas de TI que deseen dar soporte a la integración SSO con múltiples entornos. La configuración
+            de SAML se realiza a través de la interfaz de usuario de GLPI. El plugin admite la creación de usuarios
+            "Just-in-time" y reglas sencillas para aprovisionar a los usuarios recién creados. Si tienes preguntas,
+            únete a nuestro Discord en: https://discord.gg/KyMdkqJcGz. Si encuentras un problema, por favor, 
+            regístralo en nuestro repositorio de Github.
+        </es>
     </long>
 </description>
 <homepage>https://github.com/DonutsNL/glpisaml/wiki/</homepage>
